@@ -1,0 +1,39 @@
+From 74c4900aab22acdb3bff0b7917fbfbe106ec9aec Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 20 Oct 2014 14:04:45 -0400
+Subject: [PATCH] mk/rt: "export CC" does not seem to work (gcc observed), use
+ explicit shell variables instead
+
+---
+ mk/rt.mk | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/mk/rt.mk b/mk/rt.mk
+index de06d49..3e05012 100644
+--- a/mk/rt.mk
++++ b/mk/rt.mk
+@@ -284,16 +284,15 @@ endif
+ # ./configure script. This is done to force libbacktrace to *not* use the
+ # atomic/sync functionality because it pulls in unnecessary dependencies and we
+ # never use it anyway.
+-$$(BACKTRACE_BUILD_DIR_$(1))/Makefile: \
+-		export CFLAGS:=$$(CFG_GCCISH_CFLAGS_$(1):-Werror=) \
+-				-fno-stack-protector
+-$$(BACKTRACE_BUILD_DIR_$(1))/Makefile: export CC:=$$(CC_$(1))
+-$$(BACKTRACE_BUILD_DIR_$(1))/Makefile: export AR:=$$(AR_$(1))
+-$$(BACKTRACE_BUILD_DIR_$(1))/Makefile: export RANLIB:=$$(AR_$(1)) s
+ $$(BACKTRACE_BUILD_DIR_$(1))/Makefile: $$(BACKTRACE_DEPS) $$(MKFILE_DEPS)
++	@$$(call E, configure: libbacktrace for $(1))
+ 	$$(Q)rm -rf $$(BACKTRACE_BUILD_DIR_$(1))
+ 	$$(Q)mkdir -p $$(BACKTRACE_BUILD_DIR_$(1))
+ 	$$(Q)(cd $$(BACKTRACE_BUILD_DIR_$(1)) && \
++	      CC="$$(CC_$(1))" \
++	      AR="$$(AR_$(1))" \
++	      RANLIB="$$(AR_$(1)) s" \
++	      CFLAGS="$$(CFG_GCCISH_CFLAGS_$(1):-Werror=) -fno-stack-protector" \
+ 	      $(S)src/libbacktrace/configure --target=$(1) --host=$(CFG_BUILD))
+ 	$$(Q)echo '#undef HAVE_ATOMIC_FUNCTIONS' >> \
+ 	      $$(BACKTRACE_BUILD_DIR_$(1))/config.h
+-- 
+2.1.2
+
