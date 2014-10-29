@@ -7,6 +7,10 @@ LICENSE = "MIT | Apache-2.0"
 
 B = "${WORKDIR}/build"
 
+LIC_FILES_CHKSUM ="\
+	file://COPYRIGHT;md5=0e8e4a3b5d8e1c90eb243d406369763a \
+"
+
 do_configure () {
 	# FIXME: allow --enable-local-rust
 	# FIXME: target_prefix vs prefix, see cross.bbclass

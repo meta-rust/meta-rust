@@ -1,7 +1,5 @@
-LIC_FILES_CHKSUM ="\
-	file://COPYRIGHT;md5=0e8e4a3b5d8e1c90eb243d406369763a \
-"
-
 SRCREV = "1652a1f2c61883c5f2b55a952796619d8aef365e"
-
 require rust-git.inc
+
+# Doesn't build cargo as of 2014-10-28
+DEFAULT_PREFERENCE = "-1"
