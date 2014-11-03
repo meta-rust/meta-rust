@@ -18,7 +18,3 @@
 #"
 
 CFLAGS +=" -fPIC"
-
-do_configure_prepend () {
-	#export CFLAGS="$CFLAGS -fPIC"
-}
