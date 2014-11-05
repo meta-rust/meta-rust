@@ -17,4 +17,4 @@
 #	--enable-hidden-symbols \
 #"
 
-CFLAGS +=" -fPIC"
+CFLAGS += "-fPIC"
