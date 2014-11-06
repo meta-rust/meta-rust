@@ -1,4 +1,4 @@
-SRCREV = "0547a407aa03b9f1c03843aead617a2e8c5d1147"
+SRCREV = "51a25c7f96ad0d00836314d705e3f0a477562a2c"
 require rust-git.inc
 
 # Doesn't build cargo as of 2014-10-28
