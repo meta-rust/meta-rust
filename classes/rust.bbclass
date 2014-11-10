@@ -37,6 +37,8 @@ RUST_PATH = "${RUST_PATH_NATIVE}"
 
 CARGO = "cargo"
 
+OECARGO_PATH ??= ""
+
 oe_runrustc () {
 	bbnote ${RUSTC} ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
 	"${RUSTC}" ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
@@ -51,9 +53,25 @@ oe_cargo_config () {
 	# assumed to be a path to a binary. If flags are needed, a wrapper must
 	# be used.
 	cat >.cargo/config <<EOF
+paths = [
+EOF
+
+	for p in ${OECARGO_PATH}; do
+		printf "\"%s\" " "$p" 
+	done | sed -e 's/[ \n]+/,/g'  -e 's/,$//' >>.cargo/config
+
+	cat >>.cargo/config <<EOF
+]
+
 [target.${RUST_TARGET_SYS}]
 ar = "${TARGET_PREFIX}ar"
 linker = "${TARGET_PREFIX}gcc"
+EOF
+
+
+	cat >>Cargo.toml <<EOF
+[profile.dev]
+rpath = true
 EOF
 }
 
