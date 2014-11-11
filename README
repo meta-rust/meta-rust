@@ -1,0 +1,12 @@
+What works:
+
+ rust-native
+
+What doesn't:
+
+ cargo-native
+
+What's untested:
+
+ cargo, rust (built for target)
+ rust-cross
