@@ -19,6 +19,8 @@ PV .= "+git${SRCPV}"
 S = "${WORKDIR}/git"
 B = "${S}"
 
+export RUST_PATH="${RUST_PATH}"
+
 do_configure () {
 	"${S}/configure" \
 		"--prefix=${prefix}"			\
@@ -41,8 +43,6 @@ do_compile () {
 	echo "COMPILE ${PN}"
 	env
 
-	export RUST_PATH="${RUST_PATH}"
-	export LD_LIBRARY_PATH="${RUST_PATH}"
 	oe_runmake ARGS="--verbose"
 }
 
