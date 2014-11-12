@@ -19,7 +19,17 @@ PV .= "+git${SRCPV}"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-export RUST_PATH
+do_cargo_config_patch () {
+	cd "${S}"
+	cat >>Cargo.toml <<EOF
+[profile.dev]
+rpath = true
+[profile.release]
+rpath = true
+EOF
+}
+addtask cargo_config_patch after do_patch before do_configure
+do_cargo_config_patch[dirs] = "${WORKDIR}"
 
 do_configure () {
 	"${S}/configure" \

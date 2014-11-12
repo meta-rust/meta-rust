@@ -67,8 +67,9 @@ EOF
 ar = "${TARGET_PREFIX}ar"
 linker = "${TARGET_PREFIX}gcc"
 EOF
+}
 
-
+oe_cargo_patch () {
 	cat >>Cargo.toml <<EOF
 [profile.dev]
 rpath = true

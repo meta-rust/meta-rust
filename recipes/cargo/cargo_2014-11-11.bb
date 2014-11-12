@@ -1,4 +1,4 @@
-SRCREV_cargo = "f830efaa4ac85e8c8e421aa354d5becb9845e44f"
+SRCREV_cargo = "e6ec71a85249984c4ed3ed409b770f0639c1de1c"
 require cargo.inc
 
 #SRC_URI_append = " \
