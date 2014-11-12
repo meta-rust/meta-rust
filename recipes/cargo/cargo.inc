@@ -19,7 +19,7 @@ PV .= "+git${SRCPV}"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-export RUST_PATH="${RUST_PATH}"
+export RUST_PATH
 
 do_configure () {
 	"${S}/configure" \
