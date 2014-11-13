@@ -22,91 +22,137 @@ def rust_triple(arch, vendor, os, d):
             os = "linux-gnu"
     return arch + vendor + '-' + os
 
-RUST_TARGET_SYS = "${@rust_triple('${TARGET_ARCH}','${TARGET_VENDOR}','${TARGET_OS}', d)}"
-RUST_BUILD_SYS = "${@rust_triple('${BUILD_ARCH}','${BUILD_VENDOR}','${BUILD_OS}', d)}"
-RUST_HOST_SYS = "${@rust_triple('${HOST_ARCH}','${HOST_VENDOR}','${HOST_OS}', d)}"
 
-deref() {
-	eval echo "\$$1"
-}
+## Required elements of the target spec
+export DATA_LAYOUT_ARM = ""
+export LLVM_TARGET_ARM = ""
+export TARGET_ENDIAN_ARM = ""
+export TARGET_WORD_SIZE_ARM = ""
+export ARCH_ARM = ""
+# OS = linux
 
-strip_flags () {
-	# from cmake.bbclass
-	sed 's/^\([^ ]*\).*/\1/'
-}
+## "Optional" elements of the target spec
+
+
 
 # Generates a config file suitable for use as a compiler-and-runtime-build-time
 # target specification (distinct from those target specifications used by
 # `rustc --target`)
-# 
-# Designed to operate where $1={host,target,build}, and creates targets named
-# 'host', 'target', and 'build' that correspond to these.
+#
+# Designed to operate where $1={host,target,build}, and creates targets with
+# the <vendor> portion subsituted with 'host', 'build', or 'target'
 rust_gen_mk_cfg () {
+
+	deref() {
+		eval echo "\$$1"
+	}
+
+	ARCH="$(deref $u_ARCH)"
+
 	local u=`echo $1 | tr '[:lower:]' '[:upper:]'`
-	local sys=$(deref $u_SYS)
-	local rust_sys=$(deref RUST_$u_SYS)
+	local sys=$(deref ${u}_SYS)
+	local rust_base_sys=$(deref RUST_BASE_${u}_SYS)
 	local p="${S}/mk/cfg/"
+
 	if [ -z "$sys" ]; then
 		bbnote "Rust: no SYS for $u"
 		return
 	fi
-
-	if [ -z "$rust_sys" ]; then
-		bbfatal "Rust: no RUST_SYS for $u (sys=$sys)"
+	if [ -z "$rust_base_sys" ]; then
+		bbfatal "Rust: no RUST_BUILD_SYS for $u (sys=$sys)"
 	fi
 
-	if ! [ -e "$p/$rust_sys" ]; then
-		bbfatal "Could not find RUST_$u_SYS = $rust_sys in file '$p/$rust_sys'"
-	fi
-
-	if [ -e "$p/$1" ]; then
-		bbfatal "Rust config spec already exists: '$p/$1'"
+	if ! [ -e "$p$rust_base_sys" ]; then
+		bberror "Could not find RUST_BASE_${u}_SYS = ${rust_base_sys}"
+		bbfatal "file '$p/$rust_base_sys'"
 	fi
 
 	# Use one of the existing configs as our base
-	cp "$p/$rust_sys" "$p/$1"
+	cp  -f "$p$rust_base_sys" "$p$sys"
 
 	# FIXME: right now we assume our targets lack regex special characters
+	#        and assumes flags lack regex special chars and ';'
 
-	# Fixup the target name for all variables
-	# Edit in our:
-	# - CROSS_PREFIX (blank it)
-	# - CC
-	local cc="`echo $(deref $u_CC) | strip_flags`"
-	# - CXX (from cmake.bbclass)
-	local cxx="`echo $(deref $u_CXX) | strip_flags`"
-	# - CPP
-	local cpp="$cc -E"
-	# - AR
-	local ar="$(deref $u_AR)"
-	# Append our:
-	# - CFLAGS
-	local c_flags="$(deref $u_CC_ARCH)${TOOLCHAIN_OPTIONS} $(deref $u_CFLAGS)"
-	# - CXXFLAGS
-	local cxx_flags="$(deref $u_CC_ARCH)${TOOLCHAIN_OPTIONS} $(deref $u_CXXFLAGS)"
-	# - LINK_FLAGS
-	local link_flags="${TOOLCHAIN_OPTIONS} ${HOST_LD_ARCH}"
+	# 1. Fixup the target name for all variables
+	# 2. Blank CROSS_PREFIX (XXX: should we set it to "${CCACHE}${$u_PREFIX}"
+	#    and adjust other vars as needed?)
+	# 3. Edit in our:
+	local bare_cc="$(deref ${u}_PREFIX)gcc"
+	local cc="${CCACHE}${bare_cc} $(deref ${u}_CC_ARCH)"
+	local cxx="${CCACHE}$(deref ${u}_PREFIX)g++ $(deref ${u}_CC_ARCH)"
+	local cpp="$(deref ${u}_PREFIX)gcc $(deref ${u}_CC_ARCH) -E"
+	local ar="$(deref ${u}_PREFIX)ar"
+
+	# 4. Append our:
+	# FIXME: TOOLCHAIN_OPTIONS are only for TARGET (which is sometimes HOST)
+	local c_flags="$(deref ${u}_CC_ARCH)${TOOLCHAIN_OPTIONS} $(deref ${u}_CFLAGS)"
+	local cxx_flags="$(deref ${u}_CC_ARCH)${TOOLCHAIN_OPTIONS} $(deref ${u}_CXXFLAGS)"
+	local link_flags="${TOOLCHAIN_OPTIONS} $(deref ${u}_LD_ARCH)"
 
 	sed -i \
-		-e "s/$rust_sys/$1/" \
+		-e "s/${rust_base_sys}/$sys/g" \
 		\
-		-e "s/^CROSS_PREFIX_$1.*\$//gc" \
-		-e "s/^CC_$1=.*\$/CC_$1 := ${cc}/" \
-		-e "s/^CXX_$1=.*\$/CXX_$1 := ${cxx}/" \
-		-e "s/^CPP_$1=.*\$/CPP_$1 := ${cpp}/" \
-		-e "s/^AR_$1=.*\$/AR_$1 := ${ar}/" \
+		-e "s/^CROSS_PREFIX_${sys}.*\$//" \
+		-e "s/^CC_$sys=.\*\$/CC_$sys := ${cc}/" \
+		-e "s/^CXX_$sys=.\*\$/CXX_$sys := ${cxx}/" \
+		-e "s/^CPP_$sys=.\*\$/CPP_$sys := ${cpp}/" \
+		-e "s/^AR_$sys=.\*\$/AR_$sys := ${ar}/" \
 		\
-		-e "/^CFG_GCCISH_CFLAGS/ s/$/ ${c_flags}/" \
-		-e "/^CFG_GCCISH_CXXFLAGS/ s/$/ ${cxx_flags}/" \
-		-e "/^CFG_GCCISH_LINK_FLAGS/ s/$/ ${link_flags}/" \
+		-e "/^CFG_GCCISH_CFLAGS/ s;\$; ${c_flags};" \
+		-e "/^CFG_GCCISH_CXXFLAGS/ s;\$; ${cxx_flags};" \
+		-e "/^CFG_GCCISH_LINK_FLAGS/ s;\$; ${link_flags};" \
 		\
-		"$p/$1"
+		"$p/$sys"
+
+	local t="${WORKDIR}/targets/"
+	mkdir -p "$t"
+
+	local link_flags_vec='[ "-fPIC" ]'
+
+	cat >"$t$sys" <<-EOF
+	{
+		"data-layout": "$(deref DATA_LAYOUT__$ARCH)",
+		"llvm_target": "${sys}",
+		"target_endian": "little",
+		"target-word-size": "$(deref TARGET_WORD_SIZE__$ARCH)",
+		"arch": "$ARCH",
+		"os": "linux",
+
+		"linker": "${bare_cc}",
+		"pre_link_args": ${link_flags_vec},
+		# post_link_args
+		# cpu
+		"features": "$(deref FEATURES__$ARCH)",
+		"dynamic_linking": true,
+		"executables": true,
+		"morestack": true,
+		# relocation_model
+		# ...
+		# is_like_windows
+		"linker_is_gnu": true,
+		"has_rpath": true,
+		# no_compiler_rt
+		"position_independent_executables": true,
+	}
+	EOF
 }
 
 do_rust_arch_fixup () {
-	RUST_HOST_SYS="${RUST_HOST_SYS}"
-	RUST_BUILD_SYS="${RUST_BUILD_SYS}"
-	RUST_TARGET_SYS="${RUST_TARGET_SYS}"
+	RUST_BASE_TARGET_SYS="${@rust_triple('${TARGET_ARCH}','${TARGET_VENDOR}','${TARGET_OS}', d)}"
+	RUST_BASE_BUILD_SYS="${@rust_triple('${BUILD_ARCH}','${BUILD_VENDOR}','${BUILD_OS}', d)}"
+	RUST_BASE_HOST_SYS="${@rust_triple('${HOST_ARCH}','${HOST_VENDOR}','${HOST_OS}', d)}"
+
+	# XXX: these are all hacks around having the variables be shell vars
+	# instead of bitbake vars. It probably makes sense to convert this
+	# entire mess into python so we don't have to do this.
+	HOST_SYS="${HOST_SYS}"
+	BUILD_SYS="${BUILD_SYS}"
+	TARGET_SYS="${TARGET_SYS}"
+	HOST_ARCH="${HOST_ARCH}"
+	BUILD_ARCH="${BUILD_ARCH}"
+	TARGET_ARCH="${TARGET_ARCH}"
+
+
 	rust_gen_mk_cfg host
 	rust_gen_mk_cfg build
 	rust_gen_mk_cfg target
@@ -127,13 +173,14 @@ do_configure () {
 	unset CPPFLAGS
 
 	# rpath is required otherwise rustc fails to resolve symbols
+
+	#"--build=${BUILD_SYS}"				
 	${S}/configure						\
 		"--enable-rpath"				\
 		"--disable-verify-install"			\
 		"--prefix=${prefix}"				\
-		"--target=target"				\
-		"--host=host"					\
-		"--build=build"					\
+		"--target=${TARGET_SYS}"			\
+		"--host=${HOST_SYS}"				\
 		"--localstatedir=${localstatedir}"		\
 		"--sysconfdir=${sysconfdir}"			\
 		"--datadir=${datadir}"				\
@@ -153,6 +200,7 @@ rust_runmake () {
 	unset LDFLAGS
 	unset CXXFLAGS
 	unset CPPFLAGS
+
 	oe_runmake "$@"
 }
 
