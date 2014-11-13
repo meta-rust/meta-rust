@@ -174,13 +174,13 @@ do_configure () {
 
 	# rpath is required otherwise rustc fails to resolve symbols
 
-	#"--build=${BUILD_SYS}"				
 	${S}/configure						\
 		"--enable-rpath"				\
 		"--disable-verify-install"			\
 		"--prefix=${prefix}"				\
 		"--target=${TARGET_SYS}"			\
 		"--host=${HOST_SYS}"				\
+		"--build=${BUILD_SYS}"				\
 		"--localstatedir=${localstatedir}"		\
 		"--sysconfdir=${sysconfdir}"			\
 		"--datadir=${datadir}"				\
