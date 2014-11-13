@@ -11,6 +11,108 @@ LIC_FILES_CHKSUM ="\
 	file://COPYRIGHT;md5=0e8e4a3b5d8e1c90eb243d406369763a \
 "
 
+def rust_triple(arch, vendor, os, d):
+    if arch.startswith("arm"):
+        vendor = "-unknown"
+        if os.endswith("gnueabi"):
+            os += bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
+    elif arch.startswith("x86_64"):
+        vendor = "-unknown"
+        if os == "linux":
+            os = "linux-gnu"
+    return arch + vendor + '-' + os
+
+RUST_TARGET_SYS = "${@rust_triple('${TARGET_ARCH}','${TARGET_VENDOR}','${TARGET_OS}', d)}"
+RUST_BUILD_SYS = "${@rust_triple('${BUILD_ARCH}','${BUILD_VENDOR}','${BUILD_OS}', d)}"
+RUST_HOST_SYS = "${@rust_triple('${HOST_ARCH}','${HOST_VENDOR}','${HOST_OS}', d)}"
+
+deref() {
+	eval echo "\$$1"
+}
+
+strip_flags () {
+	# from cmake.bbclass
+	sed 's/^\([^ ]*\).*/\1/'
+}
+
+# Generates a config file suitable for use as a compiler-and-runtime-build-time
+# target specification (distinct from those target specifications used by
+# `rustc --target`)
+# 
+# Designed to operate where $1={host,target,build}, and creates targets named
+# 'host', 'target', and 'build' that correspond to these.
+rust_gen_mk_cfg () {
+	local u=`echo $1 | tr '[:lower:]' '[:upper:]'`
+	local sys=$(deref $u_SYS)
+	local rust_sys=$(deref RUST_$u_SYS)
+	local p="${S}/mk/cfg/"
+	if [ -z "$sys" ]; then
+		bbnote "Rust: no SYS for $u"
+		return
+	fi
+
+	if [ -z "$rust_sys" ]; then
+		bbfatal "Rust: no RUST_SYS for $u (sys=$sys)"
+	fi
+
+	if ! [ -e "$p/$rust_sys" ]; then
+		bbfatal "Could not find RUST_$u_SYS = $rust_sys in file '$p/$rust_sys'"
+	fi
+
+	if [ -e "$p/$1" ]; then
+		bbfatal "Rust config spec already exists: '$p/$1'"
+	fi
+
+	# Use one of the existing configs as our base
+	cp "$p/$rust_sys" "$p/$1"
+
+	# FIXME: right now we assume our targets lack regex special characters
+
+	# Fixup the target name for all variables
+	# Edit in our:
+	# - CROSS_PREFIX (blank it)
+	# - CC
+	local cc="`echo $(deref $u_CC) | strip_flags`"
+	# - CXX (from cmake.bbclass)
+	local cxx="`echo $(deref $u_CXX) | strip_flags`"
+	# - CPP
+	local cpp="$cc -E"
+	# - AR
+	local ar="$(deref $u_AR)"
+	# Append our:
+	# - CFLAGS
+	local c_flags="$(deref $u_CC_ARCH)${TOOLCHAIN_OPTIONS} $(deref $u_CFLAGS)"
+	# - CXXFLAGS
+	local cxx_flags="$(deref $u_CC_ARCH)${TOOLCHAIN_OPTIONS} $(deref $u_CXXFLAGS)"
+	# - LINK_FLAGS
+	local link_flags="${TOOLCHAIN_OPTIONS} ${HOST_LD_ARCH}"
+
+	sed -i \
+		-e "s/$rust_sys/$1/" \
+		\
+		-e "s/^CROSS_PREFIX_$1.*\$//gc" \
+		-e "s/^CC_$1=.*\$/CC_$1 := ${cc}/" \
+		-e "s/^CXX_$1=.*\$/CXX_$1 := ${cxx}/" \
+		-e "s/^CPP_$1=.*\$/CPP_$1 := ${cpp}/" \
+		-e "s/^AR_$1=.*\$/AR_$1 := ${ar}/" \
+		\
+		-e "/^CFG_GCCISH_CFLAGS/ s/$/ ${c_flags}/" \
+		-e "/^CFG_GCCISH_CXXFLAGS/ s/$/ ${cxx_flags}/" \
+		-e "/^CFG_GCCISH_LINK_FLAGS/ s/$/ ${link_flags}/" \
+		\
+		"$p/$1"
+}
+
+do_rust_arch_fixup () {
+	RUST_HOST_SYS="${RUST_HOST_SYS}"
+	RUST_BUILD_SYS="${RUST_BUILD_SYS}"
+	RUST_TARGET_SYS="${RUST_TARGET_SYS}"
+	rust_gen_mk_cfg host
+	rust_gen_mk_cfg build
+	rust_gen_mk_cfg target
+}
+addtask rust_arch_fixup before do_configure after do_patch
+
 do_configure () {
 	# FIXME: allow --enable-local-rust
 	# FIXME: target_prefix vs prefix, see cross.bbclass
@@ -24,23 +126,20 @@ do_configure () {
 	unset CXXFLAGS
 	unset CPPFLAGS
 
-	# XXX: rpath is required otherwise rustc fails to resolve symbols
-
+	# rpath is required otherwise rustc fails to resolve symbols
 	${S}/configure						\
 		"--enable-rpath"				\
 		"--disable-verify-install"			\
 		"--prefix=${prefix}"				\
-		"--target=${RUST_TARGET_SYS}"			\
+		"--target=target"				\
+		"--host=host"					\
+		"--build=build"					\
 		"--localstatedir=${localstatedir}"		\
 		"--sysconfdir=${sysconfdir}"			\
 		"--datadir=${datadir}"				\
 		"--infodir=${infodir}"				\
 		"--mandir=${mandir}"				\
-		"--build=${RUST_BUILD_SYS}"			\
-		"--host=${RUST_HOST_SYS}"			\
 		"--libdir=${libdir}"
-
-
 }
 
 rust_runmake () {
@@ -54,32 +153,7 @@ rust_runmake () {
 	unset LDFLAGS
 	unset CXXFLAGS
 	unset CPPFLAGS
-
-	# FIXME: this only works if RT != RH. For RT == RH, we need to add
-	# additional targets to platform.mk and patch rust to understand the
-	# new triples (so it can find runtime libraries).
-
-	# Note: these variable names include '-', so we can't supply them via
-	# shell exports
-	oe_runmake								\
-		CROSS_PREFIX_${RUST_TARGET_SYS}=				\
-		CC_${rt}="${CCACHE}${TARGET_PREFIX}gcc ${TARGET_CC_ARCH}"	\
-		CXX_${rt}="${CCACHE}${TARGET_PREFIX}g++ ${TARGET_CC_ARCH}"	\
-		CPP_${rt}="${TARGET_PREFIX}gcc ${TARGET_CC_ARCH} -E"		\
-		AR_${rt}="${TARGET_PREFIX}ar"					\
-		\
-		CROSS_PREFIX_${ROST_HOST_SYS}=					\
-		CC_${rh}="${CCACHE}${HOST_PREFIX}gcc ${HOST_CC_ARCH}"		\
-		CXX_${rh}="${CCACHE}${HOST_PREFIX}g++ ${HOST_CC_ARCH}"		\
-		CPP_${rh}="${HOST_PREFIX}gcc ${HOST_CC_ARCH} -E"		\
-		AR_${rh}="${HOST_PREFIX}ar"					\
-		\
-		CFG_CFLAGS_${RUST_TARGET_SYS}="${TARGET_CFLAGS}"		\
-		CFG_LDFLAGS_${RUST_TARGET_SYS}="${TARGET_LDFLAGS}"		\
-		CFG_CFLAGS_${RUST_HOST_SYS}="${HOST_CFLAGS}"			\
-		CFG_LDFLAGS_${RUST_HOST_SYS}="${HOST_LDFLAGS}"			\
-		\
-		"$@"
+	oe_runmake "$@"
 }
 
 do_compile () {

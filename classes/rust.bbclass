@@ -1,20 +1,6 @@
-def rust_triple(arch, vendor, os, d):
-    if arch.startswith("arm"):
-        vendor = "-unknown"
-        if os.endswith("gnueabi"):
-            os += bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
-    elif arch.startswith("x86_64"):
-        vendor = "-unknown"
-        if os == "linux":
-            os = "linux-gnu"
-    return arch + vendor + '-' + os
-
-RUST_TARGET_SYS = "${@rust_triple('${TARGET_ARCH}','${TARGET_VENDOR}','${TARGET_OS}', d)}"
-RUST_BUILD_SYS = "${@rust_triple('${BUILD_ARCH}','${BUILD_VENDOR}','${BUILD_OS}', d)}"
-RUST_HOST_SYS = "${@rust_triple('${HOST_ARCH}','${HOST_VENDOR}','${HOST_OS}', d)}"
 
 RUSTC = "rustc"
-RUSTC_ARCHFLAGS += "--target=${RUST_TARGET_SYS} -C linker=${TARGET_PREFIX}gcc\\ ${TARGET_CC_ARCH}"
+RUSTC_ARCHFLAGS += "--target=target"
 
 
 # BUILD_LDFLAGS
@@ -55,11 +41,9 @@ oe_cargo_config () {
 	cat >.cargo/config <<EOF
 paths = [
 EOF
-
 	for p in ${OECARGO_PATH}; do
 		printf "\"%s\" " "$p" 
 	done | sed -e 's/[ \n]+/,/g'  -e 's/,$//' >>.cargo/config
-
 	cat >>.cargo/config <<EOF
 ]
 
