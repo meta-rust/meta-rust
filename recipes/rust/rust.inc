@@ -22,25 +22,39 @@ def rust_triple(arch, vendor, os, d):
             os = "linux-gnu"
     return arch + vendor + '-' + os
 
+export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
-## Required elements of the target spec
-export DATA_LAYOUT_ARM = ""
-export LLVM_TARGET_ARM = ""
-export TARGET_ENDIAN_ARM = ""
-export TARGET_WORD_SIZE_ARM = ""
-export ARCH_ARM = ""
-# OS = linux
+## arm-unknown-linux-gnueabihf
+DATA_LAYOUT[arm] = "e-p:32:32:32\
+                      -i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64\
+                      -f32:32:32-f64:64:64\
+                      -v64:64:64-v128:64:128\
+                      -a0:0:64-n32"
+LLVM_TARGET[arm] = "arm-unknown-linux-gnueabihf"
+TARGET_ENDIAN[arm] = "little"
+TARGET_WORD_SIZE[arm] = "32"
+FEATURES[arm] = "+v6,+vfp2"
 
-## "Optional" elements of the target spec
+## x86
+DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-\
+                      f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-\
+                      s0:64:64-f80:128:128-n8:16:32:64-S128"
+LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
+TARGET_ENDIAN[x86_64] = "little"
+TARGET_WORD_SIZE[x86_64] = "64"
+PRE_LINK_ARGS[x86_64] = "-m64"
+
+python rust_gen_target () {
 
 
+}
 
 # Generates a config file suitable for use as a compiler-and-runtime-build-time
 # target specification (distinct from those target specifications used by
 # `rustc --target`)
 #
-# Designed to operate where $1={host,target,build}, and creates targets with
-# the <vendor> portion subsituted with 'host', 'build', or 'target'
+# Designed to operate where $1={host,target,build}, and creates targets for
+# these using our triples in *_SYS.
 rust_gen_mk_cfg () {
 
 	deref() {
@@ -210,6 +224,12 @@ do_compile () {
 
 do_install () {
 	rust_runmake DESTDIR="${D}" install
+
+	local td="${D}${datadir}/rust/targets/"
+	install -d "$td"
+	for tgt in "${WORKDIR}/targets/"* ; do
+	    install -m 0644 "$tgt" "$td"
+	done
 }
 
 # FIXME: use FILES to create a -runtime (not -native) package
