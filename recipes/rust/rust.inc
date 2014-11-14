@@ -35,7 +35,7 @@ TARGET_ENDIAN[arm] = "little"
 TARGET_WORD_SIZE[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
 
-## x86
+## x86_64-unknown-linux-gnu
 DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-\
                       f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-\
                       s0:64:64-f80:128:128-n8:16:32:64-S128"
@@ -44,7 +44,7 @@ TARGET_ENDIAN[x86_64] = "little"
 TARGET_WORD_SIZE[x86_64] = "64"
 PRE_LINK_ARGS[x86_64] = "-m64"
 
-python rust_gen_target () {
+python rust_gen_targets () {
 
 
 }
