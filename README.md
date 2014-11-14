@@ -5,11 +5,8 @@ This openembedded layer provides the rust compiler, tools for building packages
 
 ## What works:
 
- rust-native
-
-## What doesn't:
-
- cargo-native
+ Building:
+	 rust-native, cargo-native
 
 ## What's untested:
 
@@ -23,8 +20,6 @@ On the host:
 
 On the target:
 	unknown
-
-## Build Examples
 
 ## Maintainer(s) & Patch policy
 
