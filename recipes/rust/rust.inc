@@ -263,7 +263,7 @@ do_install () {
 # cp $prefix/lib/rustlib/`rust_triple "${TARGET_ARCH}" "${TARGET_VENDOR}" "${TARGET_OS}"`/lib/*.so ${target_libdir}/
 
 # cross-canadian: llvm configure fails for host while attempting to build host-only llvm
-BBCLASSEXTEND = "cross native"
+BBCLASSEXTEND = "rust-cross native"
 
 #python cross_virtclass_provides_native_handler () {
 #	classextend = e.data.getVar('BBCLASSEXTEND', True) or ""
