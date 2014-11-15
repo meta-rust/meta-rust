@@ -8,10 +8,14 @@ This openembedded layer provides the rust compiler, tools for building packages
  Building:
 	 rust-native, cargo-native
 
+## What doesn't:
+
+ Building:
+	rust-cross
+
 ## What's untested:
 
  cargo, rust (built for target)
- rust-cross
 
 ## Dependencies
 
