@@ -17,6 +17,11 @@ This openembedded layer provides the rust compiler, tools for building packages
 
  cargo, rust (built for target)
 
+## TODO
+
+ - Use rust-native when building rust & rust-cross
+ - Include downloaded stage0 snapshot in `SRC_URI`
+
 ## Dependencies
 
 On the host:
@@ -26,6 +31,8 @@ On the target:
 	unknown
 
 ## Maintainer(s) & Patch policy
+
+Open a Pull Request
 
 ## Copyright
 

@@ -26,7 +26,21 @@ DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_WORD_SIZE[x86_64] = "64"
-PRE_LINK_ARGS[x86_64] = "-m64 -Wl,--as-needed"
+PRE_LINK_ARGS[x86_64] = "-Wl,--as-needed -m64"
+
+## i686-unknown-linux-gnu
+DATA_LAYOUT[i686] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
+LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
+TARGET_ENDIAN[i686] = "little"
+TARGET_WORD_SIZE[i686] = "32"
+PRE_LINK_ARGS[i686] = "-Wl,--as-needed -m32"
+
+## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
+DATA_LAYOUT[i586] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
+LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
+TARGET_ENDIAN[i586] = "little"
+TARGET_WORD_SIZE[i586] = "32"
+PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
 def ldflags_for(d, thing):
     cc_arch = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
@@ -70,48 +84,50 @@ def as_json(list_):
     return a
 
 def rust_gen_target(d, thing, wd):
-     arch = arch_for(d, thing)
-     ldflags = ldflags_for(d, thing)
-     sys = sys_for(d, thing)
-     prefix = prefix_for(d, thing)
-     o = open(wd + sys + '.json', 'w')
+    arch = arch_for(d, thing)
+    ldflags = ldflags_for(d, thing)
+    sys = sys_for(d, thing)
+    prefix = prefix_for(d, thing)
+    o = open(wd + sys + '.json', 'w')
 
-     data_layout = d.getVarFlag('DATA_LAYOUT', arch, True)
-     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
-     target_word_size = d.getVarFlag('TARGET_WORD_SIZE', arch, True)
-     prefix = d.getVar('{}_PREFIX'.format(thing), True)
-     ccache = d.getVar('CCACHE', True)
-     linker = "{}{}gcc".format(ccache, prefix)
-     features = d.getVarFlag('FEATURES', arch, True) or ""
+    data_layout = d.getVarFlag('DATA_LAYOUT', arch, True)
+    if not data_layout:
+        bb.utils.fatal("DATA_LAYOUT[{}] required but not set for {}".format(arch, thing))
+    llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
+    target_word_size = d.getVarFlag('TARGET_WORD_SIZE', arch, True)
+    prefix = d.getVar('{}_PREFIX'.format(thing), True)
+    ccache = d.getVar('CCACHE', True)
+    linker = "{}{}gcc".format(ccache, prefix)
+    features = d.getVarFlag('FEATURES', arch, True) or ""
 
-     pre_link_args = (d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split()
+    pre_link_args = (d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split()
 
-     o.write('''{{
-          "data-layout": "{}",
-          "llvm-target": "{}",
-          "target-endian": "little",
-          "target-word-size": "{}",
-          "arch": "{}",
-          "os": "linux",
-          "linker": "{}",
-          "features": "{}",
-          "dynamic-linking": true,
-          "executables": true,
-          "morestack": true,
-          "linker-is-gnu": true,
-          "has-rpath": true,
-          "position-independent-executables": true,
-          "pre-link-args": {}
-     }}'''.format(
-               data_layout,
-               llvm_target,
-               target_word_size,
-               arch,
-               linker,
-               features,
-               as_json(pre_link_args)
-     ))
-     o.close()
+    o.write('''{{
+         "data-layout": "{}",
+         "llvm-target": "{}",
+         "target-endian": "little",
+         "target-word-size": "{}",
+         "arch": "{}",
+         "os": "linux",
+         "linker": "{}",
+         "features": "{}",
+         "dynamic-linking": true,
+         "executables": true,
+         "morestack": true,
+         "linker-is-gnu": true,
+         "has-rpath": true,
+         "position-independent-executables": true,
+         "pre-link-args": {}
+    }}'''.format(
+        data_layout,
+        llvm_target,
+        target_word_size,
+        arch,
+        linker,
+        features,
+        as_json(pre_link_args)
+    ))
+    o.close()
 
 python do_rust_gen_targets () {
      import os
@@ -131,20 +147,24 @@ def rust_base_triple(d, thing):
     '''
     Mangle bitbake's *_SYS into something that rust might support (see
     rust/mk/cfg/* for a list)
+
+    Note that os is assumed to be some linux form
     '''
 
     arch = d.getVar('{}_ARCH'.format(thing), True)
     vendor = d.getVar('{}_VENDOR'.format(thing), True)
     os = d.getVar('{}_OS'.format(thing), True)
 
+    vendor = "-unknown"
+
     if arch.startswith("arm"):
-        vendor = "-unknown"
         if os.endswith("gnueabi"):
             os += bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
     elif arch.startswith("x86_64"):
-        vendor = "-unknown"
-        if os == "linux":
-            os = "linux-gnu"
+        os = "linux-gnu"
+    elif arch.startswith("i586"):
+        arch = "i686"
+        os = "linux-gnu"
     return arch + vendor + '-' + os
 
 def rust_gen_mk_cfg(d, thing):
@@ -169,6 +189,7 @@ def rust_gen_mk_cfg(d, thing):
     p = d.getVar('S', True) + '/mk/cfg/'
 
     o = open(p + sys_for(d, thing), 'w')
+    i = open(p + rust_base_sys, 'r')
 
     r = subprocess.call(['sed',
         # update all triplets to the new one
@@ -186,9 +207,7 @@ def rust_gen_mk_cfg(d, thing):
         '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CXXFLAGS/ s;$; {};'.format(cxxflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(" ".join(ldflags_for(d, thing))),
-
-        p + rust_base_sys
-        ], stdout=o)
+        ], stdout=o, stdin=i)
     if r:
         raise Exception
 

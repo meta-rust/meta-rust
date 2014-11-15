@@ -1,6 +1,18 @@
 RUSTC = "rustc"
 RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath"
 
+def rust_base_dep(d):
+    # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to
+    # use rust instead of gcc
+    
+    deps = ""
+    if not d.getVar('INHIBIT_DEFAULT_DEPS'):
+        if (d.getVar('HOST_SYS', True) != d.getVar('BUILD_SYS', True)):
+            deps += " virtual/${TARGET_PREFIX}rust"
+    return deps
+
+BASEDEPENDS_append = " ${@rust_base_dep(d)}"
+
 # BUILD_LDFLAGS
 # 	${STAGING_LIBDIR_NATIVE}
 # 	${STAGING_BASE_LIBDIR_NATIVE}
