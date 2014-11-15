@@ -64,7 +64,7 @@ def as_json(list_):
             a += '"{}",'.format(e)
         else:
             raise Exception
-    if len(e):
+    if len(list_):
         a = a[:-1]
     a += ']'
     return a
