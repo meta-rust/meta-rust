@@ -283,14 +283,18 @@ do_compile () {
 	rust_runmake
 }
 
-do_install () {
+rust_do_install () {
 	rust_runmake DESTDIR="${D}" install
 
-	local td="${D}${datadir}/rust/targets/"
+	local td="${D}${libdir}/rust/targets/"
 	install -d "$td"
 	for tgt in "${WORKDIR}/targets/"* ; do
 	    install -m 0644 "$tgt" "$td"
 	done
+}
+
+do_install () {
+	rust_do_install
 }
 
 # FIXME: use FILES to create a -runtime (not -native) package

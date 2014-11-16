@@ -1,4 +1,6 @@
 RUSTC = "rustc"
+
+# FIXME: --sysroot might be needed
 RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath"
 
 def rust_base_dep(d):
@@ -32,7 +34,9 @@ RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}"
 export RUST_PATH ??= "${RUST_PATH_NATIVE}"
 
 # FIXME: set this to something (sysroot?) for each of target,native,cross
-export RUST_TARGET_PATH = "${datadir}/rust/target"
+# For now, tuned so target builds are correct. -native happens to work because
+# the target specs happen to match.
+export RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rust/targets"
 
 CARGO = "cargo"
 
