@@ -75,6 +75,15 @@ def cxxflags_for(d, thing):
     tc = d.getVar('TOOLCHAIN_OPTIONS', True) or ""
     return ' '.join([cc_arch, flags, tc])
 
+# Convert a normal arch (HOST_ARCH, TARGET_ARCH, BUILD_ARCH, etc) to something
+# rust's internals won't choke on.
+def arch_to_rust_target_arch(arch):
+    if arch == "i586" or arch == "i686":
+        return "x86"
+    else:
+        return arch
+
+
 def as_json(list_):
     a = '['
     for e in list_:
@@ -126,7 +135,7 @@ def rust_gen_target(d, thing, wd):
         data_layout,
         llvm_target,
         target_word_size,
-        arch,
+        arch_to_rust_target_arch(arch),
         linker,
         features,
         as_json(pre_link_args)
