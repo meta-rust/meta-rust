@@ -11,8 +11,7 @@ This openembedded layer provides the rust compiler, tools for building packages
 
 ## What doesn't:
 
- Building:
- 	- rust-hellow-world
+ - building rust-hello-world
 
 ## What's untested:
 
