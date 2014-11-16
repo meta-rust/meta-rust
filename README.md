@@ -6,16 +6,19 @@ This openembedded layer provides the rust compiler, tools for building packages
 ## What works:
 
  Building:
-	 rust-native, cargo-native
+	 rust-native, cargo-native,
+	 rust-cross (tested with qemux86)
 
 ## What doesn't:
 
  Building:
-	rust-cross
+ 	- rust-hellow-world
 
 ## What's untested:
 
- cargo, rust (built for target)
+ - cargo, rust (built for target)
+
+ - running anything
 
 ## TODO
 
