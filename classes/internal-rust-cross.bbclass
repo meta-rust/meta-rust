@@ -13,6 +13,5 @@ PN = "rust-cross-${TARGET_ARCH}"
 # INHIBIT_PACKAGE_STRIP = "1"
 # ARCH_FLAGS_FOR_TARGET += "-isystem${STAGING_DIR_NATIVE}${target_includedir}"
 
-
 # TODO: use rust-native instead of a snapshot
 EXTRA_OECONF += ""

@@ -11,6 +11,10 @@ LIC_FILES_CHKSUM ="\
 	file://COPYRIGHT;md5=0e8e4a3b5d8e1c90eb243d406369763a \
 "
 
+# Controls whether we use the local rust.
+# For -native, we set this to "0" by default.
+USE_LOCAL_RUST = "1"
+
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 ## arm-unknown-linux-gnueabihf
@@ -232,19 +236,23 @@ do_configure () {
 
 	# rpath is required otherwise rustc fails to resolve symbols
 
-	${S}/configure						\
-		"--enable-rpath"				\
-		"--disable-verify-install"			\
-		"--prefix=${prefix}"				\
-		"--target=${TARGET_SYS}"			\
-		"--host=${HOST_SYS}"				\
-		"--build=${BUILD_SYS}"				\
-		"--localstatedir=${localstatedir}"		\
-		"--sysconfdir=${sysconfdir}"			\
-		"--datadir=${datadir}"				\
-		"--infodir=${infodir}"				\
-		"--mandir=${mandir}"				\
-		"--libdir=${libdir}"
+	# TODO: consider setting --local-rust-root for -cross and -target
+    	# builds.
+	${S}/configure					\
+		"--enable-rpath"			\
+		"--disable-verify-install"		\
+		"--prefix=${prefix}"			\
+		"--target=${TARGET_SYS}"		\
+		"--host=${HOST_SYS}"			\
+		"--build=${BUILD_SYS}"			\
+		"--localstatedir=${localstatedir}"	\
+		"--sysconfdir=${sysconfdir}"		\
+		"--datadir=${datadir}"			\
+		"--infodir=${infodir}"			\
+		"--mandir=${mandir}"			\
+		"--libdir=${libdir}"			\
+    		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust', '', d)} \
+    		${EXTRA_OECONF}
 }
 
 rust_runmake () {
@@ -281,9 +289,16 @@ do_install () {
 # Need to copy the *.so files to the appropriate target path
 # cp $prefix/lib/rustlib/`rust_triple "${TARGET_ARCH}" "${TARGET_VENDOR}" "${TARGET_OS}"`/lib/*.so ${target_libdir}/
 
-# cross-canadian: llvm configure fails for host while attempting to build host-only llvm
-BBCLASSEXTEND = "rust-cross native"
+## We abuse the BBCLASSEXTEND system to avoid creating multiple .bb for every
+## rust version (which is what gcc does).
+## 
+## Right now 'target' doesn't need any special settings, but at some point we may need to:
+##  - add an internal-rust-target
+##  - set the PN of this package to something like "rust-internal" or otherwise
+##	make the base unbuildable.
+BBCLASSEXTEND = "internal-rust-cross internal-rust-native"
 
+## This is a hack to have -cross provide -native, which doesn't quite work
 #python cross_virtclass_provides_native_handler () {
 #	classextend = e.data.getVar('BBCLASSEXTEND', True) or ""
 #	if "cross" not in classextend:
