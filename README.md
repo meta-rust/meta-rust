@@ -7,7 +7,7 @@ This openembedded layer provides the rust compiler, tools for building packages
 
  Building:
 	 rust-native, cargo-native,
-	 rust-cross (tested with qemux86)
+	 rust-cross (tested with qemux86, SYS=i586-poky-linux)
 
 ## What doesn't:
 
