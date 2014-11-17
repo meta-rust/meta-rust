@@ -186,8 +186,10 @@ def rust_gen_mk_cfg(d, thing):
         '-e', 's/{}/{}/g'.format(rust_base_sys, sys),
 
         # Replace tools with our own (CROSS_PREFIX is appended to all tools
-        # by rust's build system)
-        '-e', 's/^CROSS_PREFIX_{}.*$/CROSS_PREFIX_{} := {}/'.format(sys, sys, prefix),
+        # by rust's build system). We delete and then insert this because not
+        # all targets define it.
+        '-e', 's/^CROSS_PREFIX_{}.*$//'.format(sys),
+        '-e', '/^.*$/a CROSS_PREFIX_{} := {}'.format(sys, prefix),
         '-e', 's/^CC_{}=.*$/CC_{} := gcc/'.format(sys, sys),
         '-e', 's/^CXX_{}.*$/CXX_{} := g++/'.format(sys, sys),
         '-e', 's/^CPP_{}.*$/CPP_{} := gcc -E/'.format(sys, sys),
