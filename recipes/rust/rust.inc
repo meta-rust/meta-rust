@@ -196,13 +196,14 @@ def rust_gen_mk_cfg(d, thing):
         # by rust's build system). We delete and then insert this because not
         # all targets define it.
         '-e', 's/^CROSS_PREFIX_{}.*$//'.format(sys),
-        '-e', '/^.*$/a CROSS_PREFIX_{} := {}'.format(sys, prefix),
+        '-e', '2 a CROSS_PREFIX_{} := {}'.format(sys, prefix),
         '-e', 's/^CC_{}=.*$/CC_{} := gcc/'.format(sys, sys),
         '-e', 's/^CXX_{}.*$/CXX_{} := g++/'.format(sys, sys),
         '-e', 's/^CPP_{}.*$/CPP_{} := gcc -E/'.format(sys, sys),
         '-e', 's/^AR_{}.*$/AR_{} := ar/'.format(sys, sys),
 
         # Append our flags to the existing ones
+        '-e', '/^CFG_JEMALLOC_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CXXFLAGS/ s;$; {};'.format(cxxflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(" ".join(ldflags_for(d, thing))),
