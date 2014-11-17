@@ -16,7 +16,7 @@ S = "${WORKDIR}/git"
 B = "${S}"
 
 do_compile () {
-	oe_runcargo_build
+	cargo_build
 }
 
 do_install () {

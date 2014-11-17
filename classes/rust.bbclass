@@ -59,9 +59,7 @@ RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 
 
 # FIXME: the 'rustlib' element of this is to workaround rustc forgetting the libdir it was built with.
-RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:\
-${STAGING_BASE_LIBDIR_NATIVE}:\
-${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
+RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}:${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
 
 # FIXME: set based on whether we are native vs cross vs buildsdk, etc
 export RUST_PATH ??= "${RUST_PATH_NATIVE}"
@@ -80,7 +78,7 @@ oe_runrustc () {
 	"${RUSTC}" ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
 }
 
-oe_cargo_config () {
+cargo_config () {
 	mkdir -p .cargo
 	# FIXME: we currently blow away the entire config because duplicate
 	# sections are treated as a parse error by cargo (causing the entire
@@ -96,7 +94,8 @@ oe_cargo_config () {
 	echo "]" >>.cargo/config
 }
 
-oe_cargo_patch () {
+rust_cargo_patch () {
+	cd "${S}"
 	cat >>Cargo.toml <<EOF
 [profile.dev]
 rpath = true
@@ -105,7 +104,7 @@ rpath = true
 EOF
 }
 
-oe_runcargo_build () {
+cargo_build () {
 	# FIXME: if there is already an entry for this target, in an existing
 	# cargo/config, this won't work.
 	which cargo

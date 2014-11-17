@@ -20,13 +20,7 @@ S = "${WORKDIR}/git"
 B = "${S}"
 
 do_cargo_config_patch () {
-	cd "${S}"
-	cat >>Cargo.toml <<EOF
-[profile.dev]
-rpath = true
-[profile.release]
-rpath = true
-EOF
+	rust_cargo_patch
 }
 addtask cargo_config_patch after do_patch before do_configure
 do_cargo_config_patch[dirs] = "${WORKDIR}"
@@ -34,9 +28,9 @@ do_cargo_config_patch[dirs] = "${WORKDIR}"
 do_configure () {
 	"${S}/configure" \
 		"--prefix=${prefix}"			\
-		"--build=${RUST_BUILD_SYS}"		\
-		"--host=${RUST_HOST_SYS}"		\
-		"--target=${RUST_TARGET_SYS}"		\
+		"--build=${BUILD_SYS}"			\
+		"--host=${HOST_SYS}"			\
+		"--target=${TARGET_SYS}"		\
 		"--localstatedir=${localstatedir}"	\
 		"--sysconfdir=${sysconfdir}"		\
 		"--datadir=${datadir}"			\
