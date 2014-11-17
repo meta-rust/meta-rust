@@ -15,7 +15,6 @@ This openembedded layer provides the rust compiler, tools for building packages
 ## What's untested:
 
  - cargo, rust (built for target)
-
  - running anything
 
 ## TODO
