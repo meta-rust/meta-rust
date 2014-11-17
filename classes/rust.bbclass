@@ -15,6 +15,35 @@ def rust_base_dep(d):
 
 BASEDEPENDS_append = " ${@rust_base_dep(d)}"
 
+def rust_base_triple(d, thing):
+    '''
+    Mangle bitbake's *_SYS into something that rust might support (see
+    rust/mk/cfg/* for a list)
+
+    Note that os is assumed to be some linux form
+    '''
+
+    arch = d.getVar('{}_ARCH'.format(thing), True)
+    vendor = d.getVar('{}_VENDOR'.format(thing), True)
+    os = d.getVar('{}_OS'.format(thing), True)
+
+    vendor = "-unknown"
+
+    if arch.startswith("arm"):
+        if os.endswith("gnueabi"):
+            os += bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
+    elif arch.startswith("x86_64"):
+        os = "linux-gnu"
+    elif arch.startswith("i586"):
+        arch = "i686"
+        os = "linux-gnu"
+    return arch + vendor + '-' + os
+
+RUST_BUILD_SYS = "${@rust_base_triple(d, 'BUILD')}"
+RUST_HOST_SYS = "${@rust_base_triple(d, 'HOST')}"
+RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
+
+
 # BUILD_LDFLAGS
 # 	${STAGING_LIBDIR_NATIVE}
 # 	${STAGING_BASE_LIBDIR_NATIVE}
@@ -28,7 +57,9 @@ BASEDEPENDS_append = " ${@rust_base_dep(d)}"
 #	-L${STAGING_BASE_LIBDIR_NATIVE}	\
 #"
 
-RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}"
+
+# FIXME: the 'rustlib' element of this is to workaround rustc forgetting the libdir it was built with.
+RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}:${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
 
 # FIXME: set based on whether we are native vs cross vs buildsdk, etc
 export RUST_PATH ??= "${RUST_PATH_NATIVE}"
@@ -36,7 +67,7 @@ export RUST_PATH ??= "${RUST_PATH_NATIVE}"
 # FIXME: set this to something (sysroot?) for each of target,native,cross
 # For now, tuned so target builds are correct. -native happens to work because
 # the target specs happen to match.
-export RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rust/targets"
+export RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rust/targets:${STAGING_LIBDIR_NATIVE}/rust/targets"
 
 CARGO = "cargo"
 
@@ -76,6 +107,7 @@ oe_runcargo_build () {
 	# FIXME: if there is already an entry for this target, in an existing
 	# cargo/config, this won't work.
 	which cargo
+	which rust
 	bbnote ${CARGO} build --target ${TARGET_SYS} "$@"
 	oe_cargo_config
 	"${CARGO}" build -v --target "${TARGET_SYS}" --release "$@"
