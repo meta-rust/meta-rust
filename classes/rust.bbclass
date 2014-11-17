@@ -59,7 +59,9 @@ RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 
 
 # FIXME: the 'rustlib' element of this is to workaround rustc forgetting the libdir it was built with.
-RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}:${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
+RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:\
+${STAGING_BASE_LIBDIR_NATIVE}:\
+${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
 
 # FIXME: set based on whether we are native vs cross vs buildsdk, etc
 export RUST_PATH ??= "${RUST_PATH_NATIVE}"
@@ -107,7 +109,7 @@ oe_runcargo_build () {
 	# FIXME: if there is already an entry for this target, in an existing
 	# cargo/config, this won't work.
 	which cargo
-	which rust
+	which rustc
 	bbnote ${CARGO} build --target ${TARGET_SYS} "$@"
 	oe_cargo_config
 	"${CARGO}" build -v --target "${TARGET_SYS}" --release "$@"
