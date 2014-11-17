@@ -48,14 +48,20 @@ PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
 
 def ldflags_for(d, thing):
-    cc_arch = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
-    tc = d.getVar('TOOLCHAIN_OPTIONS', True) or ""
-    ldflags = d.getVar('{}_LDFLAGS'.format(thing), True) or ""
-    return tc.split() + ldflags.split() + cc_arch.split()
+    f  = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
+    f += " "
+    f += d.getVar('TOOLCHAIN_OPTIONS', True) or ""
+    f += " "
+    f += d.getVar('{}_LDFLAGS'.format(thing), True) or ""
+    f += " "
+    f += d.getVarFlag('PRE_LINK_ARGS', d.getVar('{}_ARCH'.format(thing)), True) or ""
+    return f
 
-TARGET_PRE_LINK_ARGS_PREPEND = "${@ldflags_for(d, 'TARGET')}"
-HOST_PRE_LINK_ARGS_PREPEND   = "${@ldflags_for(d, 'HOST')}"
-BUILD_PRE_LINK_ARGS_PREPEND  = "${@ldflags_for(d, 'BUILD')}"
+# These are appended to by internal-rust-cross.bbclass and should be used
+# instead of ldflags_for() where ever ldflags are needed
+TARGET_PRE_LINK_ARGS = "${@ldflags_for(d, 'TARGET')}"
+HOST_PRE_LINK_ARGS   = "${@ldflags_for(d, 'HOST')}"
+BUILD_PRE_LINK_ARGS  = "${@ldflags_for(d, 'BUILD')}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
@@ -103,7 +109,7 @@ def as_json(list_):
 
 def rust_gen_target(d, thing, wd):
     arch = arch_for(d, thing)
-    ldflags = ldflags_for(d, thing)
+    ldflags = d.getVar('{}_PRE_LINK_ARGS'.format(thing), True).split()
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
     o = open(wd + sys + '.json', 'w')
@@ -118,8 +124,8 @@ def rust_gen_target(d, thing, wd):
     linker = "{}{}gcc".format(ccache, prefix)
     features = d.getVarFlag('FEATURES', arch, True) or ""
 
-    pre_link_args = (d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split()
-    pre_link_args.extend((d.getVar('{}_PRE_LINK_ARGS_PREPEND'.format(thing), True) or "").split())
+    pre_link_args = (d.getVar('{}_PRE_LINK_ARGS_PREPEND'.format(thing), True) or "").split()
+    pre_link_args.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
 
     o.write('''{{
          "data-layout": "{}",
@@ -182,6 +188,7 @@ def rust_gen_mk_cfg(d, thing):
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
+    ldflags = d.getVar('{}_PRE_LINK_ARGS'.format(thing), True)
 
     p = d.getVar('S', True) + '/mk/cfg/'
 
@@ -206,7 +213,7 @@ def rust_gen_mk_cfg(d, thing):
         '-e', '/^CFG_JEMALLOC_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CXXFLAGS/ s;$; {};'.format(cxxflags_for(d, thing)),
-        '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(" ".join(ldflags_for(d, thing))),
+        '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(ldflags),
         ], stdout=o, stdin=i)
     if r:
         raise Exception
