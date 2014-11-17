@@ -46,11 +46,16 @@ TARGET_ENDIAN[i586] = "little"
 TARGET_WORD_SIZE[i586] = "32"
 PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
+
 def ldflags_for(d, thing):
     cc_arch = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
     tc = d.getVar('TOOLCHAIN_OPTIONS', True) or ""
     ldflags = d.getVar('{}_LDFLAGS'.format(thing), True) or ""
     return tc.split() + ldflags.split() + cc_arch.split()
+
+TARGET_PRE_LINK_ARGS_PREPEND = "${@ldflags_for(d, 'TARGET')}"
+HOST_PRE_LINK_ARGS_PREPEND   = "${@ldflags_for(d, 'HOST')}"
+BUILD_PRE_LINK_ARGS_PREPEND  = "${@ldflags_for(d, 'BUILD')}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
@@ -61,8 +66,9 @@ def sys_for(d, thing):
 def prefix_for(d, thing):
     return d.getVar('{}_PREFIX'.format(thing), True)
 
-## FIXME: TOOLCHAIN_OPTIONS is set to "" by native.bbclass and cross.bbclass,
+## Note: TOOLCHAIN_OPTIONS is set to "" by native.bbclass and cross.bbclass,
 ## which prevents us from grabbing them when building a cross compiler (native doesn't matter).
+## We workaround this in internal-rust-cross.bbclass.
 def cflags_for(d, thing):
     cc_arch = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
     flags = d.getVar('{}_CFLAGS'.format(thing), True) or ""
@@ -155,6 +161,7 @@ python do_rust_gen_targets () {
         rust_gen_target(d, thing, wd)
 }
 addtask do_rust_gen_targets after do_patch before do_compile
+do_rust_gen_targets[dirs] = "${WORKDIR}"
 
 
 def rust_gen_mk_cfg(d, thing):
