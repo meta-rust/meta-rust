@@ -216,11 +216,10 @@ python do_rust_arch_fixup () {
         rust_gen_mk_cfg(d, thing)
 }
 addtask do_rust_arch_fixup before do_configure after do_patch
+do_rust_arch_fixup[dirs] = "${WORKDIR}"
 
 do_configure () {
-	# FIXME: allow --enable-local-rust
 	# FIXME: target_prefix vs prefix, see cross.bbclass
-	# FIXME: handle non-native builds
 
 	# CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
 	# wide range of targets (not just HOST). Yocto's settings for them will
@@ -233,7 +232,7 @@ do_configure () {
 	# rpath is required otherwise rustc fails to resolve symbols
 
 	# TODO: consider setting --local-rust-root for -cross and -target
-    	# builds.
+	# builds.
 	${S}/configure					\
 		"--enable-rpath"			\
 		"--disable-verify-install"		\
@@ -247,8 +246,9 @@ do_configure () {
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
-    		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust', '', d)} \
-    		${EXTRA_OECONF}
+                "--disable-manage-submodules"           \
+		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust', '', d)} \
+		${EXTRA_OECONF}
 }
 
 rust_runmake () {
