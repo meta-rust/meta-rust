@@ -9,7 +9,7 @@ PN = "rust-cross-${TARGET_ARCH}"
 
 # The same value as ${TOOLCHAIN_OPTIONS}. We can't use that variable directly
 # here because cross.bblcass is "helpful" and blanks it out.
-PRE_LINK_ARGS_PREPEND = "--sysroot=${STAGING_DIR_TARGET}"
+TARGET_PRE_LINK_ARGS_PREPEND = "--sysroot=${STAGING_DIR_TARGET}"
 
 ## gcc-cross settings
 # INHIBIT_DEFAULT_DEPS = "1"

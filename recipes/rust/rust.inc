@@ -113,7 +113,8 @@ def rust_gen_target(d, thing, wd):
     features = d.getVarFlag('FEATURES', arch, True) or ""
 
     pre_link_args = (d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split()
-    pre_link_args.extend((d.getVar('PRE_LINK_ARGS_PREPEND', True) or "").split())
+    if thing == 'TARGET':
+        pre_link_args.extend((d.getVar('TARGET_PRE_LINK_ARGS_PREPEND', True) or "").split())
 
     o.write('''{{
          "data-layout": "{}",
