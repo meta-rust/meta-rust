@@ -147,7 +147,6 @@ def rust_gen_target(d, thing, wd):
     o.close()
 
 python do_rust_gen_targets () {
-    import os
     wd = d.getVar('WORKDIR', True) + '/targets/'
     try:
         os.makedirs(wd)
