@@ -243,7 +243,8 @@ do_configure () {
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
-        "--disable-manage-submodules"           \
+		"--bindir=${bindir}"			\
+		"--disable-manage-submodules"           \
 		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust', '', d)} \
 		${EXTRA_OECONF}
 }
