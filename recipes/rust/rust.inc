@@ -268,7 +268,7 @@ rust_runmake () {
 	unset CXXFLAGS
 	unset CPPFLAGS
 
-	oe_runmake "$@"
+	oe_runmake "VERBOSE=1" "$@"
 }
 
 do_compile () {
