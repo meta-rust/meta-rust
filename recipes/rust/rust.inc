@@ -15,6 +15,7 @@ LIC_FILES_CHKSUM ="\
 # For -native, we set this to "0" by default.
 USE_LOCAL_RUST = "1"
 
+# We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 ## arm-unknown-linux-gnueabihf
@@ -226,10 +227,17 @@ do_configure () {
 	unset CXXFLAGS
 	unset CPPFLAGS
 
-	# rpath is required otherwise rustc fails to resolve symbols
+        if [ "${USE_LOCAL_RUST}" -eq 1 ]; then
+            # FIXME: this path to rustc may not be quite right in the case
+            # where we're reinstalling the compiler. May want to try for a real
+            # path based on bitbake vars
+            my_conf="--enable-local-rust --local-rust-root=$(dirname $(which rustc))"
+        else
+            my_conf=""
+        fi
 
-	# TODO: consider setting --local-rust-root for -cross and -target
-	# builds.
+	# - rpath is required otherwise rustc fails to resolve symbols
+        # - submodule management is done by bitbake's fetching
 	${S}/configure					\
 		"--enable-rpath"			\
 		"--disable-verify-install"		\
@@ -245,7 +253,7 @@ do_configure () {
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
 		"--disable-manage-submodules"           \
-		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust', '', d)} \
+                ${my_conf}                              \
 		${EXTRA_OECONF}
 }
 
@@ -289,7 +297,7 @@ do_install () {
 
 ## We abuse the BBCLASSEXTEND system to avoid creating multiple .bb for every
 ## rust version (which is what gcc does).
-## 
+##
 ## Right now 'target' doesn't need any special settings, but at some point we may need to:
 ##  - add an internal-rust-target
 ##  - set the PN of this package to something like "rust-internal" or otherwise

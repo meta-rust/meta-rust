@@ -6,7 +6,6 @@ RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath"
 def rust_base_dep(d):
     # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to
     # use rust instead of gcc
-    
     deps = ""
     if not d.getVar('INHIBIT_DEFAULT_DEPS'):
         if (d.getVar('HOST_SYS', True) != d.getVar('BUILD_SYS', True)):
@@ -57,17 +56,17 @@ RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 #	-L${STAGING_BASE_LIBDIR_NATIVE}	\
 #"
 
+RUST_PATH_NATIVE = "${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}"
 
-# FIXME: the 'rustlib' element of this is to workaround rustc forgetting the libdir it was built with.
-RUST_PATH_NATIVE="${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}:${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
+## Note: the 'rustlib' element of this was a workaround rustc forgetting the
+## libdir it was built with. It now remembers so this should be unneeded
+#RUST_PATH_NATIVE .= ":${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
 
 # FIXME: set based on whether we are native vs cross vs buildsdk, etc
 export RUST_PATH ??= "${RUST_PATH_NATIVE}"
 
-# FIXME: set this to something (sysroot?) for each of target,native,cross
-# For now, tuned so target builds are correct. -native happens to work because
-# the target specs happen to match.
-export RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rust/targets:${STAGING_LIBDIR_NATIVE}/rust/targets"
+## This is builtin to rustc with the value "$libdir/rust/targets"
+# RUST_TARGET_PATH = "foo:bar"
 
 CARGO = "cargo"
 
