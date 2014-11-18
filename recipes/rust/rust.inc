@@ -157,7 +157,7 @@ python do_rust_gen_targets () {
         bb.debug(1, "rust_gen_target for " + thing)
         rust_gen_target(d, thing, wd)
 }
-addtask do_rust_gen_targets after do_patch before do_compile
+addtask rust_gen_targets after do_patch before do_compile
 
 def rust_gen_mk_cfg(d, thing):
     ''''
@@ -212,7 +212,7 @@ python do_rust_arch_fixup () {
         bb.debug(1, "rust_gen_mk_cfg for " + thing)
         rust_gen_mk_cfg(d, thing)
 }
-addtask do_rust_arch_fixup before do_configure after do_patch
+addtask rust_arch_fixup before do_configure after do_patch
 do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
 
 do_configure () {
