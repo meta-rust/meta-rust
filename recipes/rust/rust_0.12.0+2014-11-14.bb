@@ -8,4 +8,7 @@ SRC_URI_append = "\
 	file://0005-CFG_CFLAGS-is-only-used-for-jemalloc-rename-all-uses.patch \
 	file://0006-mk-rt-jemalloc-pass-CFG_GCCISH_CFLAGS-inside-CC-inst.patch \
 	file://0007-mk-rt-compiler_rt-pass-LDFLAGS-from-CFG_GCCISH_LINK_.patch \
+	file://0008-Support-bindir.patch \
+	file://0009-Remember-relative-libdir-and-bindir-from-build-time.patch \
+	file://0010-Target-add-default-target.json-path-libdir-rust-targ.patch \
 "

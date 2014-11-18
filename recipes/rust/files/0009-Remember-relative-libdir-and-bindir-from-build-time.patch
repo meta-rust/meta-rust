@@ -1,0 +1,195 @@
+From 0285e9ebaea38ccb436e8b7b64a0bac232a89935 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 17 Nov 2014 20:10:42 -0500
+Subject: [PATCH 9/9] Remember relative libdir and bindir from build time
+
+---
+ configure                           |  6 +++
+ mk/install.mk                       |  2 +-
+ src/librustc/back/link.rs           |  3 +-
+ src/librustc/metadata/filesearch.rs | 73 +++++++++++++++----------------------
+ 4 files changed, 37 insertions(+), 47 deletions(-)
+
+diff --git a/configure b/configure
+index bdfeedd..c9bec44 100755
+--- a/configure
++++ b/configure
+@@ -340,6 +340,7 @@ need_cmd date
+ need_cmd tr
+ need_cmd sed
+ need_cmd file
++need_cmd realpath
+ 
+ msg "inspecting environment"
+ 
+@@ -563,6 +564,11 @@ then
+     exit 0
+ fi
+ 
++# Determine libdir and bindir relative to prefix
++step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
++CFG_BINDIR_RELATIVE=$(realpath --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(realpath --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++
+ # Validate Options
+ step_msg "validating $CFG_SELF args"
+ validate_opt
+diff --git a/mk/install.mk b/mk/install.mk
+index 4588e83..0fba6ee 100644
+--- a/mk/install.mk
++++ b/mk/install.mk
+@@ -21,7 +21,7 @@ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ else
+ 	$(Q)$(MAKE) prepare_install
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)" --bindir="$(DESTDIR)$(CFG_BINDIR)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)" "$(MAYBE_DISABLE_VERIFY)"
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+diff --git a/src/librustc/back/link.rs b/src/librustc/back/link.rs
+index 766715f..306e074 100644
+--- a/src/librustc/back/link.rs
++++ b/src/librustc/back/link.rs
+@@ -1015,11 +1015,10 @@ fn link_args(cmd: &mut Command,
+     // where extern libraries might live, based on the
+     // addl_lib_search_paths
+     if sess.opts.cg.rpath {
+-        let sysroot = sess.sysroot();
+         let target_triple = sess.opts.target_triple.as_slice();
+         let get_install_prefix_lib_path = || {
+             let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
+-            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
++            let tlib = filesearch::relative_target_lib_path(target_triple);
+             let mut path = Path::new(install_prefix);
+             path.push(&tlib);
+ 
+diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
+index f7d666e..6db56ef 100644
+--- a/src/librustc/metadata/filesearch.rs
++++ b/src/librustc/metadata/filesearch.rs
+@@ -66,8 +66,7 @@ impl<'a> FileSearch<'a> {
+         if !found {
+             let rustpath = rust_path();
+             for path in rustpath.iter() {
+-                let tlib_path = make_rustpkg_lib_path(
+-                    self.sysroot, path, self.triple);
++                let tlib_path = make_rustpkg_lib_path(path, self.triple);
+                 debug!("is {} in visited_dirs? {}", tlib_path.display(),
+                         visited_dirs.contains(&tlib_path.as_vec().to_vec()));
+ 
+@@ -149,7 +148,7 @@ impl<'a> FileSearch<'a> {
+     // Returns a list of directories where target-specific tool binaries are located.
+     pub fn get_tools_search_paths(&self) -> Vec<Path> {
+         let mut p = Path::new(self.sysroot);
+-        p.push(find_libdir(self.sysroot));
++        p.push(libdir_str());
+         p.push(rustlibdir());
+         p.push(self.triple);
+         p.push("bin");
+@@ -157,8 +156,8 @@ impl<'a> FileSearch<'a> {
+     }
+ }
+ 
+-pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
+-    let mut p = Path::new(find_libdir(sysroot));
++pub fn relative_target_lib_path(target_triple: &str) -> Path {
++    let mut p = Path::new(libdir_str());
+     assert!(p.is_relative());
+     p.push(rustlibdir());
+     p.push(target_triple);
+@@ -168,17 +167,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
+ 
+ fn make_target_lib_path(sysroot: &Path,
+                         target_triple: &str) -> Path {
+-    sysroot.join(&relative_target_lib_path(sysroot, target_triple))
++    sysroot.join(&relative_target_lib_path(target_triple))
+ }
+ 
+-fn make_rustpkg_lib_path(sysroot: &Path,
+-                         dir: &Path,
++fn make_rustpkg_lib_path(dir: &Path,
+                          triple: &str) -> Path {
+-    let mut p = dir.join(find_libdir(sysroot));
++    let mut p = dir.join(libdir_str());
+     p.push(triple);
+     p
+ }
+ 
++pub fn bindir_relative_str() -> &'static str {
++    env!("CFG_BINDIR_RELATIVE")
++}
++
++pub fn bindir_relative_path() -> Path {
++    Path::new(bindir_relative_str())
++}
++
+ pub fn get_or_default_sysroot() -> Path {
+     // Follow symlinks.  If the resolved path is relative, make it absolute.
+     fn canonicalize(path: Option<Path>) -> Option<Path> {
+@@ -190,7 +196,17 @@ pub fn get_or_default_sysroot() -> Path {
+     }
+ 
+     match canonicalize(os::self_exe_name()) {
+-        Some(mut p) => { p.pop(); p.pop(); p }
++        Some(mut p) => {
++            // Remove the exe name
++            p.pop();
++            let mut rel = bindir_relative_path();
++            // Remove a number of elements equal to the number of elements in the bindir relative
++            // path
++            while rel.pop() {
++                p.pop();
++            }
++            p
++        }
+         None => panic!("can't determine value for sysroot")
+     }
+ }
+@@ -248,40 +264,9 @@ pub fn rust_path() -> Vec<Path> {
+     env_rust_path
+ }
+ 
+-// The name of the directory rustc expects libraries to be located.
+-// On Unix should be "lib", on windows "bin"
+-#[cfg(unix)]
+-fn find_libdir(sysroot: &Path) -> String {
+-    // FIXME: This is a quick hack to make the rustc binary able to locate
+-    // Rust libraries in Linux environments where libraries might be installed
+-    // to lib64/lib32. This would be more foolproof by basing the sysroot off
+-    // of the directory where librustc is located, rather than where the rustc
+-    // binary is.
+-
+-    if sysroot.join(primary_libdir_name()).join(rustlibdir()).exists() {
+-        return primary_libdir_name();
+-    } else {
+-        return secondary_libdir_name();
+-    }
+-
+-    #[cfg(target_word_size = "64")]
+-    fn primary_libdir_name() -> String {
+-        "lib64".to_string()
+-    }
+-
+-    #[cfg(target_word_size = "32")]
+-    fn primary_libdir_name() -> String {
+-        "lib32".to_string()
+-    }
+-
+-    fn secondary_libdir_name() -> String {
+-        "lib".to_string()
+-    }
+-}
+-
+-#[cfg(windows)]
+-fn find_libdir(_sysroot: &Path) -> String {
+-    "bin".to_string()
++// The name of the directory rustc expects libraries to be located, relative to the sysroot
++fn libdir_str() -> &'static str {
++    env!("CFG_LIBDIR_RELATIVE")
+ }
+ 
+ // The name of rustc's own place to organize libraries.
+-- 
+2.0.4
+

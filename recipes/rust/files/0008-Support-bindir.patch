@@ -1,0 +1,125 @@
+From 8502ded50381200386c52a9c66e77ac3f3ca7188 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 17 Nov 2014 19:44:58 -0500
+Subject: [PATCH 8/9] Support --bindir
+
+---
+ configure          |  4 ++++
+ mk/install.mk      |  4 ++--
+ mk/main.mk         |  2 ++
+ src/etc/install.sh | 13 ++++++++++++-
+ 4 files changed, 20 insertions(+), 3 deletions(-)
+
+diff --git a/configure b/configure
+index 7790025..bdfeedd 100755
+--- a/configure
++++ b/configure
+@@ -554,6 +554,9 @@ fi
+ 
+ valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries"
+ 
++CFG_BINDIR_RELATIVE=bin
++valopt bindir "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}" "install binaries"
++
+ if [ $HELP -eq 1 ]
+ then
+     echo
+@@ -1312,6 +1315,7 @@ putvar CFG_PREFIX
+ putvar CFG_HOST
+ putvar CFG_TARGET
+ putvar CFG_LIBDIR_RELATIVE
++putvar CFG_BINDIR_RELATIVE
+ putvar CFG_DISABLE_MANAGE_SUBMODULES
+ putvar CFG_ANDROID_CROSS_PATH
+ putvar CFG_MANDIR
+diff --git a/mk/install.mk b/mk/install.mk
+index 88b451f..4588e83 100644
+--- a/mk/install.mk
++++ b/mk/install.mk
+@@ -21,7 +21,7 @@ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ else
+ 	$(Q)$(MAKE) prepare_install
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)" --bindir="$(DESTDIR)$(CFG_BINDIR)"
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+@@ -34,7 +34,7 @@ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ else
+ 	$(Q)$(MAKE) prepare_uninstall
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)"
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+diff --git a/mk/main.mk b/mk/main.mk
+index 3df4d3b..36f0e58 100644
+--- a/mk/main.mk
++++ b/mk/main.mk
+@@ -315,7 +315,9 @@ export CFG_BUILD
+ export CFG_LLVM_ROOT
+ export CFG_PREFIX
+ export CFG_LIBDIR
++export CFG_BINDIR
+ export CFG_LIBDIR_RELATIVE
++export CFG_BINDIR_RELATIVE
+ export CFG_DISABLE_INJECT_STD_VERSION
+ 
+ ######################################################################
+diff --git a/src/etc/install.sh b/src/etc/install.sh
+index 4f43b1e..add1c26 100644
+--- a/src/etc/install.sh
++++ b/src/etc/install.sh
+@@ -285,6 +285,8 @@ then
+     CFG_LIBDIR_RELATIVE=bin
+ fi
+ 
++CFG_BINDIR_RELATIVE=bin
++
+ if [ "$CFG_OSTYPE" = "pc-mingw32" ] || [ "$CFG_OSTYPE" = "w64-mingw32" ]
+ then
+     CFG_LD_PATH_VAR=PATH
+@@ -304,6 +306,7 @@ valopt prefix "/usr/local" "set installation prefix"
+ # NB This isn't quite the same definition as in `configure`.
+ # just using 'lib' instead of CFG_LIBDIR_RELATIVE
+ valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries"
++valopt bindir "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}" "install binaries"
+ valopt mandir "${CFG_PREFIX}/share/man" "install man pages in PATH"
+ 
+ if [ $HELP -eq 1 ]
+@@ -424,6 +427,7 @@ need_ok "failed to create installed manifest"
+ 
+ # Now install, iterate through the new manifest and copy files
+ while read p; do
++    is_bin=false
+ 
+     # Decide the destination of the file
+     FILE_INSTALL_PATH="${CFG_PREFIX}/$p"
+@@ -434,6 +438,13 @@ while read p; do
+         FILE_INSTALL_PATH="${CFG_LIBDIR}/$pp"
+     fi
+ 
++    if echo "$p" | grep "^bin/" > /dev/null
++    then
++        is_bin=true
++        pp=`echo $p | sed 's/^bin\///'`
++        FILE_INSTALL_PATH="${CFG_BINDIR}/$pp"
++    fi
++
+     if echo "$p" | grep "^share/man/" > /dev/null
+     then
+         pp=`echo $p | sed 's/^share\/man\///'`
+@@ -451,7 +462,7 @@ while read p; do
+ 
+     # Install the file
+     msg "${FILE_INSTALL_PATH}"
+-    if echo "$p" | grep "^bin/" > /dev/null
++    if $is_bin
+     then
+         install -m755 "${CFG_SRC_DIR}/$p" "${FILE_INSTALL_PATH}"
+     else
+-- 
+2.0.4
+

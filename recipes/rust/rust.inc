@@ -46,22 +46,13 @@ TARGET_ENDIAN[i586] = "little"
 TARGET_WORD_SIZE[i586] = "32"
 PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
-
-def ldflags_for(d, thing):
-    f  = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
-    f += " "
-    f += d.getVar('TOOLCHAIN_OPTIONS', True) or ""
-    f += " "
-    f += d.getVar('{}_LDFLAGS'.format(thing), True) or ""
-    f += " "
-    f += d.getVarFlag('PRE_LINK_ARGS', d.getVar('{}_ARCH'.format(thing)), True) or ""
-    return f
-
-# These are appended to by internal-rust-cross.bbclass and should be used
-# instead of ldflags_for() where ever ldflags are needed
-TARGET_PRE_LINK_ARGS = "${@ldflags_for(d, 'TARGET')}"
-HOST_PRE_LINK_ARGS   = "${@ldflags_for(d, 'HOST')}"
-BUILD_PRE_LINK_ARGS  = "${@ldflags_for(d, 'BUILD')}"
+# XXX: BITBAKE-BUG: these used to be set via a function, but that caused bitbake to error on
+# users of these variables without any backtrace or error message other than
+# "failed" (of some form or another). Probably an issue with bitbake attempting
+# to track variable users and us having too many dynamic variable names.
+TARGET_PRE_LINK_ARGS = "${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${TARGET_LDFLAGS} ${PRE_LINK_ARGS[${TARGET_ARCH}]}"
+BUILD_PRE_LINK_ARGS = "${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${BUILD_LDFLAGS} ${PRE_LINK_ARGS[${BUILD_ARCH}]}"
+HOST_PRE_LINK_ARGS = "${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${HOST_LDFLAGS} ${PRE_LINK_ARGS[${HOST_ARCH}]}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
@@ -124,7 +115,7 @@ def rust_gen_target(d, thing, wd):
     linker = "{}{}gcc".format(ccache, prefix)
     features = d.getVarFlag('FEATURES', arch, True) or ""
 
-    pre_link_args = (d.getVar('{}_PRE_LINK_ARGS_PREPEND'.format(thing), True) or "").split()
+    pre_link_args = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
     pre_link_args.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
 
     o.write('''{{
@@ -155,20 +146,18 @@ def rust_gen_target(d, thing, wd):
     o.close()
 
 python do_rust_gen_targets () {
-     import os
-     wd = d.getVar('WORKDIR', True) + '/targets/'
-     try:
-         os.makedirs(wd)
-     except OSError as e:
-         if e.errno != 17:
+    import os
+    wd = d.getVar('WORKDIR', True) + '/targets/'
+    try:
+        os.makedirs(wd)
+    except OSError as e:
+        if e.errno != 17:
             raise e
-
-     for thing in ['HOST', 'BUILD', 'TARGET']:
+    for thing in ['BUILD', 'HOST', 'TARGET']:
+        bb.debug(1, "rust_gen_target for " + thing)
         rust_gen_target(d, thing, wd)
 }
 addtask do_rust_gen_targets after do_patch before do_compile
-do_rust_gen_targets[dirs] = "${WORKDIR}"
-
 
 def rust_gen_mk_cfg(d, thing):
     ''''
@@ -219,11 +208,12 @@ def rust_gen_mk_cfg(d, thing):
         raise Exception
 
 python do_rust_arch_fixup () {
-    for thing in ['HOST', 'BUILD', 'TARGET']:
+    for thing in ['BUILD', 'HOST', 'TARGET']:
+        bb.debug(1, "rust_gen_mk_cfg for " + thing)
         rust_gen_mk_cfg(d, thing)
 }
 addtask do_rust_arch_fixup before do_configure after do_patch
-do_rust_arch_fixup[dirs] = "${WORKDIR}"
+do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
 
 do_configure () {
 	# FIXME: target_prefix vs prefix, see cross.bbclass
@@ -253,7 +243,7 @@ do_configure () {
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
-                "--disable-manage-submodules"           \
+        "--disable-manage-submodules"           \
 		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust', '', d)} \
 		${EXTRA_OECONF}
 }

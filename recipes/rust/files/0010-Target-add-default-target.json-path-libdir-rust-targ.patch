@@ -1,0 +1,70 @@
+From 8346b26f57926960640f5e68d78cd5a7a50e4a6d Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Tue, 18 Nov 2014 01:40:21 -0500
+Subject: [PATCH] Target: add default target.json path: $libdir/rust/targets
+
+---
+ src/librustc/driver/config.rs   | 4 ++--
+ src/librustc/driver/session.rs  | 6 +++++-
+ src/librustc_back/target/mod.rs | 6 +++---
+ 3 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/src/librustc/driver/config.rs b/src/librustc/driver/config.rs
+index 1a40a04..a5c334c 100644
+--- a/src/librustc/driver/config.rs
++++ b/src/librustc/driver/config.rs
+@@ -521,8 +521,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+     v
+ }
+ 
+-pub fn build_target_config(opts: &Options, sp: &SpanHandler) -> Config {
+-    let target = match Target::search(opts.target_triple.as_slice()) {
++pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
++    let target = match Target::search(sysroot, opts.target_triple.as_slice()) {
+         Ok(t) => t,
+         Err(e) => {
+             sp.handler().fatal((format!("Error loading target specification: {}", e)).as_slice());
+diff --git a/src/librustc/driver/session.rs b/src/librustc/driver/session.rs
+index 35ccbb4..d31735a 100644
+--- a/src/librustc/driver/session.rs
++++ b/src/librustc/driver/session.rs
+@@ -219,7 +219,11 @@ pub fn build_session_(sopts: config::Options,
+                       local_crate_source_file: Option<Path>,
+                       span_diagnostic: diagnostic::SpanHandler)
+                       -> Session {
+-    let target_cfg = config::build_target_config(&sopts, &span_diagnostic);
++    let sysroot = match sopts.maybe_sysroot {
++        Some(ref x) => Path::new(x),
++        None => filesearch::get_or_default_sysroot()
++    };
++    let target_cfg = config::build_target_config(&sysroot, &sopts, &span_diagnostic);
+     let p_s = parse::new_parse_sess_special_handler(span_diagnostic);
+     let default_sysroot = match sopts.maybe_sysroot {
+         Some(_) => None,
+diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
+index d7b4285..27ad897 100644
+--- a/src/librustc_back/target/mod.rs
++++ b/src/librustc_back/target/mod.rs
+@@ -291,7 +291,7 @@ impl Target {
+     ///
+     /// The error string could come from any of the APIs called, including filesystem access and
+     /// JSON decoding.
+-    pub fn search(target: &str) -> Result<Target, String> {
++    pub fn search(sysroot: &Path, target: &str) -> Result<Target, String> {
+         use std::os;
+         use std::io::File;
+         use std::path::Path;
+@@ -366,8 +366,8 @@ impl Target {
+ 
+         let target_path = os::getenv("RUST_TARGET_PATH").unwrap_or(String::new());
+ 
+-        let paths = os::split_paths(target_path.as_slice());
+-        // FIXME 16351: add a sane default search path?
++        let mut paths = os::split_paths(target_path.as_slice());
++        paths.push(sysroot.join_many([env!("CFG_LIBDIR_RELATIVE"), "rust", "targets"]));
+ 
+         for dir in paths.iter() {
+             let p =  dir.join(path.clone());
+-- 
+2.0.4
+
