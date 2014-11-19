@@ -1,33 +1,32 @@
-From 367597c0504a8ee4758eb2ccaef760c02b483e46 Mon Sep 17 00:00:00 2001
+From 0cd38a8844e7511f5db4ab14ec6fa80a2f9a63ec Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:07:37 -0500
-Subject: [PATCH] mk: add rule to create bindir, unconditionalize rule to
- create libdir
+Subject: [PATCH 24/28] mk: add rule to create bindir
 
 Without this make fails due to not finding a way to create the bindir target.
-
-Not clear that having the libdir rule be unconditional, so supply it all the time to avoid issues in the future
 ---
- mk/host.mk | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mk/host.mk | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/mk/host.mk b/mk/host.mk
-index 59a0095..9f8d5c4 100644
+index 59a0095..b8e8345 100644
 --- a/mk/host.mk
 +++ b/mk/host.mk
-@@ -59,10 +59,10 @@ endef
+@@ -59,9 +59,13 @@ endef
  # $(4) - the host triple (same as $(3))
  define CP_HOST_STAGE_N
  
 -ifneq ($(CFG_LIBDIR_RELATIVE),bin)
  $$(HLIB$(2)_H_$(4))/:
  	@mkdir -p $$@
--endif
++
++# Avoid redefinition warnings if libdir==bindir
++ifneq ($(HBIN$(2)_H_$(4)),$(HLIB$(2)_H_$(4)))
 +$$(HBIN$(2)_H_$(4))/:
 +	@mkdir -p $$@
+ endif
  
  endef
- 
 -- 
-2.1.3
+2.0.4
 

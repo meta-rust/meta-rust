@@ -1,0 +1,29 @@
+From 8a273a8bb1a2f6f5499b6e79a0894581a1284183 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Tue, 18 Nov 2014 16:32:03 -0500
+Subject: [PATCH 27/28] mk/target: fix typo so we depend on the correct
+ directory
+
+Without this, if we we're using a non-standard host libdir, the target
+bindir would not exist (and rustc would fail to write to the
+non-existent directory).
+---
+ mk/target.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mk/target.mk b/mk/target.mk
+index ed7d8bb..acdf780 100644
+--- a/mk/target.mk
++++ b/mk/target.mk
+@@ -116,7 +116,7 @@ $$(TBIN$(1)_T_$(2)_H_$(3))/$(4)$$(X_$(2)): \
+ 		$$(foreach dep,$$(TOOL_DEPS_$(4)), \
+ 		    $$(TLIB$(1)_T_$(2)_H_$(3))/stamp.$$(dep)) \
+ 		$$(TSREQ$(1)_T_$(2)_H_$(3)) \
+-		| $$(TBIN$(1)_T_$(4)_H_$(3))/
++		| $$(TBIN$(1)_T_$(2)_H_$(3))/
+ 	@$$(call E, rustc: $$@)
+ 	$$(STAGE$(1)_T_$(2)_H_$(3)) -o $$@ $$< --cfg $(4)
+ 
+-- 
+2.0.4
+

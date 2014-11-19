@@ -1,17 +1,17 @@
-From 0285e9ebaea38ccb436e8b7b64a0bac232a89935 Mon Sep 17 00:00:00 2001
+From a8bb6cf82242c69b20390c7ae32d865341b286a7 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 20:10:42 -0500
-Subject: [PATCH 9/9] Remember relative libdir and bindir from build time
+Subject: [PATCH 21/28] Remember relative libdir and bindir from build time
 
 ---
  configure                           |  6 +++
  mk/install.mk                       |  2 +-
- src/librustc/back/link.rs           |  3 +-
  src/librustc/metadata/filesearch.rs | 73 +++++++++++++++----------------------
+ src/librustc_trans/back/link.rs     |  3 +-
  4 files changed, 37 insertions(+), 47 deletions(-)
 
 diff --git a/configure b/configure
-index bdfeedd..c9bec44 100755
+index bdfeedd..7914601 100755
 --- a/configure
 +++ b/configure
 @@ -340,6 +340,7 @@ need_cmd date
@@ -28,8 +28,8 @@ index bdfeedd..c9bec44 100755
  
 +# Determine libdir and bindir relative to prefix
 +step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
-+CFG_BINDIR_RELATIVE=$(realpath --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
-+CFG_LIBDIR_RELATIVE=$(realpath --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
 +
  # Validate Options
  step_msg "validating $CFG_SELF args"
@@ -47,25 +47,8 @@ index 4588e83..0fba6ee 100644
  # Remove tmp files because it's a decent amount of disk space
  	$(Q)rm -R tmp/dist
  
-diff --git a/src/librustc/back/link.rs b/src/librustc/back/link.rs
-index 766715f..306e074 100644
---- a/src/librustc/back/link.rs
-+++ b/src/librustc/back/link.rs
-@@ -1015,11 +1015,10 @@ fn link_args(cmd: &mut Command,
-     // where extern libraries might live, based on the
-     // addl_lib_search_paths
-     if sess.opts.cg.rpath {
--        let sysroot = sess.sysroot();
-         let target_triple = sess.opts.target_triple.as_slice();
-         let get_install_prefix_lib_path = || {
-             let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
--            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
-+            let tlib = filesearch::relative_target_lib_path(target_triple);
-             let mut path = Path::new(install_prefix);
-             path.push(&tlib);
- 
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index f7d666e..6db56ef 100644
+index fee289d..b626308 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
 @@ -66,8 +66,7 @@ impl<'a> FileSearch<'a> {
@@ -190,6 +173,23 @@ index f7d666e..6db56ef 100644
  }
  
  // The name of rustc's own place to organize libraries.
+diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
+index d5d488e..cddf970 100644
+--- a/src/librustc_trans/back/link.rs
++++ b/src/librustc_trans/back/link.rs
+@@ -1015,11 +1015,10 @@ fn link_args(cmd: &mut Command,
+     // where extern libraries might live, based on the
+     // addl_lib_search_paths
+     if sess.opts.cg.rpath {
+-        let sysroot = sess.sysroot();
+         let target_triple = sess.opts.target_triple.as_slice();
+         let get_install_prefix_lib_path = || {
+             let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
+-            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
++            let tlib = filesearch::relative_target_lib_path(target_triple);
+             let mut path = Path::new(install_prefix);
+             path.push(&tlib);
+ 
 -- 
 2.0.4
 

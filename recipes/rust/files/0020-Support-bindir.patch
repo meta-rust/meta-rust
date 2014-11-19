@@ -1,7 +1,7 @@
-From 8502ded50381200386c52a9c66e77ac3f3ca7188 Mon Sep 17 00:00:00 2001
+From e9a22fbdb8e938bd10a7af6972386dfb29f359f0 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 19:44:58 -0500
-Subject: [PATCH 8/9] Support --bindir
+Subject: [PATCH 20/28] Support --bindir
 
 ---
  configure          |  4 ++++

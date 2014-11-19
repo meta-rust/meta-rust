@@ -1,7 +1,7 @@
-From c2981f76da9514262289662585acfcdd5925b761 Mon Sep 17 00:00:00 2001
+From 846a56728ba8b7ba64b12c2969bd133a384fc474 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:44:13 -0500
-Subject: [PATCH] mk: add missing CFG_BINDIR_RELATIVE uses
+Subject: [PATCH 22/28] mk: add missing CFG_BINDIR_RELATIVE uses
 
 ---
  mk/main.mk    | 2 +-
@@ -60,5 +60,5 @@ index 7df2489..842078f 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 -- 
-2.1.3
+2.0.4
 

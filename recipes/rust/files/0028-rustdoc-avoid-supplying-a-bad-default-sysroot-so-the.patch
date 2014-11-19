@@ -1,0 +1,34 @@
+From 370101c62c740c4ef86453277b9cd39561095c54 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Tue, 18 Nov 2014 18:56:12 -0500
+Subject: [PATCH 28/28] rustdoc: avoid supplying a bad default sysroot so the
+ librustc code can calculate it properly
+
+---
+ src/librustdoc/core.rs | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/librustdoc/core.rs b/src/librustdoc/core.rs
+index 21242e6..b040a4b 100644
+--- a/src/librustdoc/core.rs
++++ b/src/librustdoc/core.rs
+@@ -18,7 +18,6 @@ use rustc_trans::back::link;
+ use syntax::{ast, ast_map, codemap, diagnostic};
+ 
+ use std::cell::RefCell;
+-use std::os;
+ use std::collections::{HashMap, HashSet};
+ use arena::TypedArena;
+ 
+@@ -89,7 +88,7 @@ pub fn run_core(libs: Vec<Path>, cfgs: Vec<String>, externs: Externs,
+     let warning_lint = lint::builtin::WARNINGS.name_lower();
+ 
+     let sessopts = config::Options {
+-        maybe_sysroot: Some(os::self_exe_path().unwrap().dir_path()),
++        maybe_sysroot: None,
+         addl_lib_search_paths: RefCell::new(libs),
+         crate_types: vec!(config::CrateTypeRlib),
+         lint_opts: vec!((warning_lint, lint::Allow)),
+-- 
+2.0.4
+
