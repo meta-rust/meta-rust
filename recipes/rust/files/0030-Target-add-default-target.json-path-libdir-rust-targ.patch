@@ -1,19 +1,19 @@
-From 8346b26f57926960640f5e68d78cd5a7a50e4a6d Mon Sep 17 00:00:00 2001
+From b0b65f8b4c660b21b92ce2743fe2b03b310927b0 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
 Subject: [PATCH] Target: add default target.json path: $libdir/rust/targets
 
 ---
- src/librustc/driver/config.rs   | 4 ++--
- src/librustc/driver/session.rs  | 6 +++++-
+ src/librustc/session/config.rs  | 4 ++--
+ src/librustc/session/mod.rs     | 6 +++++-
  src/librustc_back/target/mod.rs | 6 +++---
  3 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/src/librustc/driver/config.rs b/src/librustc/driver/config.rs
-index 1a40a04..a5c334c 100644
---- a/src/librustc/driver/config.rs
-+++ b/src/librustc/driver/config.rs
-@@ -521,8 +521,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
+index e10a1a4..feb4878 100644
+--- a/src/librustc/session/config.rs
++++ b/src/librustc/session/config.rs
+@@ -540,8 +540,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
@@ -24,10 +24,10 @@ index 1a40a04..a5c334c 100644
          Ok(t) => t,
          Err(e) => {
              sp.handler().fatal((format!("Error loading target specification: {}", e)).as_slice());
-diff --git a/src/librustc/driver/session.rs b/src/librustc/driver/session.rs
-index 35ccbb4..d31735a 100644
---- a/src/librustc/driver/session.rs
-+++ b/src/librustc/driver/session.rs
+diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
+index 72a9f23..d6ccae7 100644
+--- a/src/librustc/session/mod.rs
++++ b/src/librustc/session/mod.rs
 @@ -219,7 +219,11 @@ pub fn build_session_(sopts: config::Options,
                        local_crate_source_file: Option<Path>,
                        span_diagnostic: diagnostic::SpanHandler)
