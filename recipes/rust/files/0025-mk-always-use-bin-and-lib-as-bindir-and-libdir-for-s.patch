@@ -12,7 +12,7 @@ diff --git a/mk/main.mk b/mk/main.mk
 index 0fb6f5f..676ea21 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -333,8 +333,18 @@ define SREQ
+@@ -333,8 +333,17 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -23,11 +23,10 @@ index 0fb6f5f..676ea21 100644
 +# libdir. At the moment, this assumes the relative paths (from sysroot aka
 +# prefix) are 'lib' and 'bin'.
 +HBIN$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/bin
-+HLIB$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/lib
 +else
  HBIN$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_BINDIR_RELATIVE)
- HLIB$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_LIBDIR_RELATIVE)
 +endif
+ HLIB$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_LIBDIR_RELATIVE)
  
  # Destinations of artifacts for target architectures
  TROOT$(1)_T_$(2)_H_$(3) = $$(HLIB$(1)_H_$(3))/rustlib/$(2)
