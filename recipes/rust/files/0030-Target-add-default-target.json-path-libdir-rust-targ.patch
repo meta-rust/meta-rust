@@ -1,4 +1,4 @@
-From b0b65f8b4c660b21b92ce2743fe2b03b310927b0 Mon Sep 17 00:00:00 2001
+From 302d94ff44c5a6bda5a40fa02304d583cc1a73b5 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
 Subject: [PATCH] Target: add default target.json path: $libdir/rust/targets
@@ -42,7 +42,7 @@ index 72a9f23..d6ccae7 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index d7b4285..27ad897 100644
+index d7b4285..af9d7b1 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
 @@ -291,7 +291,7 @@ impl Target {
@@ -61,7 +61,7 @@ index d7b4285..27ad897 100644
 -        let paths = os::split_paths(target_path.as_slice());
 -        // FIXME 16351: add a sane default search path?
 +        let mut paths = os::split_paths(target_path.as_slice());
-+        paths.push(sysroot.join_many([env!("CFG_LIBDIR_RELATIVE"), "rust", "targets"]));
++        paths.push(sysroot.join_many(&[env!("CFG_LIBDIR_RELATIVE"), "rust", "targets"]));
  
          for dir in paths.iter() {
              let p =  dir.join(path.clone());

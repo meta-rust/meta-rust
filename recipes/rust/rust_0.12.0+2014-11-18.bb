@@ -3,7 +3,6 @@ require rust-git.inc
 
 SRC_URI_append = "\
 	file://0001-platform.mk-avoid-choking-on-i586.patch \
-	file://0005-CFG_CFLAGS-is-only-used-for-jemalloc-rename-all-uses.patch \
 	file://0007-mk-rt-compiler_rt-pass-LDFLAGS-from-CFG_GCCISH_LINK_.patch \
 	file://0020-Support-bindir.patch \
 	file://0021-Remember-relative-libdir-and-bindir-from-build-time.patch \
