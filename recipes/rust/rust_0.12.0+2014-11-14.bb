@@ -11,4 +11,9 @@ SRC_URI_append = "\
 	file://0008-Support-bindir.patch \
 	file://0009-Remember-relative-libdir-and-bindir-from-build-time.patch \
 	file://0010-Target-add-default-target.json-path-libdir-rust-targ.patch \
+	file://0011-rustc_back-target-add-debug-output-for-target-search.patch \
+	file://0012-mk-add-missing-CFG_BINDIR_RELATIVE-uses.patch \
+	file://0013-mk-add-missing-CFG_LIBDIR_RELATIVE.patch \
+	file://0014-configure-CFG_-DIR_RELATIVE-avoid-requiring-existenc.patch \
+	file://0015-mk-add-rule-to-create-bindir-unconditionalize-rule-t.patch \
 "
