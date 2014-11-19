@@ -15,4 +15,5 @@ SRC_URI_append = "\
 	file://0028-rustdoc-avoid-supplying-a-bad-default-sysroot-so-the.patch \
 	file://0030-Target-add-default-target.json-path-libdir-rust-targ.patch \
 	file://0031-mk-cfg-add-.mk-suffix-on-files-to-avoid-supprises-wh.patch \
+	file://0033-mk-instead-of-lieing-about-stage0-libdir-pass-flags-.patch \
 "

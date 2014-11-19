@@ -1,7 +1,7 @@
-From 0cd38a8844e7511f5db4ab14ec6fa80a2f9a63ec Mon Sep 17 00:00:00 2001
+From 58a621bdfafd3dfb7aa5e9dc7e9df177fe8977eb Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:07:37 -0500
-Subject: [PATCH 24/28] mk: add rule to create bindir
+Subject: [PATCH 25/29] mk: add rule to create bindir
 
 Without this make fails due to not finding a way to create the bindir target.
 ---
@@ -28,5 +28,5 @@ index 59a0095..b8e8345 100644
  
  endef
 -- 
-2.0.4
+2.1.3
 

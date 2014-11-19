@@ -1,7 +1,7 @@
-From a8bb6cf82242c69b20390c7ae32d865341b286a7 Mon Sep 17 00:00:00 2001
+From 21379cee1db605007e5eb2b28b1d55ac24c04a5b Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 20:10:42 -0500
-Subject: [PATCH 21/28] Remember relative libdir and bindir from build time
+Subject: [PATCH 21/29] Remember relative libdir and bindir from build time
 
 ---
  configure                           |  6 +++
@@ -11,7 +11,7 @@ Subject: [PATCH 21/28] Remember relative libdir and bindir from build time
  4 files changed, 37 insertions(+), 47 deletions(-)
 
 diff --git a/configure b/configure
-index bdfeedd..7914601 100755
+index bdfeedd..c9bec44 100755
 --- a/configure
 +++ b/configure
 @@ -340,6 +340,7 @@ need_cmd date
@@ -28,8 +28,8 @@ index bdfeedd..7914601 100755
  
 +# Determine libdir and bindir relative to prefix
 +step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
-+CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
-+CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++CFG_BINDIR_RELATIVE=$(realpath --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(realpath --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
 +
  # Validate Options
  step_msg "validating $CFG_SELF args"
@@ -174,7 +174,7 @@ index fee289d..b626308 100644
  
  // The name of rustc's own place to organize libraries.
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index d5d488e..cddf970 100644
+index d27a338..2e1138e 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
 @@ -1015,11 +1015,10 @@ fn link_args(cmd: &mut Command,
@@ -191,5 +191,5 @@ index d5d488e..cddf970 100644
              path.push(&tlib);
  
 -- 
-2.0.4
+2.1.3
 

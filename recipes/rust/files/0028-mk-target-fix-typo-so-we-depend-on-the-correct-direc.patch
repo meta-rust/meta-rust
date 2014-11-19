@@ -1,7 +1,7 @@
-From 8a273a8bb1a2f6f5499b6e79a0894581a1284183 Mon Sep 17 00:00:00 2001
+From 3cee7291722137195a9cc6f6556609ecac75fb8a Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 16:32:03 -0500
-Subject: [PATCH 27/28] mk/target: fix typo so we depend on the correct
+Subject: [PATCH 28/29] mk/target: fix typo so we depend on the correct
  directory
 
 Without this, if we we're using a non-standard host libdir, the target
@@ -25,5 +25,5 @@ index ed7d8bb..acdf780 100644
  	$$(STAGE$(1)_T_$(2)_H_$(3)) -o $$@ $$< --cfg $(4)
  
 -- 
-2.0.4
+2.1.3
 

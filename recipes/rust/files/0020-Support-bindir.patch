@@ -1,7 +1,7 @@
-From e9a22fbdb8e938bd10a7af6972386dfb29f359f0 Mon Sep 17 00:00:00 2001
+From 7059bccadb5cdf560f1c060ed3f785fe935ad68d Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 19:44:58 -0500
-Subject: [PATCH 20/28] Support --bindir
+Subject: [PATCH 20/29] Support --bindir
 
 ---
  configure          |  4 ++++
@@ -121,5 +121,5 @@ index 4f43b1e..add1c26 100644
          install -m755 "${CFG_SRC_DIR}/$p" "${FILE_INSTALL_PATH}"
      else
 -- 
-2.0.4
+2.1.3
 

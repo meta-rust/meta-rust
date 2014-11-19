@@ -1,4 +1,4 @@
-From e097e84e4d0f1315d7b20b7c8a59b0060b1343ed Mon Sep 17 00:00:00 2001
+From 5998606dc38d69b1ccf870242b2549dc76b6d418 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Sun, 16 Nov 2014 21:35:19 -0500
 Subject: [PATCH] dl-snapshot: be more forgiving to triples
@@ -8,10 +8,10 @@ Subject: [PATCH] dl-snapshot: be more forgiving to triples
  1 file changed, 37 insertions(+), 13 deletions(-)
 
 diff --git a/src/etc/dl-snapshot.py b/src/etc/dl-snapshot.py
-index 64329ac..31ada37 100644
+index 096b02e..cfbfc83 100644
 --- a/src/etc/dl-snapshot.py
 +++ b/src/etc/dl-snapshot.py
-@@ -18,20 +18,44 @@ win32 = lines[5]
+@@ -25,20 +25,44 @@ win32 = lines[5]
  win64 = lines[6]
  triple = sys.argv[1]
  
@@ -67,8 +67,8 @@ index 64329ac..31ada37 100644
 +
 +triple = new_triple
  
- platform, hash = me.strip().split(' ')
+ platform, hash = me.strip().split()
  
 -- 
-2.0.4
+2.1.3
 
