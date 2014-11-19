@@ -188,8 +188,8 @@ def rust_gen_mk_cfg(d, thing):
 
     p = d.getVar('S', True) + '/mk/cfg/'
 
-    o = open(p + sys_for(d, thing), 'w')
-    i = open(p + rust_base_sys, 'r')
+    o = open(p + sys_for(d, thing) + '.mk', 'w')
+    i = open(p + rust_base_sys + '.mk', 'r')
 
     r = subprocess.call(['sed',
         # update all triplets to the new one
