@@ -6,7 +6,6 @@ SRC_URI_append = "\
 	file://0007-mk-rt-compiler_rt-pass-LDFLAGS-from-CFG_GCCISH_LINK_.patch \
 	file://0030-Target-add-default-target.json-path-libdir-rust-targ.patch \
 	file://0031-mk-cfg-add-.mk-suffix-on-files-to-avoid-supprises-wh.patch \
-	\
 	file://0020-Support-bindir.patch \
 	file://0021-Remember-relative-libdir-and-bindir-from-build-time.patch \
 	file://0022-mk-add-missing-CFG_BINDIR_RELATIVE-uses.patch \
