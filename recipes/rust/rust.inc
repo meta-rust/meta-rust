@@ -67,7 +67,7 @@ HOST_CPPFLAGS ??= "${CPPFLAGS}"
 # relative ones so things work a bit better
 #
 # XXX: may need to restrict the -rpath flags to only BUILD & HOST
-RELATIVE_LIB_FROM_BIN = "${@os.path.relpath('libdir', 'bindir')}"
+RELATIVE_LIB_FROM_BIN = "${@os.path.relpath('${libdir}', '${bindir}')}"
 RPATH_LDFLAGS = "-Wl,--enable-new-dtags -Wl,-rpath=$ORIGIN/${RELATIVE_LIB_FROM_BIN} -Wl,-rpath-link=$ORIGIN/${RELATIVE_LIB_FROM_BIN}"
 TARGET_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 BUILD_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
@@ -240,6 +240,8 @@ def rust_gen_mk_cfg(d, thing):
         '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CXXFLAGS/ s;$; {};'.format(cxxflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(ldflags),
+
+        # May need to add: CFG_LLC_FLAGS_{}
         ], stdout=o, stdin=i)
     if r:
         raise Exception
@@ -251,10 +253,6 @@ python do_rust_arch_fixup () {
 }
 addtask rust_arch_fixup before do_configure after do_patch
 do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
-
-def rel_bin_to_lib(bindir, libdir):
-    os.path.relpath(libdir, bindir)
-
 
 do_configure () {
 	# FIXME: target_prefix vs prefix, see cross.bbclass

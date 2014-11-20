@@ -1,0 +1,26 @@
+From 0f6c3e00618fae91987e7d5bf52dbd63ec291f99 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Thu, 20 Nov 2014 15:56:58 -0500
+Subject: [PATCH] mk/rt: use CFG_LLVM_TARGET instead of plain target when
+ calling llc
+
+---
+ mk/rt.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mk/rt.mk b/mk/rt.mk
+index a7d6a6e..38aec83 100644
+--- a/mk/rt.mk
++++ b/mk/rt.mk
+@@ -75,7 +75,7 @@ $$(RT_OUTPUT_DIR_$(1))/%.o: $(S)src/rt/%.ll $$(MKFILE_DEPS) \
+ 	@mkdir -p $$(@D)
+ 	@$$(call E, compile: $$@)
+ 	$$(Q)$$(LLC_$$(CFG_BUILD)) $$(CFG_LLC_FLAGS_$(1)) \
+-	    -filetype=obj -mtriple=$(1) -relocation-model=pic -o $$@ $$<
++	    -filetype=obj -mtriple=$$(CFG_LLVM_TARGET_$(1)) -relocation-model=pic -o $$@ $$<
+ 
+ $$(RT_OUTPUT_DIR_$(1))/%.o: $(S)src/rt/%.c $$(MKFILE_DEPS)
+ 	@mkdir -p $$(@D)
+-- 
+2.1.3
+
