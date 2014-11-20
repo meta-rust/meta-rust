@@ -54,22 +54,31 @@ HOST_CFLAGS   ??= "${CFLAGS}"
 HOST_CXXFLAGS ??= "${CXXFLAGS}"
 HOST_CPPFLAGS ??= "${CPPFLAGS}"
 
-# XXX: BITBAKE-BUG: these used to be set via a function, but that caused bitbake to error on
-# users of these variables without any backtrace or error message other than
-# "failed" (of some form or another). Probably an issue with bitbake attempting
-# to track variable users and us having too many dynamic variable names.
+# XXX: BITBAKE-BUG: *_PRE_LINK_ARGS used to be set via function invocation, but
+# that caused bitbake to error on users of these variables without any
+# backtrace or error message other than "failed" (of some form or another).
+# Probably an issue with bitbake attempting to track variable users and us
+# having too many dynamic variable names.
+#
 # enable-new-dtags causes rpaths to be inserted as DT_RUNPATH (as well as
 # DT_RPATH), which lets LD_LIBRARY_PATH override them
-TARGET_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-BUILD_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-HOST_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+#
+# rust appears to use absolute rpath's instead of relative ones, pass in some
+# relative ones so things work a bit better
+#
+# XXX: may need to restrict the -rpath flags to only BUILD & HOST
+RELATIVE_LIB_FROM_BIN = "${@os.path.relpath('libdir', 'bindir')}"
+RPATH_LDFLAGS = "-Wl,--enable-new-dtags -Wl,-rpath=$ORIGIN/${RELATIVE_LIB_FROM_BIN} -Wl,-rpath-link=$ORIGIN/${RELATIVE_LIB_FROM_BIN}"
+TARGET_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+BUILD_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+HOST_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 
 # These LDFLAGS have '-L' options in them. We need these to come last so they
 # don't screw up the link order and pull in the wrong rust build/version.
 # TODO: may want to strip out all the '-L' flags entirely here
-#TARGET_POST_LINK_ARGS = "${TARGET_LDFLAGS}"
-#BUILD_POST_LINK_ARGS = "${BUILD_LDFLAGS}"
-#HOST_POST_LINK_ARGS = "${HOST_LDFLAGS}"
+TARGET_POST_LINK_ARGS = "${TARGET_LDFLAGS}"
+BUILD_POST_LINK_ARGS = "${BUILD_LDFLAGS}"
+HOST_POST_LINK_ARGS = "${HOST_LDFLAGS}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
@@ -115,7 +124,7 @@ def as_json(list_):
     a += ']'
     return a
 
-def ldflags_for(d, thing):
+def ldflags_for(d, thing, arch):
     ldflags = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
     ldflags.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
     return ldflags
@@ -123,7 +132,7 @@ def ldflags_for(d, thing):
 
 def rust_gen_target(d, thing, wd):
     arch = arch_for(d, thing)
-    ldflags = ldflags_for(d, thing)
+    ldflags = ldflags_for(d, thing, arch)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
     o = open(wd + sys + '.json', 'w')
@@ -133,6 +142,7 @@ def rust_gen_target(d, thing, wd):
         bb.utils.fatal("DATA_LAYOUT[{}] required but not set for {}".format(arch, thing))
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     target_word_size = d.getVarFlag('TARGET_WORD_SIZE', arch, True)
+    endian = d.getVarFlag('TARGET_ENDIAN', arch, True)
     prefix = d.getVar('{}_PREFIX'.format(thing), True)
     ccache = d.getVar('CCACHE', True)
     linker = "{}{}gcc".format(ccache, prefix)
@@ -146,7 +156,7 @@ def rust_gen_target(d, thing, wd):
     o.write('''{{
          "data-layout": "{}",
          "llvm-target": "{}",
-         "target-endian": "little",
+         "target-endian": "{}",
          "target-word-size": "{}",
          "arch": "{}",
          "os": "linux",
@@ -163,6 +173,7 @@ def rust_gen_target(d, thing, wd):
     }}'''.format(
         data_layout,
         llvm_target,
+        endian,
         target_word_size,
         arch_to_rust_target_arch(arch),
         linker,
@@ -203,7 +214,7 @@ def rust_gen_mk_cfg(d, thing):
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
-    ldflags = d.getVar('{}_PRE_LINK_ARGS'.format(thing), True)
+    ldflags = ' '.join(ldflags_for(d, thing, arch))
 
     p = d.getVar('S', True) + '/mk/cfg/'
 
@@ -240,6 +251,10 @@ python do_rust_arch_fixup () {
 }
 addtask rust_arch_fixup before do_configure after do_patch
 do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
+
+def rel_bin_to_lib(bindir, libdir):
+    os.path.relpath(libdir, bindir)
+
 
 do_configure () {
 	# FIXME: target_prefix vs prefix, see cross.bbclass
