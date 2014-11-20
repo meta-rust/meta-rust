@@ -233,14 +233,9 @@ do_configure () {
 	unset CXXFLAGS
 	unset CPPFLAGS
 
-        if [ "${USE_LOCAL_RUST}" -eq 1 ]; then
-            # FIXME: this path to rustc may not be quite right in the case
-            # where we're reinstalling the compiler. May want to try for a real
-            # path based on bitbake vars
-            my_conf="--enable-local-rust --local-rust-root=$(dirname $(which rustc))"
-        else
-            my_conf=""
-        fi
+	# FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
+	# where we're reinstalling the compiler. May want to try for a real
+	# path based on bitbake vars
 
 	# - rpath is required otherwise rustc fails to resolve symbols
         # - submodule management is done by bitbake's fetching
@@ -259,7 +254,7 @@ do_configure () {
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
 		"--disable-manage-submodules"           \
-                ${my_conf}                              \
+		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust --local-rust-root=$(which rustc)', '', d)} \
 		${EXTRA_OECONF}
 }
 
