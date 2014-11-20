@@ -58,16 +58,18 @@ HOST_CPPFLAGS ??= "${CPPFLAGS}"
 # users of these variables without any backtrace or error message other than
 # "failed" (of some form or another). Probably an issue with bitbake attempting
 # to track variable users and us having too many dynamic variable names.
-TARGET_PRE_LINK_ARGS = "${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${TARGET_ARCH}]}"
-BUILD_PRE_LINK_ARGS = "${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${BUILD_ARCH}]}"
-HOST_PRE_LINK_ARGS = "${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${HOST_ARCH}]}"
+# enable-new-dtags causes rpaths to be inserted as DT_RUNPATH (as well as
+# DT_RPATH), which lets LD_LIBRARY_PATH override them
+TARGET_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${TARGET_ARCH}]}"
+BUILD_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${BUILD_ARCH}]}"
+HOST_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${HOST_ARCH}]}"
 
 # These LDFLAGS have '-L' options in them. We need these to come last so they
 # don't screw up the link order and pull in the wrong rust build/version.
 # TODO: may want to strip out all the '-L' flags entirely here
-TARGET_POST_LINK_ARGS = "${TARGET_LDFLAGS}"
-BUILD_POST_LINK_ARGS = "${BUILD_LDFLAGS}"
-HOST_POST_LINK_ARGS = "${HOST_LDFLAGS}"
+#TARGET_POST_LINK_ARGS = "${TARGET_LDFLAGS}"
+#BUILD_POST_LINK_ARGS = "${BUILD_LDFLAGS}"
+#HOST_POST_LINK_ARGS = "${HOST_LDFLAGS}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
