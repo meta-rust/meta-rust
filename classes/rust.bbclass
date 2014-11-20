@@ -63,7 +63,7 @@ RUST_PATH_NATIVE = "${STAGING_LIBDIR_NATIVE}:${STAGING_BASE_LIBDIR_NATIVE}"
 #RUST_PATH_NATIVE .= ":${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/rustlib/${TARGET_SYS}/lib"
 
 # FIXME: set based on whether we are native vs cross vs buildsdk, etc
-export RUST_PATH ??= "${RUST_PATH_NATIVE}"
+#export RUST_PATH ??= "${RUST_PATH_NATIVE}"
 
 ## This is builtin to rustc with the value "$libdir/rust/targets"
 # RUST_TARGET_PATH = "foo:bar"

@@ -58,9 +58,16 @@ HOST_CPPFLAGS ??= "${CPPFLAGS}"
 # users of these variables without any backtrace or error message other than
 # "failed" (of some form or another). Probably an issue with bitbake attempting
 # to track variable users and us having too many dynamic variable names.
-TARGET_PRE_LINK_ARGS = "${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${TARGET_LDFLAGS} ${PRE_LINK_ARGS[${TARGET_ARCH}]}"
-BUILD_PRE_LINK_ARGS = "${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${BUILD_LDFLAGS} ${PRE_LINK_ARGS[${BUILD_ARCH}]}"
-HOST_PRE_LINK_ARGS = "${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${HOST_LDFLAGS} ${PRE_LINK_ARGS[${HOST_ARCH}]}"
+TARGET_PRE_LINK_ARGS = "${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${TARGET_ARCH}]}"
+BUILD_PRE_LINK_ARGS = "${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${BUILD_ARCH}]}"
+HOST_PRE_LINK_ARGS = "${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${HOST_ARCH}]}"
+
+# These LDFLAGS have '-L' options in them. We need these to come last so they
+# don't screw up the link order and pull in the wrong rust build/version.
+# TODO: may want to strip out all the '-L' flags entirely here
+TARGET_POST_LINK_ARGS = "${TARGET_LDFLAGS}"
+BUILD_POST_LINK_ARGS = "${BUILD_LDFLAGS}"
+HOST_POST_LINK_ARGS = "${HOST_LDFLAGS}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
@@ -126,6 +133,9 @@ def rust_gen_target(d, thing, wd):
     pre_link_args = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
     pre_link_args.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
 
+    post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
+    post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
+
     o.write('''{{
          "data-layout": "{}",
          "llvm-target": "{}",
@@ -141,7 +151,8 @@ def rust_gen_target(d, thing, wd):
          "linker-is-gnu": true,
          "has-rpath": true,
          "position-independent-executables": true,
-         "pre-link-args": {}
+         "pre-link-args": {},
+         "post-link-args": {}
     }}'''.format(
         data_layout,
         llvm_target,
@@ -149,7 +160,8 @@ def rust_gen_target(d, thing, wd):
         arch_to_rust_target_arch(arch),
         linker,
         features,
-        as_json(pre_link_args)
+        as_json(pre_link_args),
+        as_json(post_link_args),
     ))
     o.close()
 
