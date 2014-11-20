@@ -236,6 +236,13 @@ do_configure () {
 	# FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
 	# where we're reinstalling the compiler. May want to try for a real
 	# path based on bitbake vars
+        # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
+        local_rust_root=$(dirname $(dirname $(which rustc)))
+        if [ -e "$local_rust_root/bin/rustc" ]; then
+            local_maybe_enable=enable
+        else
+            local_maybe_enable=disable
+        fi
 
 	# - rpath is required otherwise rustc fails to resolve symbols
         # - submodule management is done by bitbake's fetching
@@ -254,7 +261,7 @@ do_configure () {
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
 		"--disable-manage-submodules"           \
-		${@base_conditional('USE_LOCAL_RUST', '1', '--enable-local-rust --local-rust-root=$(which rustc)', '', d)} \
+		${@base_conditional('USE_LOCAL_RUST', '1', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '', d)} \
 		${EXTRA_OECONF}
 }
 
