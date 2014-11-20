@@ -1,15 +1,15 @@
-From 158d68fff7134af6dd48e307c1562482e1446709 Mon Sep 17 00:00:00 2001
+From 12bc4bb5708299b736a144d5ed134ce885bd136b Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 19 Nov 2014 20:01:08 -0500
-Subject: [PATCH 62/62] configure: allow local-rust-root to be given a direct
- path to rustc
+Subject: [PATCH] configure: allow local-rust-root to be given a direct path to
+ rustc
 
 ---
  configure | 17 +++++++++--------
  1 file changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/configure b/configure
-index a5c6aa8..ec66abf 100755
+index a5c6aa8..c6910cc 100755
 --- a/configure
 +++ b/configure
 @@ -690,18 +690,19 @@ fi
@@ -24,9 +24,9 @@ index a5c6aa8..ec66abf 100755
 -        # we assume that rustc is in a /bin directory
 -        CFG_LOCAL_RUST_ROOT=${system_rustc%/bin/rustc}
 +    c="${CFG_LOCAL_RUST_ROOT}/bin/rustc${BIN_SUF}"
-+    if [ -f "$c" ]; then
++    if [ -x "$c" ] && [ -f "$c" ]; then
 +        CFG_LOCAL_RUST_ROOT="$c"
-+    elif [ -x "${CFG_LOCAL_RUST_ROOT}" ]; then
++    elif [ -x "${CFG_LOCAL_RUST_ROOT}" ] && [ -f "${CFG_LOCAL_RUST_ROOT}" ]; then
 +        # everything is already configured
 +        :
 +    elif [ -n "$system_rustc" ]; then
@@ -41,5 +41,5 @@ index a5c6aa8..ec66abf 100755
      if [ $? -ne 0 ]
      then
 -- 
-2.0.4
+2.1.3
 
