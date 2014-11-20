@@ -18,5 +18,4 @@ SRC_URI_append = "\
 	file://0059-rustdoc-avoid-supplying-a-bad-default-sysroot-so-the.patch \
 	file://0060-src-etc-install.sh-use-LIBDIR-and-BINDIR-RELATIVE.patch \
 	file://0061-configure-silence-warning-about-LOCAL_RUST_ROOT-bein.patch \
-	file://0062-configure-allow-local-rust-root-to-be-given-a-direct.patch \
 "
