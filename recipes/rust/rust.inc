@@ -60,9 +60,9 @@ HOST_CPPFLAGS ??= "${CPPFLAGS}"
 # to track variable users and us having too many dynamic variable names.
 # enable-new-dtags causes rpaths to be inserted as DT_RUNPATH (as well as
 # DT_RPATH), which lets LD_LIBRARY_PATH override them
-TARGET_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${TARGET_ARCH}]}"
-BUILD_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${BUILD_ARCH}]}"
-HOST_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS} ${PRE_LINK_ARGS[${HOST_ARCH}]}"
+TARGET_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+BUILD_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+HOST_PRE_LINK_ARGS = "-Wl,--enable-new-dtags ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 
 # These LDFLAGS have '-L' options in them. We need these to come last so they
 # don't screw up the link order and pull in the wrong rust build/version.
@@ -115,9 +115,15 @@ def as_json(list_):
     a += ']'
     return a
 
+def ldflags_for(d, thing):
+    ldflags = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
+    ldflags.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
+    return ldflags
+
+
 def rust_gen_target(d, thing, wd):
     arch = arch_for(d, thing)
-    ldflags = d.getVar('{}_PRE_LINK_ARGS'.format(thing), True).split()
+    ldflags = ldflags_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
     o = open(wd + sys + '.json', 'w')
@@ -132,8 +138,7 @@ def rust_gen_target(d, thing, wd):
     linker = "{}{}gcc".format(ccache, prefix)
     features = d.getVarFlag('FEATURES', arch, True) or ""
 
-    pre_link_args = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
-    pre_link_args.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
+    pre_link_args = ldflags
 
     post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
     post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
