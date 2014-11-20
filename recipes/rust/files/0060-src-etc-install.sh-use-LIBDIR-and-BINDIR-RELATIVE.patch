@@ -1,0 +1,75 @@
+From 573101145b8d5a666b7b45c557838e4f1a8837e7 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Wed, 19 Nov 2014 19:30:06 -0500
+Subject: [PATCH 60/62] src/etc/install.sh: use LIBDIR and BINDIR RELATIVE
+
+---
+ src/etc/install.sh | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+diff --git a/src/etc/install.sh b/src/etc/install.sh
+index add1c26..021dc31 100644
+--- a/src/etc/install.sh
++++ b/src/etc/install.sh
+@@ -315,6 +315,11 @@ then
+     exit 0
+ fi
+ 
++# Determine libdir and bindir relative to prefix
++step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
++CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++
+ step_msg "validating $CFG_SELF args"
+ validate_opt
+ 
+@@ -328,8 +333,8 @@ then
+     if [ -z "${CFG_UNINSTALL}" ]
+     then
+         msg "verifying platform can run binaries"
+-        export $CFG_LD_PATH_VAR="${CFG_SRC_DIR}/lib:$CFG_OLD_LD_PATH_VAR"
+-        "${CFG_SRC_DIR}/bin/rustc" --version > /dev/null
++        export $CFG_LD_PATH_VAR="${CFG_SRC_DIR}/${CFG_LIBDIR_RELATIVE}:$CFG_OLD_LD_PATH_VAR"
++        "${CFG_SRC_DIR}/${CFG_BINDIR_RELATIVE}/rustc" --version > /dev/null
+         if [ $? -ne 0 ]
+         then
+             err "can't execute rustc binary on this platform"
+@@ -432,16 +437,16 @@ while read p; do
+     # Decide the destination of the file
+     FILE_INSTALL_PATH="${CFG_PREFIX}/$p"
+ 
+-    if echo "$p" | grep "^lib/" > /dev/null
++    if echo "$p" | grep "^${CFG_LIBDIR_RELATIVE}/" > /dev/null
+     then
+-        pp=`echo $p | sed 's/^lib\///'`
++        pp=`echo $p | sed 's;^'${CFG_LIBDIR_RELATIVE}'/;;'`
+         FILE_INSTALL_PATH="${CFG_LIBDIR}/$pp"
+     fi
+ 
+-    if echo "$p" | grep "^bin/" > /dev/null
++    if echo "$p" | grep "^${CFG_BINDIR_RELATIVE}/" > /dev/null
+     then
+         is_bin=true
+-        pp=`echo $p | sed 's/^bin\///'`
++        pp=`echo $p | sed 's;^'${CFG_BINDIR_RELATIVE}'/;;'`
+         FILE_INSTALL_PATH="${CFG_BINDIR}/$pp"
+     fi
+ 
+@@ -497,11 +502,11 @@ fi
+ if [ -z "${CFG_DISABLE_VERIFY}" ]
+ then
+     msg "verifying installed binaries are executable"
+-    "${CFG_PREFIX}/bin/rustc" --version 2> /dev/null 1> /dev/null
++    "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}/rustc" --version 2> /dev/null 1> /dev/null
+     if [ $? -ne 0 ]
+     then
+-        export $CFG_LD_PATH_VAR="${CFG_PREFIX}/lib:$CFG_OLD_LD_PATH_VAR"
+-        "${CFG_PREFIX}/bin/rustc" --version > /dev/null
++        export $CFG_LD_PATH_VAR="${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}:$CFG_OLD_LD_PATH_VAR"
++        "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}/rustc" --version > /dev/null
+         if [ $? -ne 0 ]
+         then
+             ERR="can't execute installed rustc binary. "
+-- 
+2.0.4
+

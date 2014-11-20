@@ -1,7 +1,7 @@
 From 1cac153be4b71e97ec61c894c3681e803a17f985 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:52:56 -0500
-Subject: [PATCH 26/29] mk: always use bin as bindir for stage0 CFG_BUILD and
+Subject: [PATCH 56/62] mk: always use bin as bindir for stage0 CFG_BUILD and
  pass it an -L to the TLIB dir
 
 We can't trust stage0 rustc to actually know where our libdir is, so we
@@ -66,5 +66,5 @@ index 0fb6f5f..2e6c6c8 100644
  
  endef
 -- 
-2.1.3
+2.0.4
 

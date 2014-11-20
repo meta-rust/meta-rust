@@ -1,7 +1,7 @@
 From 21379cee1db605007e5eb2b28b1d55ac24c04a5b Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 20:10:42 -0500
-Subject: [PATCH 21/29] Remember relative libdir and bindir from build time
+Subject: [PATCH 51/62] Remember relative libdir and bindir from build time
 
 ---
  configure                           |  6 +++
@@ -191,5 +191,5 @@ index d27a338..2e1138e 100644
              path.push(&tlib);
  
 -- 
-2.1.3
+2.0.4
 

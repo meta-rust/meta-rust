@@ -1,0 +1,45 @@
+From 158d68fff7134af6dd48e307c1562482e1446709 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Wed, 19 Nov 2014 20:01:08 -0500
+Subject: [PATCH 62/62] configure: allow local-rust-root to be given a direct
+ path to rustc
+
+---
+ configure | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/configure b/configure
+index a5c6aa8..ec66abf 100755
+--- a/configure
++++ b/configure
+@@ -690,18 +690,19 @@ fi
+ if [ ! -z "$CFG_ENABLE_LOCAL_RUST" ]
+ then
+     system_rustc=$(which rustc)
+-    if [ -f ${CFG_LOCAL_RUST_ROOT}/bin/rustc${BIN_SUF} ]
+-    then
+-        : # everything already configured
+-    elif [ -n "$system_rustc" ]
+-    then
+-        # we assume that rustc is in a /bin directory
+-        CFG_LOCAL_RUST_ROOT=${system_rustc%/bin/rustc}
++    c="${CFG_LOCAL_RUST_ROOT}/bin/rustc${BIN_SUF}"
++    if [ -f "$c" ]; then
++        CFG_LOCAL_RUST_ROOT="$c"
++    elif [ -x "${CFG_LOCAL_RUST_ROOT}" ]; then
++        # everything is already configured
++        :
++    elif [ -n "$system_rustc" ]; then
++        CFG_LOCAL_RUST_ROOT=${system_rustc}
+     else
+         err "no local rust to use"
+     fi
+ 
+-    CMD="${CFG_LOCAL_RUST_ROOT}/bin/rustc${BIN_SUF}"
++    CMD="${CFG_LOCAL_RUST_ROOT}"
+     LRV=`$CMD --version`
+     if [ $? -ne 0 ]
+     then
+-- 
+2.0.4
+

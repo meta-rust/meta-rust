@@ -1,7 +1,7 @@
 From 6c66b1d90457ef8cf6b6ef73301c5f74f1e41d7d Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:48:14 -0500
-Subject: [PATCH 23/29] mk: add missing CFG_LIBDIR_RELATIVE
+Subject: [PATCH 53/62] mk: add missing CFG_LIBDIR_RELATIVE
 
 ---
  mk/grammar.mk | 4 ++--
@@ -23,5 +23,5 @@ index 12190fb..dcebabf 100644
  
  # Run the reference lexer against libsyntax and compare the tokens and spans.
 -- 
-2.1.3
+2.0.4
 

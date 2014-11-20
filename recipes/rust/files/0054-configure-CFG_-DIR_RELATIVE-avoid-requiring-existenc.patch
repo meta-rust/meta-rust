@@ -1,7 +1,7 @@
 From 9c4d2a42ecae5908e4864352422d5e28457307b3 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:02:36 -0500
-Subject: [PATCH 24/29] configure: CFG_*DIR_RELATIVE: avoid requiring existence
+Subject: [PATCH 54/62] configure: CFG_*DIR_RELATIVE: avoid requiring existence
 
 ---
  configure | 4 ++--
@@ -23,5 +23,5 @@ index c9bec44..7914601 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
 -- 
-2.1.3
+2.0.4
 

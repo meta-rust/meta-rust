@@ -1,7 +1,7 @@
 From 70cbf9f2285349700fd1fce8b3e4d2ca25ca53c7 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:53:39 -0500
-Subject: [PATCH 27/29] mk/stage0: complain instead of creating an empty file
+Subject: [PATCH 57/62] mk/stage0: complain instead of creating an empty file
 
 If the expected rustc snapshot is not where we expect it to be,
 complain and fail at that point rather than creating a empty rustc file
@@ -24,5 +24,5 @@ index e028bba..460a4a7 100644
  # For other targets, let the host build the target:
  
 -- 
-2.1.3
+2.0.4
 

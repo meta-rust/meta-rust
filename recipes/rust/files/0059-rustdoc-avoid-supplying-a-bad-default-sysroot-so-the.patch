@@ -1,7 +1,7 @@
 From c70d53d795de0d361cdb2220fc348993336be850 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 18:56:12 -0500
-Subject: [PATCH 29/29] rustdoc: avoid supplying a bad default sysroot so the
+Subject: [PATCH 59/62] rustdoc: avoid supplying a bad default sysroot so the
  librustc code can calculate it properly
 
 ---
@@ -30,5 +30,5 @@ index 21242e6..b040a4b 100644
          crate_types: vec!(config::CrateTypeRlib),
          lint_opts: vec!((warning_lint, lint::Allow)),
 -- 
-2.1.3
+2.0.4
 
