@@ -214,6 +214,7 @@ def rust_gen_mk_cfg(d, thing):
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
+    llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     ldflags = ' '.join(ldflags_for(d, thing, arch))
 
     p = d.getVar('S', True) + '/mk/cfg/'
@@ -230,6 +231,8 @@ def rust_gen_mk_cfg(d, thing):
         # all targets define it.
         '-e', 's/^CROSS_PREFIX_{}.*$//'.format(sys),
         '-e', '2 a CROSS_PREFIX_{} := {}'.format(sys, prefix),
+        '-e', 's/^CFG_LLVM_TARGET_.*$//',
+        '-e'  '2 a CFG_LLVM_TARGET_{} := {}'.format(sys, llvm_target),
         '-e', 's/^CC_{}=.*$/CC_{} := gcc/'.format(sys, sys),
         '-e', 's/^CXX_{}.*$/CXX_{} := g++/'.format(sys, sys),
         '-e', 's/^CPP_{}.*$/CPP_{} := gcc -E/'.format(sys, sys),

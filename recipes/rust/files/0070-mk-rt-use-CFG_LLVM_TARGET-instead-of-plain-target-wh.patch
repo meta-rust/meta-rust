@@ -1,13 +1,40 @@
-From 0f6c3e00618fae91987e7d5bf52dbd63ec291f99 Mon Sep 17 00:00:00 2001
+From 12749fc8ec3f110d3fb8057b955c7fab98f85730 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Thu, 20 Nov 2014 15:56:58 -0500
 Subject: [PATCH] mk/rt: use CFG_LLVM_TARGET instead of plain target when
  calling llc
 
----
- mk/rt.mk | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+We add CFG_LLVM_TARGET_$(target) (which can be defined in any of the
+mk/cfg/* files) and supply a default to the plain target name
 
+CFG_LLVM_TARGET mirrors the value of llvm_target (aka llvm-target) in
+the librustc_back runtime target specification.
+---
+ mk/main.mk | 7 +++++--
+ mk/rt.mk   | 2 +-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/mk/main.mk b/mk/main.mk
+index 3df4d3b..2e759a1 100644
+--- a/mk/main.mk
++++ b/mk/main.mk
+@@ -190,11 +190,14 @@ endif
+ # Target-and-rule "utility variables"
+ ######################################################################
+ 
+-define DEF_X
++define DEF_FOR_TARGET
+ X_$(1) := $(CFG_EXE_SUFFIX_$(1))
++ifndef CFG_LLVM_TARGET_$(1)
++CFG_LLVM_TARGET_$(1) := $(1)
++endif
+ endef
+ $(foreach target,$(CFG_TARGET), \
+-  $(eval $(call DEF_X,$(target))))
++  $(eval $(call DEF_FOR_TARGET,$(target))))
+ 
+ # "Source" files we generate in builddir along the way.
+ GENERATED :=
 diff --git a/mk/rt.mk b/mk/rt.mk
 index a7d6a6e..38aec83 100644
 --- a/mk/rt.mk
