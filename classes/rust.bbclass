@@ -77,7 +77,7 @@ oe_runrustc () {
 	"${RUSTC}" ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
 }
 
-cargo_config () {
+oe_cargo_config () {
 	mkdir -p .cargo
 	# FIXME: we currently blow away the entire config because duplicate
 	# sections are treated as a parse error by cargo (causing the entire
@@ -103,7 +103,7 @@ rpath = true
 EOF
 }
 
-cargo_build () {
+oe_cargo_build () {
 	# FIXME: if there is already an entry for this target, in an existing
 	# cargo/config, this won't work.
 	which cargo

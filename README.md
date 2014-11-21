@@ -5,11 +5,11 @@ This openembedded layer provides the rust compiler, tools for building packages
 
 ## What works:
 
- - Building rust-native and rust-cross (tested with qemux86, SYS=i586-poky-linux)
+ - MACHINE="beaglebone" (TARGET_SYS=arm-poky-linux-gnueabi)
+ - Building rust-native, rust-cross, rust-hello-world
 
 ## What doesn't:
 
- - building rust-hello-world
  - building cargo-native (I managed to break it)
 
 ## What's untested:

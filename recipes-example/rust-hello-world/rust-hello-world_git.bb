@@ -10,15 +10,20 @@ LICENSE = "MIT | Apache-2.0"
 
 # FIXME: we really depend on cargo-native, but avoid it for now as building it
 # is more painful than it should be
-#DEPENDS = "cargo-native"
+DEPENDS = "cargo-native"
 
 S = "${WORKDIR}/git"
 B = "${S}"
 
 do_compile () {
-	cargo_build
+	oe_cargo_build
 }
 
 do_install () {
-	cp ${WORKDIR}/target/* ${D}${bindir}
+	install -d "${D}${bindir}"
+	for tgt in "${B}/target/${HOST_SYS}/release/"*; do
+		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
+			install -m755 "$tgt" "${D}${bindir}"
+		fi
+	done
 }
