@@ -124,15 +124,24 @@ def as_json(list_):
     a += ']'
     return a
 
-def ldflags_for(d, thing, arch):
+def post_link_args_for(d, thing, arch):
+    post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
+    post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
+    return post_link_args
+
+
+def pre_link_args_for(d, thing, arch):
     ldflags = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
     ldflags.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
     return ldflags
 
+def ldflags_for(d, thing, arch):
+    a = pre_link_args_for(d, thing, arch)
+    a.extend(post_link_args_for(d, thing, arch))
+    return a
 
 def rust_gen_target(d, thing, wd):
     arch = arch_for(d, thing)
-    ldflags = ldflags_for(d, thing, arch)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
     o = open(wd + sys + '.json', 'w')
@@ -148,10 +157,8 @@ def rust_gen_target(d, thing, wd):
     linker = "{}{}gcc".format(ccache, prefix)
     features = d.getVarFlag('FEATURES', arch, True) or ""
 
-    pre_link_args = ldflags
-
-    post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
-    post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
+    pre_link_args = pre_link_args_for(d, thing, arch)
+    post_link_args = post_link_args_for(d, thing, arch)
 
     o.write('''{{
          "data-layout": "{}",
