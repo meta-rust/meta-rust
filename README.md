@@ -23,6 +23,8 @@ This openembedded layer provides the rust compiler, tools for building packages
  - Include downloaded stage0 snapshot in `SRC_URI`
  - -crosssdk and -buildsdk packages
  - -runtime? (install target libraries on target)
+ - Add SRC_URI components so that cargo doesn't use the network
+ - Convince cargo not to use '$HOME/.cargo' for storing downloaded source code
 
 ## Pitfalls
 
