@@ -291,6 +291,14 @@ do_configure () {
 	${S}/configure					\
 		"--enable-rpath"			\
 		"--disable-verify-install"		\
+		"--disable-docs"			\
+		"--disable-manage-submodules"           \
+		"--disable-debug"			\
+		"--disable-llvm-assertions"		\
+		"--enable-optimize"			\
+		"--enable-optimize-cxx"			\
+		"--enable-optimize-llvm"		\
+		"--enable-optimize-tests"		\
 		"--prefix=${prefix}"			\
 		"--target=${TARGET_SYS}"		\
 		"--host=${HOST_SYS}"			\
@@ -302,7 +310,6 @@ do_configure () {
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
-		"--disable-manage-submodules"           \
 		${@base_conditional('USE_LOCAL_RUST', '1', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '', d)} \
 		${EXTRA_OECONF}
 }
