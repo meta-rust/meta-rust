@@ -294,7 +294,6 @@ do_configure () {
 		"--disable-docs"			\
 		"--disable-manage-submodules"           \
 		"--disable-debug"			\
-		"--disable-llvm-assertions"		\
 		"--enable-optimize"			\
 		"--enable-optimize-cxx"			\
 		"--enable-optimize-llvm"		\
