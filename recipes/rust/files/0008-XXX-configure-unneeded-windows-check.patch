@@ -1,4 +1,4 @@
-From f8b2de1317f15f72b52f4b8e265b20df05081b9a Mon Sep 17 00:00:00 2001
+From 10b67857441bb3430324877bc5e133021c35ac4a Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:22:43 -0500
 Subject: [PATCH 8/8] XXX: configure: unneeded windows check
@@ -8,10 +8,10 @@ Subject: [PATCH 8/8] XXX: configure: unneeded windows check
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/configure b/configure
-index 0b3486e..931c1bf 100755
+index 5a32887..f31d871 100755
 --- a/configure
 +++ b/configure
-@@ -556,8 +556,8 @@ fi
+@@ -555,8 +555,8 @@ fi
  
  valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (do not set it on windows platform)"
  

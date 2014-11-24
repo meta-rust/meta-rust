@@ -1,4 +1,4 @@
-From 8b13875744911f55b46d2ded522c3644d773fc2c Mon Sep 17 00:00:00 2001
+From 37badf3a17f80c03e751390399f6e38a6dbb09d7 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
 Subject: [PATCH 6/8] configure: support --bindir, and extend libdir to
@@ -24,7 +24,7 @@ Note that this adds the requirement of the 'realpath' tool
  9 files changed, 85 insertions(+), 64 deletions(-)
 
 diff --git a/configure b/configure
-index 5ac3982..4176631 100755
+index 8a6ba86..78c5aa7 100755
 --- a/configure
 +++ b/configure
 @@ -340,6 +340,7 @@ need_cmd date
@@ -35,8 +35,8 @@ index 5ac3982..4176631 100755
  
  msg "inspecting environment"
  
-@@ -568,12 +569,20 @@ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ];
-     err "libdir on windows should be set to 'bin'"
+@@ -564,12 +565,20 @@ else
+     CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
  fi
  
 +CFG_BINDIR_RELATIVE=bin
@@ -56,7 +56,7 @@ index 5ac3982..4176631 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1334,6 +1343,7 @@ putvar CFG_PREFIX
+@@ -1335,6 +1344,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -106,10 +106,10 @@ index 88b451f..0fba6ee 100644
  	$(Q)rm -R tmp/dist
  
 diff --git a/mk/main.mk b/mk/main.mk
-index d81a804..128f956 100644
+index 1f33c0b..2023195 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -318,7 +318,9 @@ export CFG_BUILD
+@@ -315,7 +315,9 @@ export CFG_BUILD
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -119,7 +119,7 @@ index d81a804..128f956 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  
  ######################################################################
-@@ -334,7 +336,16 @@ define SREQ
+@@ -331,7 +333,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)

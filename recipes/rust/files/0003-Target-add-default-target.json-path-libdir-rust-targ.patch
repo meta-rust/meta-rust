@@ -1,4 +1,4 @@
-From 1a42cfe068a84c0bfcd4638146999d73cf16e447 Mon Sep 17 00:00:00 2001
+From 726a8fb3a7d54d0a398f91b6477934713188db43 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
 Subject: [PATCH 3/8] Target: add default target.json path:
