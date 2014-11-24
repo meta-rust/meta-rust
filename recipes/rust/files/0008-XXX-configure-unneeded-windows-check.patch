@@ -1,4 +1,4 @@
-From c1a1dd39f53cb79e766699198e05e13ba5d588bc Mon Sep 17 00:00:00 2001
+From 9d3d00c93160d026b5b8895920ce21bdebe19af3 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:22:43 -0500
 Subject: [PATCH 8/9] XXX: configure: unneeded windows check
@@ -8,10 +8,10 @@ Subject: [PATCH 8/9] XXX: configure: unneeded windows check
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/configure b/configure
-index 17e0007..4baa18a 100755
+index b10b427..a967fb2 100755
 --- a/configure
 +++ b/configure
-@@ -553,8 +553,8 @@ then
+@@ -554,8 +554,8 @@ fi
  
  valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries"
  

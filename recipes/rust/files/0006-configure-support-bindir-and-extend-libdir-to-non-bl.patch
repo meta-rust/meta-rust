@@ -1,4 +1,4 @@
-From b371c603db7f0c5c8b4b856f3c0e3170047d4a39 Mon Sep 17 00:00:00 2001
+From c622cb85bdd3d4d5349240b1431854ac9ee250ac Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
 Subject: [PATCH 6/9] configure: support --bindir, and extend libdir to
