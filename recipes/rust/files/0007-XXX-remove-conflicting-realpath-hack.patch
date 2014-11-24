@@ -1,0 +1,32 @@
+From 4be83a87f1cfe8a23b84216d5282bf8fb075c07d Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 24 Nov 2014 13:20:57 -0500
+Subject: [PATCH 7/8] XXX: remove conflicting realpath hack
+
+---
+ configure | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/configure b/configure
+index 4176631..0b3486e 100755
+--- a/configure
++++ b/configure
+@@ -556,15 +556,6 @@ fi
+ 
+ valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (do not set it on windows platform)"
+ 
+-case "$CFG_LIBDIR" in
+-    "$CFG_PREFIX"/*) CAT_INC=2;;
+-    "$CFG_PREFIX"*)  CAT_INC=1;;
+-    *)
+-        err "libdir must begin with the prefix. Use --prefix to set it accordingly.";;
+-esac
+-
+-CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
+-
+ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
+     err "libdir on windows should be set to 'bin'"
+ fi
+-- 
+2.1.3
+

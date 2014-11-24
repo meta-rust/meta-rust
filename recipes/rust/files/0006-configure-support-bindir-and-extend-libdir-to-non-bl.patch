@@ -1,0 +1,424 @@
+From 8b13875744911f55b46d2ded522c3644d773fc2c Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 24 Nov 2014 13:10:15 -0500
+Subject: [PATCH 6/8] configure: support --bindir, and extend libdir to
+ non-blessed dirs
+
+Adds --bindir, and:
+
+Allows --bindir and --libdir to have multiple elements in their paths
+relative to sysroot, and allows libdir to end in an arbitrary directory
+(previously it was limited to lib, lib32, and lib64).
+
+Note that this adds the requirement of the 'realpath' tool
+---
+ configure                           | 10 +++++
+ mk/host.mk                          |  6 ++-
+ mk/install.mk                       |  4 +-
+ mk/main.mk                          | 11 ++++++
+ mk/perf.mk                          |  4 +-
+ mk/prepare.mk                       |  4 +-
+ src/etc/install.sh                  | 29 +++++++++++---
+ src/librustc/metadata/filesearch.rs | 78 ++++++++++++++-----------------------
+ src/librustc_trans/back/link.rs     |  3 +-
+ 9 files changed, 85 insertions(+), 64 deletions(-)
+
+diff --git a/configure b/configure
+index 5ac3982..4176631 100755
+--- a/configure
++++ b/configure
+@@ -340,6 +340,7 @@ need_cmd date
+ need_cmd tr
+ need_cmd sed
+ need_cmd file
++need_cmd realpath
+ 
+ msg "inspecting environment"
+ 
+@@ -568,12 +569,20 @@ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ];
+     err "libdir on windows should be set to 'bin'"
+ fi
+ 
++CFG_BINDIR_RELATIVE=bin
++valopt bindir "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}" "install binaries"
++
+ if [ $HELP -eq 1 ]
+ then
+     echo
+     exit 0
+ fi
+ 
++# Determine libdir and bindir relative to prefix
++step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
++CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++
+ # Validate Options
+ step_msg "validating $CFG_SELF args"
+ validate_opt
+@@ -1334,6 +1343,7 @@ putvar CFG_PREFIX
+ putvar CFG_HOST
+ putvar CFG_TARGET
+ putvar CFG_LIBDIR_RELATIVE
++putvar CFG_BINDIR_RELATIVE
+ putvar CFG_DISABLE_MANAGE_SUBMODULES
+ putvar CFG_ANDROID_CROSS_PATH
+ putvar CFG_MANDIR
+diff --git a/mk/host.mk b/mk/host.mk
+index 59a0095..b8e8345 100644
+--- a/mk/host.mk
++++ b/mk/host.mk
+@@ -59,9 +59,13 @@ endef
+ # $(4) - the host triple (same as $(3))
+ define CP_HOST_STAGE_N
+ 
+-ifneq ($(CFG_LIBDIR_RELATIVE),bin)
+ $$(HLIB$(2)_H_$(4))/:
+ 	@mkdir -p $$@
++
++# Avoid redefinition warnings if libdir==bindir
++ifneq ($(HBIN$(2)_H_$(4)),$(HLIB$(2)_H_$(4)))
++$$(HBIN$(2)_H_$(4))/:
++	@mkdir -p $$@
+ endif
+ 
+ endef
+diff --git a/mk/install.mk b/mk/install.mk
+index 88b451f..0fba6ee 100644
+--- a/mk/install.mk
++++ b/mk/install.mk
+@@ -21,7 +21,7 @@ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ else
+ 	$(Q)$(MAKE) prepare_install
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)" "$(MAYBE_DISABLE_VERIFY)"
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+@@ -34,7 +34,7 @@ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ else
+ 	$(Q)$(MAKE) prepare_uninstall
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)"
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+diff --git a/mk/main.mk b/mk/main.mk
+index d81a804..128f956 100644
+--- a/mk/main.mk
++++ b/mk/main.mk
+@@ -318,7 +318,9 @@ export CFG_BUILD
+ export CFG_LLVM_ROOT
+ export CFG_PREFIX
+ export CFG_LIBDIR
++export CFG_BINDIR
+ export CFG_LIBDIR_RELATIVE
++export CFG_BINDIR_RELATIVE
+ export CFG_DISABLE_INJECT_STD_VERSION
+ 
+ ######################################################################
+@@ -334,7 +336,16 @@ define SREQ
+ 
+ # Destinations of artifacts for the host compiler
+ HROOT$(1)_H_$(3) = $(3)/stage$(1)
++
++ifeq ($(1)-$(3),0-$$(CFG_BUILD))
++# stage0 relative paths are fixed so we can bootstrap from snapshots
++# (downloaded snapshots drop their rustc in HROOT/bin)
++# libdir discrepancy is worked around with RUSTFLAGS below.
+ HBIN$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/bin
++else
++HBIN$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_BINDIR_RELATIVE)
++endif
++
+ HLIB$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_LIBDIR_RELATIVE)
+ 
+ # Destinations of artifacts for target architectures
+diff --git a/mk/perf.mk b/mk/perf.mk
+index 16cbaab..f8a354c 100644
+--- a/mk/perf.mk
++++ b/mk/perf.mk
+@@ -10,13 +10,13 @@
+ 
+ 
+ ifdef CFG_PERF_TOOL
+-rustc-perf$(X): $(CFG_BUILD)/stage2/bin/rustc$(X_$(CFG_BUILD))
++rustc-perf$(X): $(CFG_BUILD)/stage2/$(CFG_BINDIR_RELATIVE)/rustc$(X_$(CFG_BUILD))
+ 	@$(call E, perf compile: $@)
+ 	$(PERF_STAGE2_T_$(CFG_BUILD)_H_$(CFG_BUILD)) \
+ 		 -o $@ $(COMPILER_CRATE) >rustc-perf.err 2>&1
+ 	$(Q)rm -f $(LIBRUSTC_GLOB)
+ else
+-rustc-perf$(X): $(CFG_BUILD)/stage2/bin/rustc$(X_$(CFG_BUILD))
++rustc-perf$(X): $(CFG_BUILD)/stage2/$(CFG_BINDIR_RELATIVE)/rustc$(X_$(CFG_BUILD))
+ 	$(Q)touch $@
+ endif
+ 
+diff --git a/mk/prepare.mk b/mk/prepare.mk
+index 7df2489..842078f 100644
+--- a/mk/prepare.mk
++++ b/mk/prepare.mk
+@@ -147,10 +147,10 @@ endef
+ define DEF_PREPARE
+ 
+ prepare-base-$(1): PREPARE_SOURCE_DIR=$$(PREPARE_HOST)/stage$$(PREPARE_STAGE)
+-prepare-base-$(1): PREPARE_SOURCE_BIN_DIR=$$(PREPARE_SOURCE_DIR)/bin
++prepare-base-$(1): PREPARE_SOURCE_BIN_DIR=$$(PREPARE_SOURCE_DIR)/$$(CFG_BINDIR_RELATIVE)
+ prepare-base-$(1): PREPARE_SOURCE_LIB_DIR=$$(PREPARE_SOURCE_DIR)/$$(CFG_LIBDIR_RELATIVE)
+ prepare-base-$(1): PREPARE_SOURCE_MAN_DIR=$$(S)/man
+-prepare-base-$(1): PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_DIR)/bin
++prepare-base-$(1): PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_DIR)/$$(CFG_BINDIR_RELATIVE)
+ prepare-base-$(1): PREPARE_DEST_LIB_DIR=$$(PREPARE_DEST_DIR)/$$(CFG_LIBDIR_RELATIVE)
+ prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
+ prepare-base-$(1): prepare-everything-$(1)
+diff --git a/src/etc/install.sh b/src/etc/install.sh
+index 8bc48fc..e524510 100644
+--- a/src/etc/install.sh
++++ b/src/etc/install.sh
+@@ -213,6 +213,7 @@ need_cmd grep
+ need_cmd uname
+ need_cmd tr
+ need_cmd sed
++need_cmd realpath
+ 
+ CFG_SRC_DIR="$(cd $(dirname $0) && pwd)"
+ CFG_SELF="$0"
+@@ -285,6 +286,8 @@ then
+     CFG_LIBDIR_RELATIVE=bin
+ fi
+ 
++CFG_BINDIR_RELATIVE=bin
++
+ if [ "$CFG_OSTYPE" = "pc-mingw32" ] || [ "$CFG_OSTYPE" = "w64-mingw32" ]
+ then
+     CFG_LD_PATH_VAR=PATH
+@@ -311,6 +314,7 @@ case "$CFG_LIBDIR" in
+ esac
+ CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
+ 
++valopt bindir "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}" "install binaries"
+ valopt mandir "${CFG_PREFIX}/share/man" "install man pages in PATH"
+ 
+ if [ $HELP -eq 1 ]
+@@ -319,6 +323,11 @@ then
+     exit 0
+ fi
+ 
++# Determine libdir and bindir relative to prefix
++step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
++CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++
+ step_msg "validating $CFG_SELF args"
+ validate_opt
+ 
+@@ -332,8 +341,8 @@ then
+     if [ -z "${CFG_UNINSTALL}" ]
+     then
+         msg "verifying platform can run binaries"
+-        export $CFG_LD_PATH_VAR="${CFG_SRC_DIR}/lib:$CFG_OLD_LD_PATH_VAR"
+-        "${CFG_SRC_DIR}/bin/rustc" --version > /dev/null
++        export $CFG_LD_PATH_VAR="${CFG_SRC_DIR}/${CFG_LIBDIR_RELATIVE}:$CFG_OLD_LD_PATH_VAR"
++        "${CFG_SRC_DIR}/${CFG_BINDIR_RELATIVE}/rustc" --version > /dev/null
+         if [ $? -ne 0 ]
+         then
+             err "can't execute rustc binary on this platform"
+@@ -431,6 +440,7 @@ need_ok "failed to create installed manifest"
+ 
+ # Now install, iterate through the new manifest and copy files
+ while read p; do
++    is_bin=false
+ 
+     # Decide the destination of the file
+     FILE_INSTALL_PATH="${CFG_PREFIX}/$p"
+@@ -441,6 +451,13 @@ while read p; do
+         FILE_INSTALL_PATH="${CFG_LIBDIR}/$pp"
+     fi
+ 
++    if echo "$p" | grep "^${CFG_BINDIR_RELATIVE}/" > /dev/null
++    then
++        is_bin=true
++        pp=`echo $p | sed 's;^'${CFG_BINDIR_RELATIVE}'/;;'`
++        FILE_INSTALL_PATH="${CFG_BINDIR}/$pp"
++    fi
++
+     if echo "$p" | grep "^share/man/" > /dev/null
+     then
+         pp=`echo $p | sed 's/^share\/man\///'`
+@@ -458,7 +475,7 @@ while read p; do
+ 
+     # Install the file
+     msg "${FILE_INSTALL_PATH}"
+-    if echo "$p" | grep "^bin/" > /dev/null
++    if $is_bin
+     then
+         install -m755 "${CFG_SRC_DIR}/$p" "${FILE_INSTALL_PATH}"
+     else
+@@ -493,11 +510,11 @@ fi
+ if [ -z "${CFG_DISABLE_VERIFY}" ]
+ then
+     msg "verifying installed binaries are executable"
+-    "${CFG_PREFIX}/bin/rustc" --version 2> /dev/null 1> /dev/null
++    "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}/rustc" --version 2> /dev/null 1> /dev/null
+     if [ $? -ne 0 ]
+     then
+-        export $CFG_LD_PATH_VAR="${CFG_PREFIX}/lib:$CFG_OLD_LD_PATH_VAR"
+-        "${CFG_PREFIX}/bin/rustc" --version > /dev/null
++        export $CFG_LD_PATH_VAR="${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}:$CFG_OLD_LD_PATH_VAR"
++        "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}/rustc" --version > /dev/null
+         if [ $? -ne 0 ]
+         then
+             ERR="can't execute installed rustc binary. "
+diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
+index 89f3343..b626308 100644
+--- a/src/librustc/metadata/filesearch.rs
++++ b/src/librustc/metadata/filesearch.rs
+@@ -66,8 +66,7 @@ impl<'a> FileSearch<'a> {
+         if !found {
+             let rustpath = rust_path();
+             for path in rustpath.iter() {
+-                let tlib_path = make_rustpkg_lib_path(
+-                    self.sysroot, path, self.triple);
++                let tlib_path = make_rustpkg_lib_path(path, self.triple);
+                 debug!("is {} in visited_dirs? {}", tlib_path.display(),
+                         visited_dirs.contains(&tlib_path.as_vec().to_vec()));
+ 
+@@ -149,7 +148,7 @@ impl<'a> FileSearch<'a> {
+     // Returns a list of directories where target-specific tool binaries are located.
+     pub fn get_tools_search_paths(&self) -> Vec<Path> {
+         let mut p = Path::new(self.sysroot);
+-        p.push(find_libdir(self.sysroot));
++        p.push(libdir_str());
+         p.push(rustlibdir());
+         p.push(self.triple);
+         p.push("bin");
+@@ -157,8 +156,8 @@ impl<'a> FileSearch<'a> {
+     }
+ }
+ 
+-pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
+-    let mut p = Path::new(find_libdir(sysroot));
++pub fn relative_target_lib_path(target_triple: &str) -> Path {
++    let mut p = Path::new(libdir_str());
+     assert!(p.is_relative());
+     p.push(rustlibdir());
+     p.push(target_triple);
+@@ -168,17 +167,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
+ 
+ fn make_target_lib_path(sysroot: &Path,
+                         target_triple: &str) -> Path {
+-    sysroot.join(&relative_target_lib_path(sysroot, target_triple))
++    sysroot.join(&relative_target_lib_path(target_triple))
+ }
+ 
+-fn make_rustpkg_lib_path(sysroot: &Path,
+-                         dir: &Path,
++fn make_rustpkg_lib_path(dir: &Path,
+                          triple: &str) -> Path {
+-    let mut p = dir.join(find_libdir(sysroot));
++    let mut p = dir.join(libdir_str());
+     p.push(triple);
+     p
+ }
+ 
++pub fn bindir_relative_str() -> &'static str {
++    env!("CFG_BINDIR_RELATIVE")
++}
++
++pub fn bindir_relative_path() -> Path {
++    Path::new(bindir_relative_str())
++}
++
+ pub fn get_or_default_sysroot() -> Path {
+     // Follow symlinks.  If the resolved path is relative, make it absolute.
+     fn canonicalize(path: Option<Path>) -> Option<Path> {
+@@ -190,7 +196,17 @@ pub fn get_or_default_sysroot() -> Path {
+     }
+ 
+     match canonicalize(os::self_exe_name()) {
+-        Some(mut p) => { p.pop(); p.pop(); p }
++        Some(mut p) => {
++            // Remove the exe name
++            p.pop();
++            let mut rel = bindir_relative_path();
++            // Remove a number of elements equal to the number of elements in the bindir relative
++            // path
++            while rel.pop() {
++                p.pop();
++            }
++            p
++        }
+         None => panic!("can't determine value for sysroot")
+     }
+ }
+@@ -248,45 +264,9 @@ pub fn rust_path() -> Vec<Path> {
+     env_rust_path
+ }
+ 
+-// The name of the directory rustc expects libraries to be located.
+-// On Unix should be "lib", on windows "bin"
+-#[cfg(unix)]
+-fn find_libdir(sysroot: &Path) -> String {
+-    // FIXME: This is a quick hack to make the rustc binary able to locate
+-    // Rust libraries in Linux environments where libraries might be installed
+-    // to lib64/lib32. This would be more foolproof by basing the sysroot off
+-    // of the directory where librustc is located, rather than where the rustc
+-    // binary is.
+-    //If --libdir is set during configuration to the value other than
+-    // "lib" (i.e. non-default), this value is used (see issue #16552).
+-
+-    match option_env!("CFG_LIBDIR_RELATIVE") {
+-        Some(libdir) if libdir != "lib" => return libdir.to_string(),
+-        _ => if sysroot.join(primary_libdir_name()).join(rustlibdir()).exists() {
+-            return primary_libdir_name();
+-        } else {
+-            return secondary_libdir_name();
+-        }
+-    }
+-
+-    #[cfg(target_word_size = "64")]
+-    fn primary_libdir_name() -> String {
+-        "lib64".to_string()
+-    }
+-
+-    #[cfg(target_word_size = "32")]
+-    fn primary_libdir_name() -> String {
+-        "lib32".to_string()
+-    }
+-
+-    fn secondary_libdir_name() -> String {
+-        "lib".to_string()
+-    }
+-}
+-
+-#[cfg(windows)]
+-fn find_libdir(_sysroot: &Path) -> String {
+-    "bin".to_string()
++// The name of the directory rustc expects libraries to be located, relative to the sysroot
++fn libdir_str() -> &'static str {
++    env!("CFG_LIBDIR_RELATIVE")
+ }
+ 
+ // The name of rustc's own place to organize libraries.
+diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
+index 3715256..efa7ed4 100644
+--- a/src/librustc_trans/back/link.rs
++++ b/src/librustc_trans/back/link.rs
+@@ -1014,11 +1014,10 @@ fn link_args(cmd: &mut Command,
+     // where extern libraries might live, based on the
+     // addl_lib_search_paths
+     if sess.opts.cg.rpath {
+-        let sysroot = sess.sysroot();
+         let target_triple = sess.opts.target_triple.as_slice();
+         let get_install_prefix_lib_path = || {
+             let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
+-            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
++            let tlib = filesearch::relative_target_lib_path(target_triple);
+             let mut path = Path::new(install_prefix);
+             path.push(&tlib);
+ 
+-- 
+2.1.3
+
