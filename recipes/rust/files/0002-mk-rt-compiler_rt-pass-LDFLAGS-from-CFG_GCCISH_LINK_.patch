@@ -1,7 +1,7 @@
-From c2f0af1b2b4d10abd740cd8928473c40813519af Mon Sep 17 00:00:00 2001
+From 895c63ef1aa7dc90f74d6b269658281097c32113 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 16:14:15 -0500
-Subject: [PATCH 2/8] mk/rt/compiler_rt: pass LDFLAGS from
+Subject: [PATCH 2/9] mk/rt/compiler_rt: pass LDFLAGS from
  CFG_GCCISH_LINK_FLAGS
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 2/8] mk/rt/compiler_rt: pass LDFLAGS from
  1 file changed, 1 insertion(+)
 
 diff --git a/mk/rt.mk b/mk/rt.mk
-index a7d6a6e..6eaff9a 100644
+index 38aec83..fefb7da 100644
 --- a/mk/rt.mk
 +++ b/mk/rt.mk
 @@ -231,6 +231,7 @@ $$(COMPRT_LIB_$(1)): $$(COMPRT_DEPS) $$(MKFILE_DEPS)

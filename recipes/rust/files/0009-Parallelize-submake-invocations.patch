@@ -1,0 +1,122 @@
+From 7bd5c6edc254de42b83113f000dcaaaac653d332 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 24 Nov 2014 13:54:42 -0500
+Subject: [PATCH 9/9] Parallelize submake invocations
+
+---
+ mk/clean.mk   | 2 +-
+ mk/install.mk | 8 ++++----
+ mk/llvm.mk    | 4 ++--
+ mk/rt.mk      | 6 +++---
+ mk/util.mk    | 2 ++
+ 5 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/mk/clean.mk b/mk/clean.mk
+index 97c823c..da99763 100644
+--- a/mk/clean.mk
++++ b/mk/clean.mk
+@@ -120,7 +120,7 @@ $(foreach host, $(CFG_HOST), \
+ define DEF_CLEAN_LLVM_HOST
+ ifeq ($(CFG_LLVM_ROOT),)
+ clean-llvm$(1):
+-	$$(Q)$$(MAKE) -C $$(CFG_LLVM_BUILD_DIR_$(1)) clean
++	$$(Q)$$(P)$$(MAKE) -C $$(CFG_LLVM_BUILD_DIR_$(1)) clean
+ else
+ clean-llvm$(1): ;
+ 
+diff --git a/mk/install.mk b/mk/install.mk
+index 0fba6ee..72b799c 100644
+--- a/mk/install.mk
++++ b/mk/install.mk
+@@ -17,9 +17,9 @@ endif
+ install:
+ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ # Build the dist as the original user
+-	$(Q)sudo -u "$$SUDO_USER" $(MAKE) prepare_install
++	$(Q)$(P)sudo -u "$$SUDO_USER" $(MAKE) prepare_install
+ else
+-	$(Q)$(MAKE) prepare_install
++	$(Q)$(P)$(MAKE) prepare_install
+ endif
+ 	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)" "$(MAYBE_DISABLE_VERIFY)"
+ # Remove tmp files because it's a decent amount of disk space
+@@ -30,9 +30,9 @@ prepare_install: dist-install-dir-$(CFG_BUILD) | tmp/empty_dir
+ uninstall:
+ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ # Build the dist as the original user
+-	$(Q)sudo -u "$$SUDO_USER" $(MAKE) prepare_uninstall
++	$(Q)$(P)sudo -u "$$SUDO_USER" $(MAKE) prepare_uninstall
+ else
+-	$(Q)$(MAKE) prepare_uninstall
++	$(Q)$(P)$(MAKE) prepare_uninstall
+ endif
+ 	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)"
+ # Remove tmp files because it's a decent amount of disk space
+diff --git a/mk/llvm.mk b/mk/llvm.mk
+index bce4390..f0f3892 100644
+--- a/mk/llvm.mk
++++ b/mk/llvm.mk
+@@ -28,7 +28,7 @@ LLVM_STAMP_$(1) = $$(CFG_LLVM_BUILD_DIR_$(1))/llvm-auto-clean-stamp
+ 
+ $$(LLVM_CONFIG_$(1)): $$(LLVM_DEPS) $$(LLVM_STAMP_$(1))
+ 	@$$(call E, make: llvm)
+-	$$(Q)$$(MAKE) -C $$(CFG_LLVM_BUILD_DIR_$(1)) $$(CFG_LLVM_BUILD_ENV_$(1)) ONLY_TOOLS="$$(LLVM_TOOLS)"
++	$$(Q)$$(P)$$(MAKE) -C $$(CFG_LLVM_BUILD_DIR_$(1)) $$(CFG_LLVM_BUILD_ENV_$(1)) ONLY_TOOLS="$$(LLVM_TOOLS)"
+ 	$$(Q)touch $$(LLVM_CONFIG_$(1))
+ endif
+ 
+@@ -38,7 +38,7 @@ endif
+ # the stamp in the source dir.
+ $$(LLVM_STAMP_$(1)): $(S)src/rustllvm/llvm-auto-clean-trigger
+ 	@$$(call E, make: cleaning llvm)
+-	$(Q)$(MAKE) clean-llvm$(1)
++	$$(Q)$$(P)$$(MAKE) clean-llvm$(1)
+ 	@$$(call E, make: done cleaning llvm)
+ 	touch $$@
+ 
+diff --git a/mk/rt.mk b/mk/rt.mk
+index fefb7da..43c4b25 100644
+--- a/mk/rt.mk
++++ b/mk/rt.mk
+@@ -182,7 +182,7 @@ $$(JEMALLOC_LOCAL_$(1)): $$(JEMALLOC_DEPS) $$(MKFILE_DEPS)
+ 		RANLIB="$$(AR_$(1)) s" \
+ 		CPPFLAGS="-I $(S)src/rt/" \
+ 		EXTRA_CFLAGS="-g1"
+-	$$(Q)$$(MAKE) -C "$$(JEMALLOC_BUILD_DIR_$(1))" build_lib_static
++	$$(Q)$$(P)$$(MAKE) -C "$$(JEMALLOC_BUILD_DIR_$(1))" build_lib_static
+ 
+ ifeq ($$(CFG_DISABLE_JEMALLOC),)
+ RUSTFLAGS_alloc := --cfg jemalloc
+@@ -224,7 +224,7 @@ COMPRT_BUILD_DIR_$(1) := $$(RT_OUTPUT_DIR_$(1))/compiler-rt
+ 
+ $$(COMPRT_LIB_$(1)): $$(COMPRT_DEPS) $$(MKFILE_DEPS)
+ 	@$$(call E, make: compiler-rt)
+-	$$(Q)$$(MAKE) -C "$(S)src/compiler-rt" \
++	$$(Q)$$(P)$$(MAKE) -C "$(S)src/compiler-rt" \
+ 		ProjSrcRoot="$(S)src/compiler-rt" \
+ 		ProjObjRoot="$$(abspath $$(COMPRT_BUILD_DIR_$(1)))" \
+ 		CC="$$(CC_$(1))" \
+@@ -302,7 +302,7 @@ $$(BACKTRACE_BUILD_DIR_$(1))/Makefile: $$(BACKTRACE_DEPS) $$(MKFILE_DEPS)
+ 
+ $$(BACKTRACE_LIB_$(1)): $$(BACKTRACE_BUILD_DIR_$(1))/Makefile $$(MKFILE_DEPS)
+ 	@$$(call E, make: libbacktrace)
+-	$$(Q)$$(MAKE) -C $$(BACKTRACE_BUILD_DIR_$(1)) \
++	$$(Q)$$(P)$$(MAKE) -C $$(BACKTRACE_BUILD_DIR_$(1)) \
+ 		INCDIR=$(S)src/libbacktrace
+ 	$$(Q)cp $$(BACKTRACE_BUILD_DIR_$(1))/.libs/libbacktrace.a $$@
+ 
+diff --git a/mk/util.mk b/mk/util.mk
+index 3bbc8f4..4300b02 100644
+--- a/mk/util.mk
++++ b/mk/util.mk
+@@ -16,5 +16,7 @@ else
+   E = echo $(1)
+ endif
+ 
++P = +
++
+ S := $(CFG_SRC_DIR)
+ 
+-- 
+2.1.3
+

@@ -1,39 +1,38 @@
-From fc60bd327ea3cd9909d1028dd287330127314a8a Mon Sep 17 00:00:00 2001
+From b95d0cc6e35da533920c39cbcf6acc7fb1b1bec3 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:20:57 -0500
-Subject: [PATCH 7/8] XXX: remove conflicting realpath hack
+Subject: [PATCH 7/9] XXX: remove conflicting realpath hack
 
 ---
- configure | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ configure | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
 diff --git a/configure b/configure
-index 78c5aa7..5a32887 100755
+index 4176631..17e0007 100755
 --- a/configure
 +++ b/configure
-@@ -551,18 +551,12 @@ CFG_LIBDIR_RELATIVE=lib
+@@ -550,20 +550,8 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
  then
      CFG_LIBDIR_RELATIVE=bin
--    CFG_LIBDIR="${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}"
 -else
--    valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (ignored on windows platform)"
-+fi
+-    CFG_LIBDIR_RELATIVE=lib
+-fi
+-
+-valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (do not set it on windows platform)"
+-
+-case "$CFG_LIBDIR" in
+-    "$CFG_PREFIX"/*) CAT_INC=2;;
+-    "$CFG_PREFIX"*)  CAT_INC=1;;
+-    *)
+-        err "libdir must begin with the prefix. Use --prefix to set it accordingly.";;
+-esac
  
--    case "$CFG_LIBDIR" in
--	"$CFG_PREFIX"/*) CAT_INC=2;;
--	"$CFG_PREFIX"*)  CAT_INC=1;;
--	*)
--            err "libdir must begin with the prefix. Use --prefix to set it accordingly.";;
--    esac
-+valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (do not set it on windows platform)"
+-CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
++valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries"
  
--    CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
-+if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
-+    err "libdir on windows should be set to 'bin'"
- fi
- 
- CFG_BINDIR_RELATIVE=bin
+ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
+     err "libdir on windows should be set to 'bin'"
 -- 
 2.1.3
 
