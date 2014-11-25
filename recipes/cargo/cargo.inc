@@ -1,4 +1,4 @@
-inherit rust
+inherit cargo
 SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
 HOMEPAGE = "http://crates.io"
 SECTION = "devel"
@@ -13,7 +13,7 @@ LIC_FILES_CHKSUM ="\
 	file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
 	file://LICENSE-THIRD-PARTY;md5=afbb7ae0aa70c8e437a007314eae5f3b \
 "
-SRCREV_FORMAT = "cargo"
+SRCREV_FORMAT ?= "cargo"
 PV .= "+git${SRCPV}"
 
 S = "${WORKDIR}/git"
@@ -36,7 +36,8 @@ do_configure () {
 		"--datadir=${datadir}"			\
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
-		"--libdir=${libdir}"
+		"--libdir=${libdir}"			\
+		|| die "Could not configure cargo"
 
 	# cargo downloads a cargo snapshot to build itself using cargo, we need
 	# to override it's arch info.

@@ -5,7 +5,7 @@ CARGO = "cargo"
 # Cargo only supports in-tree builds at the moment
 B = "${S}"
 
-OECARGO_PATH ??= ""
+EXTRA_OECARGO_PATHS ??= ""
 
 oe_cargo_config () {
 	mkdir -p .cargo
@@ -17,7 +17,7 @@ oe_cargo_config () {
 	# be used.
 	echo "paths = [" >.cargo/config
 
-	for p in ${OECARGO_PATH}; do
+	for p in ${EXTRA_OECARGO_PATHS}; do
 		printf "\"%s\" " "$p"
 	done | sed -e 's/[ \n]+/,/g'  -e 's/,$//' >>.cargo/config
 	echo "]" >>.cargo/config
