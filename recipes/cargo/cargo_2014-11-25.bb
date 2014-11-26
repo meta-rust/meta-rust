@@ -7,8 +7,8 @@ SRC_URI += " \
 	file://curl-rust/0001-openssl-sys-is-used-in-curl-rust-so-include-it-expli.patch;patchdir=../curl-rust \
 \
 	git://github.com/alexcrichton/gcc-rs.git;protocol=https;name=gcc-rs;destsuffix=gcc-rs \
-	file://gcc-rs/0001-XXX-hacks.patch;patchdir=../gcc-rs \
 "
+#file://gcc-rs/0001-XXX-hacks.patch;patchdir=../gcc-rs
 
 SRCREV_curl-rust = "c1b96e146f6752353a1e84cca932c628e6bf73af"
 SRCREV_gcc-rs = "903e8f8a2e3766ad3d514404d452dbaa1d3b2d79"

@@ -10,6 +10,8 @@ def rust_base_dep(d):
     if not d.getVar('INHIBIT_DEFAULT_DEPS'):
         if (d.getVar('HOST_SYS', True) != d.getVar('BUILD_SYS', True)):
             deps += " virtual/${TARGET_PREFIX}rust"
+        else:
+            deps += " rust-native"
     return deps
 
 BASEDEPENDS_append = " ${@rust_base_dep(d)}"
