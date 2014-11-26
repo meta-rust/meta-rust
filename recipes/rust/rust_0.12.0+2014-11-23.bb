@@ -11,4 +11,5 @@ SRC_URI_append = "\
 	file://0007-XXX-remove-conflicting-realpath-hack.patch \
 	file://0008-XXX-configure-unneeded-windows-check.patch \
 	file://0009-Parallelize-submake-invocations.patch \
+	file://0001-libstd-io-process-Command-fully-quote-and-escape-the.patch \
 "

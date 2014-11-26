@@ -45,9 +45,6 @@ do_configure () {
 }
 
 do_compile () {
-	echo "COMPILE ${PN}"
-	env
-
 	oe_runmake ARGS="--verbose"
 }
 

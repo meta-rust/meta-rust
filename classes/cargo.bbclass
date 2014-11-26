@@ -2,8 +2,16 @@ inherit rust
 
 CARGO = "cargo"
 
+# FIXME: this is a workaround for a misbehavior in cargo when used with quilt.
+# See https://github.com/rust-lang/cargo/issues/978
+PATCHTOOL = "patch"
+
 # Cargo only supports in-tree builds at the moment
 B = "${S}"
+
+# In case something fails in the build process, give a bit more feedback on
+# where the issue occured
+export RUST_BACKTRACE = "1"
 
 EXTRA_OECARGO_PATHS ??= ""
 
@@ -18,8 +26,8 @@ oe_cargo_config () {
 	echo "paths = [" >.cargo/config
 
 	for p in ${EXTRA_OECARGO_PATHS}; do
-		printf "\"%s\" " "$p"
-	done | sed -e 's/[ \n]+/,/g'  -e 's/,$//' >>.cargo/config
+		printf "\"%s\"\n" "$p"
+	done | sed -e 's/$/,/' >>.cargo/config
 	echo "]" >>.cargo/config
 }
 
