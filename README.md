@@ -23,8 +23,8 @@ This openembedded layer provides the rust compiler, tools for building packages
  You may run into errors similar to:
 
 ```
-| /home/cody/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.0.2/src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
-| /home/cody/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.0.2/src/lib.rs:12 extern crate "openssl-sys" as ffi;
+| src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
+| src/lib.rs:12 extern crate "openssl-sys" as ffi;
 |                                                                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
