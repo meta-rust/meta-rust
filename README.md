@@ -41,7 +41,8 @@ do this.
  - -crosssdk and -buildsdk packages
  - -runtime? (install target libraries on target)
  - Add SRC_URI components so that cargo doesn't use the network
- - Convince cargo not to use '$HOME/.cargo' for storing downloaded source code
+ - Convince cargo (via env vars or patching) not to use '$HOME/.cargo' for storing downloaded source code
+ - Upstream local rustc patches for libdir and bindir support
 
 ## Pitfalls
 
