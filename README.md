@@ -32,7 +32,7 @@ This openembedded layer provides the rust compiler, tools for building packages
 by a crate's Cargo.toml including triplet-specific dependencies and then using
 the crate based on a feature (most often, `#[cfg(unix)]`). Until cargo and it's
 ecosystem get their act together, you'll need to supply patches to the
-misbehaving packages. See `recipies/cargo/cargo_*.bb` for and example of how to
+misbehaving packages. See `recipies/cargo/cargo_*.bb` for an example of how to
 do this.
 
 ## TODO
