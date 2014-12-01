@@ -25,7 +25,7 @@ This openembedded layer provides the rust compiler, tools for building packages
 ```
 | src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
 | src/lib.rs:12 extern crate "openssl-sys" as ffi;
-|                                                                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
  Where a "-sys" crate (or other crate) is not found. These are typically caused
