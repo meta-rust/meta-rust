@@ -7,7 +7,7 @@ This openembedded layer provides the rust compiler, tools for building packages
 
  - MACHINE="beaglebone" (TARGET_SYS=arm-poky-linux-gnueabi)
  - Building rust-native, rust-cross, rust-hello-world, cargo-native
- - Running/using all of these except rust-hello-world
+ - Running/using all of these (including rust-hello-world)
 
 ## What doesn't:
 
@@ -16,8 +16,24 @@ This openembedded layer provides the rust compiler, tools for building packages
 ## What's untested:
 
  - cargo, rust (built for target)
- - running rust-hello-world on target
  - Other TARGETs
+
+## Common issues when packaging things using cargo
+
+ You may run into errors similar to:
+
+```
+| /home/cody/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.0.2/src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
+| /home/cody/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.0.2/src/lib.rs:12 extern crate "openssl-sys" as ffi;
+|                                                                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+ Where a "-sys" crate (or other crate) is not found. These are typically caused
+by a crate's Cargo.toml including triplet-specific dependencies and then using
+the crate based on a feature (most often, `#[cfg(unix)]`). Until cargo and it's
+ecosystem get their act together, you'll need to supply patches to the
+misbehaving packages. See `recipies/cargo/cargo_*.bb` for and example of how to
+do this.
 
 ## TODO
 
