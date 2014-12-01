@@ -1,4 +1,6 @@
 inherit cargo
+inherit patch
+
 SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
 HOMEPAGE = "http://crates.io"
 SECTION = "devel"
@@ -18,12 +20,6 @@ PV .= "+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 B = "${S}"
-
-do_cargo_config_patch () {
-	rust_cargo_patch
-}
-addtask cargo_config_patch after do_patch before do_configure
-do_cargo_config_patch[dirs] = "${WORKDIR}"
 
 do_configure () {
 	"${S}/configure" \
@@ -45,6 +41,8 @@ do_configure () {
 }
 
 do_compile () {
+	export CC="${RUST_CC}"
+	export CFLAGS="${RUST_CFLAGS}"
 	oe_runmake ARGS="--verbose"
 }
 

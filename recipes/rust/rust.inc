@@ -340,6 +340,10 @@ rust_do_install () {
 	for tgt in "${WORKDIR}/targets/"* ; do
 	    install -m 0644 "$tgt" "$td"
 	done
+
+        ## rust will complain about multiple providers of the runtime libs
+        ## (libstd, libsync, etc.) without this.
+        ln -sf "${D}${libdir}/rustlib/${HOST_SYS}/lib/lib*.so" "${D}${libdir}/"
 }
 
 do_install () {

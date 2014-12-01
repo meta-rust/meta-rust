@@ -44,7 +44,6 @@ RUST_BUILD_SYS = "${@rust_base_triple(d, 'BUILD')}"
 RUST_HOST_SYS = "${@rust_base_triple(d, 'HOST')}"
 RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 
-
 # BUILD_LDFLAGS
 # 	${STAGING_LIBDIR_NATIVE}
 # 	${STAGING_BASE_LIBDIR_NATIVE}

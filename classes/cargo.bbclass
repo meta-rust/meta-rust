@@ -41,6 +41,14 @@ rpath = true
 EOF
 }
 
+# All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
+# command. Fixup the ones we give it so that is the case.
+# XXX: this is hard coded based on meta/conf/bitbake.conf
+# TODO: we do quite a bit very similar to this in rust.inc, see if it can be
+# generalized.
+export RUST_CC = "${CCACHE}${TARGET_PREFIX}gcc"
+export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
+
 oe_cargo_build () {
 	# FIXME: if there is already an entry for this target, in an existing
 	# cargo/config, this won't work.
@@ -53,6 +61,8 @@ oe_cargo_build () {
 
 cargo_do_compile () {
 	cd "${B}"
+	export CC="${RUST_CC}"
+	export CFLAGS="${RUST_CFLAGS}"
 	oe_cargo_build
 }
 

@@ -1,0 +1,35 @@
+From 89782cabdc9848865845b2d00a444074ce3d59e7 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 1 Dec 2014 10:51:31 -0500
+Subject: [PATCH] Unconditionally depend on openssl-sys
+
+---
+ libssh2-sys/Cargo.toml | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
+
+diff --git a/libssh2-sys/Cargo.toml b/libssh2-sys/Cargo.toml
+index b16493b..10ad017 100644
+--- a/libssh2-sys/Cargo.toml
++++ b/libssh2-sys/Cargo.toml
+@@ -12,17 +12,7 @@ path = "lib.rs"
+ [dependencies.libz-sys]
+   git = "https://github.com/alexcrichton/libz-sys"
+ 
+-[target.i686-apple-darwin.dependencies.openssl-sys]
+-  git = "https://github.com/sfackler/rust-openssl"
+-[target.x86_64-apple-darwin.dependencies.openssl-sys]
+-  git = "https://github.com/sfackler/rust-openssl"
+-[target.i686-unknown-linux-gnu.dependencies.openssl-sys]
+-  git = "https://github.com/sfackler/rust-openssl"
+-[target.x86_64-unknown-linux-gnu.dependencies.openssl-sys]
+-  git = "https://github.com/sfackler/rust-openssl"
+-[target.i686-unknown-freebsd.dependencies.openssl-sys]
+-  git = "https://github.com/sfackler/rust-openssl"
+-[target.x86_64-unknown-freebsd.dependencies.openssl-sys]
++[dependencies.openssl-sys]
+   git = "https://github.com/sfackler/rust-openssl"
+ 
+ [build-dependencies.pkg-config]
+-- 
+2.1.3
+
