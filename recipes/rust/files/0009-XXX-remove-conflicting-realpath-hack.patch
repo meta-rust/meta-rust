@@ -1,14 +1,14 @@
-From 9131d50decdde98fac37164b42a339f7ccf33c5b Mon Sep 17 00:00:00 2001
+From cb25ce23ce1105d8695a8cc20f3e763c494c51bd Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:20:57 -0500
-Subject: [PATCH 7/9] XXX: remove conflicting realpath hack
+Subject: [PATCH 09/11] XXX: remove conflicting realpath hack
 
 ---
  configure | 13 +------------
  1 file changed, 1 insertion(+), 12 deletions(-)
 
 diff --git a/configure b/configure
-index 4176631..b10b427 100755
+index bc92474..4b05c91 100755
 --- a/configure
 +++ b/configure
 @@ -550,20 +550,9 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)

@@ -1,7 +1,8 @@
-From 1fd138dbc5ccf1197baad97f1ab8d169f82053cf Mon Sep 17 00:00:00 2001
+From fa47c64a5b41597786b8212b92fc59ee87af096f Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:52:56 -0500
-Subject: [PATCH 4/9] mk: for stage0, use RUSTFLAGS to override target libs dir
+Subject: [PATCH 06/11] mk: for stage0, use RUSTFLAGS to override target libs
+ dir
 
 Setting HLIB specially for stage0 (and even more specially for windows)
 also affects the location we place TLIB. To keep the TLIBs we build in
@@ -12,7 +13,7 @@ stage0-rustc at the appropriate location.
  1 file changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/mk/main.mk b/mk/main.mk
-index a9a99f1..d81a804 100644
+index 4aed1ce..867d919 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
 @@ -335,21 +335,22 @@ define SREQ
@@ -46,7 +47,7 @@ index a9a99f1..d81a804 100644
  # Preqrequisites for using the stageN compiler
  ifeq ($(1),0)
  HSREQ$(1)_H_$(3) = $$(HBIN$(1)_H_$(3))/rustc$$(X_$(3))
-@@ -459,6 +460,7 @@ STAGE$(1)_T_$(2)_H_$(3) := \
+@@ -461,6 +462,7 @@ STAGE$(1)_T_$(2)_H_$(3) := \
  		$$(HBIN$(1)_H_$(3))/rustc$$(X_$(3)) \
  		--cfg $$(CFGFLAG$(1)_T_$(2)_H_$(3)) \
  		$$(CFG_RUSTC_FLAGS) $$(EXTRAFLAGS_STAGE$(1)) --target=$(2)) \
@@ -54,7 +55,7 @@ index a9a99f1..d81a804 100644
                  $$(RUSTC_FLAGS_$(2))
  
  PERF_STAGE$(1)_T_$(2)_H_$(3) := \
-@@ -467,6 +469,7 @@ PERF_STAGE$(1)_T_$(2)_H_$(3) := \
+@@ -469,6 +471,7 @@ PERF_STAGE$(1)_T_$(2)_H_$(3) := \
  		$$(HBIN$(1)_H_$(3))/rustc$$(X_$(3)) \
  		--cfg $$(CFGFLAG$(1)_T_$(2)_H_$(3)) \
  		$$(CFG_RUSTC_FLAGS) $$(EXTRAFLAGS_STAGE$(1)) --target=$(2)) \

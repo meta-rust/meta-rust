@@ -1,14 +1,14 @@
-From 9d3d00c93160d026b5b8895920ce21bdebe19af3 Mon Sep 17 00:00:00 2001
+From e52460bf2c9550e4fbc10944f2868ed02ed71497 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:22:43 -0500
-Subject: [PATCH 8/9] XXX: configure: unneeded windows check
+Subject: [PATCH 10/11] XXX: configure: unneeded windows check
 
 ---
  configure | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/configure b/configure
-index b10b427..a967fb2 100755
+index 4b05c91..a9bd175 100755
 --- a/configure
 +++ b/configure
 @@ -554,8 +554,8 @@ fi

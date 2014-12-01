@@ -1,7 +1,7 @@
-From 0e058b076a33f26e902decf41da78c9d61a4bc63 Mon Sep 17 00:00:00 2001
+From b1ea0b2db188b21f17af2206dcff059ed309a690 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
-Subject: [PATCH 9/9] Parallelize submake invocations
+Subject: [PATCH 11/11] Parallelize submake invocations
 
 ---
  mk/clean.mk   | 2 +-
@@ -12,10 +12,10 @@ Subject: [PATCH 9/9] Parallelize submake invocations
  5 files changed, 12 insertions(+), 10 deletions(-)
 
 diff --git a/mk/clean.mk b/mk/clean.mk
-index 97c823c..da99763 100644
+index aadc55b..f671745 100644
 --- a/mk/clean.mk
 +++ b/mk/clean.mk
-@@ -120,7 +120,7 @@ $(foreach host, $(CFG_HOST), \
+@@ -121,7 +121,7 @@ $(foreach host, $(CFG_HOST), \
  define DEF_CLEAN_LLVM_HOST
  ifeq ($(CFG_LLVM_ROOT),)
  clean-llvm$(1):
@@ -53,7 +53,7 @@ index 0fba6ee..72b799c 100644
  	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" --bindir="$(DESTDIR)$(CFG_BINDIR)"
  # Remove tmp files because it's a decent amount of disk space
 diff --git a/mk/llvm.mk b/mk/llvm.mk
-index bce4390..f0f3892 100644
+index ba2e073..3998806 100644
 --- a/mk/llvm.mk
 +++ b/mk/llvm.mk
 @@ -28,7 +28,7 @@ LLVM_STAMP_$(1) = $$(CFG_LLVM_BUILD_DIR_$(1))/llvm-auto-clean-stamp

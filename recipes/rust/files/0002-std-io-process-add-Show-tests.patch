@@ -1,0 +1,33 @@
+From 9af37c0bae0925de62b106b8bad3c8b3c81a20b9 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 1 Dec 2014 15:50:13 -0500
+Subject: [PATCH 02/11] std/io/process: add Show tests
+
+---
+ src/libstd/io/process.rs | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/libstd/io/process.rs b/src/libstd/io/process.rs
+index 90e5567..67476f0 100644
+--- a/src/libstd/io/process.rs
++++ b/src/libstd/io/process.rs
+@@ -1237,4 +1237,16 @@ mod tests {
+         let val = env.get(&EnvKey("PATH".to_c_str()));
+         assert!(val.unwrap() == &"bar".to_c_str());
+     }
++
++    fn check_show(c: Command, v: &str) {
++        assert_eq!(format!("{}", c), v)
++    }
++
++    #[test]
++    fn show() {
++        check_show(Command::new("gcc ").arg("-Ifoo'bar"), "'gcc ' '-Ifoo'\\''bar'");
++        check_show(Command::new("c99"), "'c99'");
++        check_show(Command::new("c99 "), "'c99 '");
++        check_show(Command::new("Can't buy me love"), "'Can'\\''t buy me love'");
++    }
+ }
+-- 
+2.1.3
+

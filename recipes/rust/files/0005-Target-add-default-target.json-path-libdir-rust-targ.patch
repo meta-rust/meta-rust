@@ -1,7 +1,7 @@
-From c7b10c32d790dbdca3c2b961f237d79431871d36 Mon Sep 17 00:00:00 2001
+From 57865c3a06909470918db23e3d5c5b0fa925a29c Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 3/9] Target: add default target.json path:
+Subject: [PATCH 05/11] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
@@ -11,10 +11,10 @@ Subject: [PATCH 3/9] Target: add default target.json path:
  3 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index e10a1a4..feb4878 100644
+index 3c2dbae..e99bf2c 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -540,8 +540,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+@@ -546,8 +546,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
@@ -26,10 +26,10 @@ index e10a1a4..feb4878 100644
          Err(e) => {
              sp.handler().fatal((format!("Error loading target specification: {}", e)).as_slice());
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index 72a9f23..d6ccae7 100644
+index 047e598..25151be 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
-@@ -219,7 +219,11 @@ pub fn build_session_(sopts: config::Options,
+@@ -239,7 +239,11 @@ pub fn build_session_(sopts: config::Options,
                        local_crate_source_file: Option<Path>,
                        span_diagnostic: diagnostic::SpanHandler)
                        -> Session {

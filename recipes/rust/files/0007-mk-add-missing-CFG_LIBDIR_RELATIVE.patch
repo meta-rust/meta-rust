@@ -1,7 +1,7 @@
-From 252e607f9942874c16d45e0c9146ac992b614cb0 Mon Sep 17 00:00:00 2001
+From 2deaa6d8455b277f9f1980f8bf5dc237eca7462c Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:48:14 -0500
-Subject: [PATCH 5/9] mk: add missing CFG_LIBDIR_RELATIVE
+Subject: [PATCH 07/11] mk: add missing CFG_LIBDIR_RELATIVE
 
 ---
  mk/grammar.mk | 4 ++--

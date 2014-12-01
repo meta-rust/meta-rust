@@ -1,4 +1,4 @@
-SRCREV = "c637cab85323c97be37d0c12bfa0fc0e9ea2c367"
+SRCREV = "de95ad4c46788518822326941bdc5084b1023abf"
 require rust-git.inc
 
 SRC_URI_append = "\
