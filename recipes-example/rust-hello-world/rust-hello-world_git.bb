@@ -8,8 +8,6 @@ SUMMARY = "Hello World by Cargo for Rust"
 HOMEPAGE = "https://github.com/jmesmon/rust-hello-world"
 LICENSE = "MIT | Apache-2.0"
 
-# FIXME: we really depend on cargo-native, but avoid it for now as building it
-# is more painful than it should be
-#DEPENDS = "cargo-native"
+DEPENDS = "cargo-native"
 
 S = "${WORKDIR}/git"
