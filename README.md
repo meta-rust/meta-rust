@@ -43,16 +43,16 @@ We add "cargo-native" to ASSUME_PROVIDED unless overridden by clearing CARGO_PRO
  You may run into errors similar to:
 
 ```
-| /home/cody/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.0.2/src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
-| /home/cody/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.0.2/src/lib.rs:12 extern crate "openssl-sys" as ffi;
-|                                                                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
+| src/lib.rs:12 extern crate "openssl-sys" as ffi;
+|               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
  Where a "-sys" crate (or other crate) is not found. These are typically caused
 by a crate's Cargo.toml including triplet-specific dependencies and then using
 the crate based on a feature (most often, `#[cfg(unix)]`). Until cargo and it's
 ecosystem get their act together, you'll need to supply patches to the
-misbehaving packages. See `recipies/cargo/cargo_*.bb` for and example of how to
+misbehaving packages. See `recipies/cargo/cargo_*.bb` for an example of how to
 do this.
 
 ## TODO
