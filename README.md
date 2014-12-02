@@ -22,13 +22,16 @@ To a conf file (probably local.conf)
 
 ### What about cargo?:
 
-We provide .bb files for these, and they are working every now-and-then.
+We provide .bb files for cargo (-target) and cargo-native, and they are working
+every now-and-then.
 Unfortunately, rust moves a bit too quickly for cargo to keep up, and it ends
 up broken fairly often.
 
 Very often we'll want newer versions of rust than cargo is able to build with.
 Thankfully, we don't need any custom cargo configuration, and can use a vanilla
 cargo binary.
+
+We add "cargo-native" to ASSUME_PROVIDED unless overridden by clearing CARGO_PROVIDED (via conf/layer.conf)
 
 ## What's untested:
 
