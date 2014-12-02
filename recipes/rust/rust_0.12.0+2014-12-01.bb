@@ -14,3 +14,5 @@ SRC_URI_append = "\
 	file://0010-XXX-configure-unneeded-windows-check.patch \
 	file://0011-Parallelize-submake-invocations.patch \
 "
+
+DEFAULT_PREFERENCE = "-1"
