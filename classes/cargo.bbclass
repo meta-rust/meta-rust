@@ -2,9 +2,18 @@ inherit rust
 
 CARGO = "cargo"
 
+# cargo & rust go out of sync rather frequently. Very often we'll want newer
+# versions of rust than cargo is able to build with. Thankfully, we don't need
+# any custom cargo configuration, and can use a vanilla cargo binary.
+#
+# If you want to have cargo built for packages that depend on it, set
+# INHIBIT_CARGO_DEP = "0" in your local.conf, distro.conf, or other global
+# config file.
+INHIBIT_CARGO_DEP ??= "1"
+
 def cargo_base_dep(d):
     deps = ""
-    if not d.getVar('INHIBIT_DEFAULT_DEPS') and not d.getVar('INHIBIT_CARGO_DEP'):
+    if not d.getVar('INHIBIT_DEFAULT_DEPS') and d.getVar('INHIBIT_CARGO_DEP') != "0":
             deps += " cargo-native"
     return deps
 
