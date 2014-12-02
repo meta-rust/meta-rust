@@ -1,4 +1,4 @@
-SRCREV = "de95ad4c46788518822326941bdc5084b1023abf"
+SRCREV = "21ba1d5e58144c83093a8cbb467a6c9cb12fc4a1"
 require rust-git.inc
 
 SRC_URI_append = "\
@@ -14,5 +14,3 @@ SRC_URI_append = "\
 	file://0010-XXX-configure-unneeded-windows-check.patch \
 	file://0011-Parallelize-submake-invocations.patch \
 "
-
-DEFAULT_PREFERENCE = "-1"

@@ -12,10 +12,14 @@ This openembedded layer provides the rust compiler, tools for building packages
 ## What doesn't:
 
  - Probably some of the untested things
+ - cargo and cargo-native (use a local package for -native)
+	- We provide .bb files for these, and they are working every
+	  now-and-then. Unfortunately, rust moves a bit too quickly for cargo
+          to keep up, and it ends up broken fairly often.
 
 ## What's untested:
 
- - cargo, rust (built for target)
+ - rust (built for target)
  - Other TARGETs
 
 ## Common issues when packaging things using cargo
