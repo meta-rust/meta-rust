@@ -17,6 +17,9 @@ This openembedded layer provides the rust compiler, tools for building packages
 	  now-and-then. Unfortunately, rust moves a bit too quickly for cargo
           to keep up, and it ends up broken fairly often.
 
+	- To use a local cargo, add `ASSUME_PROVIDED = "cargo-native"` to your
+	  local.conf file (or use the `bitbake -I cargo-native` option)
+
 ## What's untested:
 
  - rust (built for target)
