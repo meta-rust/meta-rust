@@ -8,6 +8,4 @@ SUMMARY = "Hello World by Cargo for Rust"
 HOMEPAGE = "https://github.com/jmesmon/rust-hello-world"
 LICENSE = "MIT | Apache-2.0"
 
-DEPENDS = "cargo-native"
-
 S = "${WORKDIR}/git"
