@@ -1,3 +1,5 @@
+INHIBIT_CARGO_DEP = "1"
+
 inherit cargo
 inherit patch
 

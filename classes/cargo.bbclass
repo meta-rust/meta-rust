@@ -2,6 +2,14 @@ inherit rust
 
 CARGO = "cargo"
 
+def cargo_base_dep(d):
+    deps = ""
+    if not d.getVar('INHIBIT_DEFAULT_DEPS') and not d.getVar('INHIBIT_CARGO_DEP'):
+            deps += " cargo-native"
+    return deps
+
+BASEDEPENDS_append = " ${@cargo_base_dep(d)}"
+
 # FIXME: this is a workaround for a misbehavior in cargo when used with quilt.
 # See https://github.com/rust-lang/cargo/issues/978
 PATCHTOOL = "patch"
