@@ -1,0 +1,49 @@
+From 29fcce9f8147ff9644666824ce9f7739f4aa9ea8 Mon Sep 17 00:00:00 2001
+From: Josh Stone <cuviper@gmail.com>
+Date: Sat, 29 Nov 2014 13:38:57 -0800
+Subject: [PATCH] Update to namespaced io::FileType
+
+---
+ libssh2-sys/build.rs |  2 +-
+ src/session.rs       | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/libssh2-sys/build.rs b/libssh2-sys/build.rs
+index 4886782..c68643f 100644
+--- a/libssh2-sys/build.rs
++++ b/libssh2-sys/build.rs
+@@ -90,7 +90,7 @@ fn main() {
+         let root = root.join("include");
+         let dst = dst.join("include");
+         for file in fs::walk_dir(&root).unwrap() {
+-            if fs::stat(&file).unwrap().kind != io::TypeFile { continue }
++            if fs::stat(&file).unwrap().kind != io::FileType::RegularFile { continue }
+ 
+             let part = file.path_relative_from(&root).unwrap();
+             let dst = dst.join(part);
+diff --git a/src/session.rs b/src/session.rs
+index 0fcee0c..c22d8e6 100644
+--- a/src/session.rs
++++ b/src/session.rs
+@@ -588,12 +588,12 @@ fn mkstat(stat: &libc::stat) -> io::FileStat {
+     io::FileStat {
+         size: stat.st_size as u64,
+         kind: match (stat.st_mode as Mode) & libc::S_IFMT {
+-            libc::S_IFREG => io::TypeFile,
+-            libc::S_IFDIR => io::TypeDirectory,
+-            libc::S_IFIFO => io::TypeNamedPipe,
+-            libc::S_IFBLK => io::TypeBlockSpecial,
+-            libc::S_IFLNK => io::TypeSymlink,
+-            _ => io::TypeUnknown,
++            libc::S_IFREG => io::FileType::RegularFile,
++            libc::S_IFDIR => io::FileType::Directory,
++            libc::S_IFIFO => io::FileType::NamedPipe,
++            libc::S_IFBLK => io::FileType::BlockSpecial,
++            libc::S_IFLNK => io::FileType::Symlink,
++            _ => io::FileType::Unknown,
+         },
+         perm: io::FilePermission::from_bits_truncate(stat.st_mode as u32),
+         created: mktime(stat.st_ctime as u64, stat.st_ctime_nsec as u64),
+-- 
+2.0.4
+

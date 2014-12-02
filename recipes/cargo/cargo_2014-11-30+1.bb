@@ -34,3 +34,5 @@ EXTRA_OECARGO_PATHS = "\
 	${WORKDIR}/curl-rust \
 	${WORKDIR}/gcc-rs \
 "
+
+DEFAULT_PREFERENCE = "-1"

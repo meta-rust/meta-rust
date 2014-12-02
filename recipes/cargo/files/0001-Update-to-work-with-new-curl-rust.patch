@@ -1,0 +1,26 @@
+From 8085ebca084bb842a8896c48680fecdb9e06c59b Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 1 Dec 2014 22:11:20 -0500
+Subject: [PATCH] Update to work with new curl-rust
+
+---
+ src/registry/lib.rs | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/registry/lib.rs b/src/registry/lib.rs
+index d2952ae..ddca499 100644
+--- a/src/registry/lib.rs
++++ b/src/registry/lib.rs
+@@ -8,7 +8,8 @@ use std::io::util::ChainedReader;
+ use std::result;
+ 
+ use curl::http;
+-use curl::http::handle::{Put, Get, Delete, Method, Request};
++use curl::http::handle::Method::{Put, Get, Delete};
++use curl::http::handle::{Method, Request};
+ use serialize::json;
+ 
+ pub struct Registry {
+-- 
+2.0.4
+
