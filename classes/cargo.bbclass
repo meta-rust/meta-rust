@@ -6,15 +6,11 @@ CARGO = "cargo"
 # versions of rust than cargo is able to build with. Thankfully, we don't need
 # any custom cargo configuration, and can use a vanilla cargo binary.
 #
-# If you want to have cargo built for packages that depend on it, set
-# INHIBIT_CARGO_DEP = "0" in your local.conf, distro.conf, or other global
-# config file.
-INHIBIT_CARGO_DEP ??= "1"
-
+# We recommend setting ASSUME_PROVIDED += "cargo-native" in your local.conf
 def cargo_base_dep(d):
     deps = ""
-    if not d.getVar('INHIBIT_DEFAULT_DEPS') and d.getVar('INHIBIT_CARGO_DEP') != "0":
-            deps += " cargo-native"
+    if not d.getVar('INHIBIT_DEFAULT_DEPS') and not d.getVar('INHIBIT_CARGO_DEP'):
+        deps += " cargo-native"
     return deps
 
 BASEDEPENDS_append = " ${@cargo_base_dep(d)}"
@@ -49,6 +45,8 @@ oe_cargo_config () {
 }
 
 rust_cargo_patch () {
+	# FIXME: if there is already an entry for this target, in an existing
+	# cargo/config, this won't work.
 	cd "${S}"
 	cat >>Cargo.toml <<EOF
 [profile.dev]
@@ -67,8 +65,6 @@ export RUST_CC = "${CCACHE}${TARGET_PREFIX}gcc"
 export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 
 oe_cargo_build () {
-	# FIXME: if there is already an entry for this target, in an existing
-	# cargo/config, this won't work.
 	which cargo
 	which rustc
 	bbnote ${CARGO} build --target ${TARGET_SYS} "$@"

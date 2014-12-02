@@ -343,7 +343,9 @@ rust_do_install () {
 
         ## rust will complain about multiple providers of the runtime libs
         ## (libstd, libsync, etc.) without this.
-        ln -sf "${D}${libdir}/rustlib/${HOST_SYS}/lib/lib*.so" "${D}${libdir}/"
+        pushd "${D}${libdir}"
+        ln -sf "rustlib/${HOST_SYS}/lib/lib"*.so .
+        popd
 }
 
 do_install () {
