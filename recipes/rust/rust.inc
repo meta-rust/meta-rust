@@ -49,10 +49,10 @@ PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
 # XXX: for some reason bitbake sets BUILD_* & TARGET_* but uses the bare
 # variables for HOST. Alias things to make it easier for us.
-HOST_LDFLAGS  ??= "${LDFLAGS}"
-HOST_CFLAGS   ??= "${CFLAGS}"
-HOST_CXXFLAGS ??= "${CXXFLAGS}"
-HOST_CPPFLAGS ??= "${CPPFLAGS}"
+HOST_LDFLAGS  ?= "${LDFLAGS}"
+HOST_CFLAGS   ?= "${CFLAGS}"
+HOST_CXXFLAGS ?= "${CXXFLAGS}"
+HOST_CPPFLAGS ?= "${CPPFLAGS}"
 
 # XXX: BITBAKE-BUG: *_PRE_LINK_ARGS used to be set via function invocation, but
 # that caused bitbake to error on users of these variables without any

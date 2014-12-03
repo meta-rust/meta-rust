@@ -22,5 +22,3 @@ EXTRA_OECARGO_PATHS = "\
 	${WORKDIR}/gcc-rs \
 	${WORKDIR}/ssh2-rs \
 "
-
-

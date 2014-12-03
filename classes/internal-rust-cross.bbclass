@@ -12,6 +12,11 @@ PN = "rust-cross-${TARGET_ARCH}"
 # here because cross.bblcass is "helpful" and blanks it out.
 #TARGET_PRE_LINK_ARGS_append = " --sysroot=${STAGING_DIR_TARGET}"
 
+# FIXME: the only way to convince cargo to include the rpath is via editing
+# Config.toml, and doing that safely requires us to write actual patches
+HOST_PRE_LINK_ARGS_append = " -Wl,-rpath=${libdir}"
+BUILD_PRE_LINK_ARGS_append = " -Wl,-rpath=${libdir}"
+
 # We need the same thing for the calls to the compiler when building the runtime crap
 TARGET_CC_ARCH_append = " --sysroot=${STAGING_DIR_TARGET}"
 
