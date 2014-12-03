@@ -1,8 +1,7 @@
-SRCREV_cargo = "5a80c023690bc6171eccadcc49075d1b3edec8ce"
+SRCREV_cargo = "a0f0abca4f718e36ddc7cc23f9bce4c51d93cbe5"
 require cargo.inc
 
 SRC_URI += " \
-	file://0001-Update-for-nightly.patch \
 	file://0001-custom_build-map-the-CFLAGS-and-CC-variables-for-HOS.patch \
 \
 	git://github.com/carllerche/curl-rust.git;protocol=https;name=curl-rust;destsuffix=curl-rust \
