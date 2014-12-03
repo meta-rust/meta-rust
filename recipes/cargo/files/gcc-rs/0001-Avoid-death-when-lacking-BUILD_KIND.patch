@@ -1,0 +1,27 @@
+From f2872c1887de199d1ba773d092548876113775bf Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Wed, 3 Dec 2014 14:21:29 -0500
+Subject: [PATCH] Avoid death when lacking BUILD_KIND
+
+---
+ src/lib.rs | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 18718b9..d22d833 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -115,8 +115,8 @@ fn get_var(var_base: &str) -> Option<String> {
+     let target_u = target.split('-')
+         .collect::<Vec<&str>>()
+         .connect("_");
+-    let kind   = os::getenv("BUILD_KIND")
+-        .expect("Environment variable 'BUILD_KIND' is unset");
++    let kind = os::getenv("BUILD_KIND")
++        .unwrap_or(String::from_str("TARGET"));
+     os::getenv(format!("{}_{}", var_base, target).as_slice())
+         .or_else(|| os::getenv(format!("{}_{}", var_base, target_u).as_slice()))
+         .or_else(|| os::getenv(format!("{}_{}", kind, var_base).as_slice()))
+-- 
+2.1.3
+
