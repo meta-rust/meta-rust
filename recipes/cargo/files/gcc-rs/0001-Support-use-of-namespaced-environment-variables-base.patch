@@ -1,4 +1,4 @@
-From 364ff39932c6281cb90c5ebe8c9fd04e7b05a1f3 Mon Sep 17 00:00:00 2001
+From 5f5cb84a50a505a7876999729d4f53f59fa913ec Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 3 Dec 2014 13:41:11 -0500
 Subject: [PATCH] Support use of namespaced environment variables based on
@@ -6,8 +6,8 @@ Subject: [PATCH] Support use of namespaced environment variables based on
 
 ---
  README.md  | 25 +++++++++++++++++++++++++
- src/lib.rs | 18 +++++++++++++++---
- 2 files changed, 40 insertions(+), 3 deletions(-)
+ src/lib.rs | 20 +++++++++++++++++---
+ 2 files changed, 42 insertions(+), 3 deletions(-)
 
 diff --git a/README.md b/README.md
 index bb7047d..73b72d7 100644
@@ -46,19 +46,21 @@ index bb7047d..73b72d7 100644
  
  Currently use of this crate means that Windows users will require gcc to be
 diff --git a/src/lib.rs b/src/lib.rs
-index 51157c8..ffd5aef 100644
+index 51157c8..18718b9 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -109,8 +109,20 @@ fn run(cmd: &mut Command) {
+@@ -109,8 +109,22 @@ fn run(cmd: &mut Command) {
      }
  }
  
 +fn get_var(var_base: &str) -> Option<String> {
-+    let target = os::getenv("TARGET").unwrap();
++    let target = os::getenv("TARGET")
++        .expect("Environment variable 'TARGET' is unset");
 +    let target_u = target.split('-')
 +        .collect::<Vec<&str>>()
 +        .connect("_");
-+    let kind   = os::getenv("BUILD_KIND").unwrap();
++    let kind   = os::getenv("BUILD_KIND")
++        .expect("Environment variable 'BUILD_KIND' is unset");
 +    os::getenv(format!("{}_{}", var_base, target).as_slice())
 +        .or_else(|| os::getenv(format!("{}_{}", var_base, target_u).as_slice()))
 +        .or_else(|| os::getenv(format!("{}_{}", kind, var_base).as_slice()))
@@ -71,7 +73,7 @@ index 51157c8..ffd5aef 100644
          "gcc".to_string()
      } else {
          "cc".to_string()
-@@ -118,11 +130,11 @@ fn gcc() -> String {
+@@ -118,11 +132,11 @@ fn gcc() -> String {
  }
  
  fn ar() -> String {

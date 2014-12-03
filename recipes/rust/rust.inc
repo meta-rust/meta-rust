@@ -61,7 +61,7 @@ PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 #
 # XXX: may need to restrict the -rpath flags to only BUILD & HOST
 RELATIVE_LIB_FROM_BIN = "${@os.path.relpath('${libdir}', '${bindir}')}"
-RPATH_LDFLAGS = "-Wl,--enable-new-dtags -Wl,-rpath=$ORIGIN/${RELATIVE_LIB_FROM_BIN} -Wl,-rpath-link=$ORIGIN/${RELATIVE_LIB_FROM_BIN}"
+RPATH_LDFLAGS = "-Wl,--enable-new-dtags"
 TARGET_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 BUILD_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 HOST_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"

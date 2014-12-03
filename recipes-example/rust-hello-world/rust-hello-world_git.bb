@@ -9,3 +9,5 @@ HOMEPAGE = "https://github.com/jmesmon/rust-hello-world"
 LICENSE = "MIT | Apache-2.0"
 
 S = "${WORKDIR}/git"
+
+BBCLASSEXTEND = "native"

@@ -13,6 +13,7 @@ SRC_URI += " \
 \
 	git://github.com/alexcrichton/gcc-rs.git;protocol=https;name=gcc-rs;destsuffix=gcc-rs \
 	file://gcc-rs/0001-Support-use-of-namespaced-environment-variables-base.patch;patchdir=../gcc-rs \
+	file://gcc-rs/0001-Avoid-death-when-lacking-BUILD_KIND.patch;patchdir=../gcc-rs \
 "
 
 SRCREV_curl-rust = "5d0f5c8848e3cf1e12480a1923ae888e24d58f63"
