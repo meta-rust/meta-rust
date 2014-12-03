@@ -1,0 +1,558 @@
+From 26708d62882e44c592b596961e18b902caaa7574 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 1 Dec 2014 22:11:20 -0500
+Subject: [PATCH] Update for nightly
+
+I'm a bit shaky on the profile.rs changes (`thread_local!` and `RefCell`
+relplacing `local_data_key!`), do make sure I haven't royally screwed
+something up there.
+
+Note that I haven't sucessfully run the various test_cargo_cross_compile
+tests as I don't have an i686-unknown-linux-gnu rustc sitting around.
+---
+ Cargo.lock                           | 100 +++++++++++++++++++----------------
+ src/bin/cargo.rs                     |   2 +-
+ src/cargo/core/source.rs             |  12 ++---
+ src/cargo/sources/git/utils.rs       |   4 +-
+ src/cargo/sources/registry.rs        |   2 +-
+ src/cargo/util/errors.rs             |   4 +-
+ src/cargo/util/paths.rs              |   2 +-
+ src/cargo/util/profile.rs            |  33 ++++++------
+ src/registry/lib.rs                  |   5 +-
+ src/rustversion.txt                  |   2 +-
+ tests/resolve.rs                     |   2 +-
+ tests/support/mod.rs                 |   2 +-
+ tests/support/paths.rs               |   9 +---
+ tests/support/registry.rs            |   2 +-
+ tests/test_cargo_compile_git_deps.rs |   2 +-
+ tests/test_cargo_test.rs             |   4 +-
+ 16 files changed, 96 insertions(+), 91 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 1493cc0..44bb899 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -3,15 +3,15 @@ name = "cargo"
+ version = "0.1.0"
+ dependencies = [
+  "curl 0.1.0 (git+https://github.com/carllerche/curl-rust)",
+- "docopt 0.6.8 (git+https://github.com/docopt/docopt.rs)",
+- "flate2 0.0.3 (git+https://github.com/alexcrichton/flate2-rs)",
++ "docopt 0.6.12 (git+https://github.com/docopt/docopt.rs)",
++ "flate2 0.1.0 (git+https://github.com/alexcrichton/flate2-rs)",
+  "git2 0.0.1 (git+https://github.com/alexcrichton/git2-rs)",
+- "glob 0.0.3 (git+https://github.com/rust-lang/glob)",
++ "glob 0.1.0 (git+https://github.com/rust-lang/glob)",
+  "hamcrest 0.1.0 (git+https://github.com/carllerche/hamcrest-rust.git)",
+  "registry 0.1.0",
+  "semver 0.1.3 (git+https://github.com/rust-lang/semver)",
+- "tar 0.0.3 (git+https://github.com/alexcrichton/tar-rs)",
+- "time 0.0.3 (git+https://github.com/rust-lang/time)",
++ "tar 0.1.0 (git+https://github.com/alexcrichton/tar-rs)",
++ "time 0.1.0 (git+https://github.com/rust-lang/time)",
+  "toml 0.1.2 (git+https://github.com/alexcrichton/toml-rs)",
+  "url 0.1.0 (git+https://github.com/servo/rust-url)",
+ ]
+@@ -19,7 +19,7 @@ dependencies = [
+ [[package]]
+ name = "curl"
+ version = "0.1.0"
+-source = "git+https://github.com/carllerche/curl-rust#c1b96e146f6752353a1e84cca932c628e6bf73af"
++source = "git+https://github.com/carllerche/curl-rust#5d0f5c8848e3cf1e12480a1923ae888e24d58f63"
+ dependencies = [
+  "curl-sys 0.1.0 (git+https://github.com/carllerche/curl-rust)",
+  "url 0.1.0 (git+https://github.com/servo/rust-url)",
+@@ -28,45 +28,50 @@ dependencies = [
+ [[package]]
+ name = "curl-sys"
+ version = "0.1.0"
+-source = "git+https://github.com/carllerche/curl-rust#c1b96e146f6752353a1e84cca932c628e6bf73af"
++source = "git+https://github.com/carllerche/curl-rust#5d0f5c8848e3cf1e12480a1923ae888e24d58f63"
+ dependencies = [
+- "libz-sys 0.0.1 (git+https://github.com/alexcrichton/libz-sys)",
+- "openssl-sys 0.0.1 (git+https://github.com/sfackler/rust-openssl)",
+- "pkg-config 0.0.1 (git+https://github.com/alexcrichton/pkg-config-rs)",
++ "libz-sys 0.1.0 (git+https://github.com/alexcrichton/libz-sys)",
++ "openssl-sys 0.2.2 (git+https://github.com/sfackler/rust-openssl)",
++ "pkg-config 0.1.0 (git+https://github.com/alexcrichton/pkg-config-rs)",
+ ]
+ 
+ [[package]]
+ name = "docopt"
+-version = "0.6.8"
+-source = "git+https://github.com/docopt/docopt.rs#be2e3b6b91ab1912d79f1e840d9397dead6e6a6e"
++version = "0.6.12"
++source = "git+https://github.com/docopt/docopt.rs#938d640720d91529252adddc79d020714cba7346"
+ 
+ [[package]]
+ name = "flate2"
+-version = "0.0.3"
+-source = "git+https://github.com/alexcrichton/flate2-rs#044e4dc2a766bc32fd5ae76bbe958be6e85be481"
++version = "0.1.0"
++source = "git+https://github.com/alexcrichton/flate2-rs#861f52e4c71681f96605dd65cb7c1c9f6e6ecc3c"
+ dependencies = [
+- "miniz-sys 0.0.2 (git+https://github.com/alexcrichton/flate2-rs)",
++ "miniz-sys 0.1.0 (git+https://github.com/alexcrichton/flate2-rs)",
+ ]
+ 
+ [[package]]
+ name = "gcc"
+-version = "0.0.2"
+-source = "git+https://github.com/alexcrichton/gcc-rs#903e8f8a2e3766ad3d514404d452dbaa1d3b2d79"
++version = "0.1.0"
++source = "git+https://github.com/alexcrichton/gcc-rs#d32b24466d3e0094cef1c1809a04d7a28536f0e0"
++
++[[package]]
++name = "gcc"
++version = "0.1.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
+ 
+ [[package]]
+ name = "git2"
+ version = "0.0.1"
+-source = "git+https://github.com/alexcrichton/git2-rs#d0d21ca14b4a410806b577b04c2d29f7f8e45f61"
++source = "git+https://github.com/alexcrichton/git2-rs#1676b0196c4b130ef670aa5c09903dd00aac33a6"
+ dependencies = [
+  "libgit2-sys 0.0.1 (git+https://github.com/alexcrichton/git2-rs)",
+- "time 0.0.3 (git+https://github.com/rust-lang/time)",
++ "time 0.1.0 (git+https://github.com/rust-lang/time)",
+  "url 0.1.0 (git+https://github.com/servo/rust-url)",
+ ]
+ 
+ [[package]]
+ name = "glob"
+-version = "0.0.3"
+-source = "git+https://github.com/rust-lang/glob#9efe98bd82ad4932819888a94eb933ac618312f0"
++version = "0.1.0"
++source = "git+https://github.com/rust-lang/glob#923126289064ded89f028d14dc2f28bb347ae178"
+ 
+ [[package]]
+ name = "hamcrest"
+@@ -76,51 +81,56 @@ source = "git+https://github.com/carllerche/hamcrest-rust.git#2b9bd6cdae5dcf08ac
+ [[package]]
+ name = "libgit2-sys"
+ version = "0.0.1"
+-source = "git+https://github.com/alexcrichton/git2-rs#d0d21ca14b4a410806b577b04c2d29f7f8e45f61"
++source = "git+https://github.com/alexcrichton/git2-rs#1676b0196c4b130ef670aa5c09903dd00aac33a6"
+ dependencies = [
+  "libssh2-sys 0.0.1 (git+https://github.com/alexcrichton/ssh2-rs)",
+- "openssl-sys 0.0.1 (git+https://github.com/sfackler/rust-openssl)",
+- "pkg-config 0.0.1 (git+https://github.com/alexcrichton/pkg-config-rs)",
++ "openssl-sys 0.2.2 (git+https://github.com/sfackler/rust-openssl)",
++ "pkg-config 0.1.0 (git+https://github.com/alexcrichton/pkg-config-rs)",
+ ]
+ 
+ [[package]]
+ name = "libssh2-sys"
+ version = "0.0.1"
+-source = "git+https://github.com/alexcrichton/ssh2-rs#922531da4c22abe7a216672314315d41769d7fb1"
++source = "git+https://github.com/alexcrichton/ssh2-rs#490f91fb9e90bf4e305f1a23a051228c59e60eaf"
+ dependencies = [
+- "libz-sys 0.0.1 (git+https://github.com/alexcrichton/libz-sys)",
+- "openssl-sys 0.0.1 (git+https://github.com/sfackler/rust-openssl)",
+- "pkg-config 0.0.1 (git+https://github.com/alexcrichton/pkg-config-rs)",
++ "libz-sys 0.1.0 (git+https://github.com/alexcrichton/libz-sys)",
++ "openssl-sys 0.2.2 (git+https://github.com/sfackler/rust-openssl)",
++ "pkg-config 0.1.0 (git+https://github.com/alexcrichton/pkg-config-rs)",
+ ]
+ 
+ [[package]]
+ name = "libz-sys"
+-version = "0.0.1"
+-source = "git+https://github.com/alexcrichton/libz-sys#37926b786b09e013e5fd64cc278b3df1b49c4fbe"
++version = "0.1.0"
++source = "git+https://github.com/alexcrichton/libz-sys#5622ae17a0262af56055b71f0d74fa5ee91d3a41"
+ dependencies = [
+- "pkg-config 0.0.1 (git+https://github.com/alexcrichton/pkg-config-rs)",
++ "pkg-config 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+ 
+ [[package]]
+ name = "miniz-sys"
+-version = "0.0.2"
+-source = "git+https://github.com/alexcrichton/flate2-rs#044e4dc2a766bc32fd5ae76bbe958be6e85be481"
++version = "0.1.0"
++source = "git+https://github.com/alexcrichton/flate2-rs#861f52e4c71681f96605dd65cb7c1c9f6e6ecc3c"
+ dependencies = [
+- "gcc 0.0.2 (git+https://github.com/alexcrichton/gcc-rs)",
++ "gcc 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+ 
+ [[package]]
+ name = "openssl-sys"
+-version = "0.0.1"
+-source = "git+https://github.com/sfackler/rust-openssl#b084ddc7b0fe9c7816fef6e415a05db6ec43fb71"
++version = "0.2.2"
++source = "git+https://github.com/sfackler/rust-openssl#fd680e8a336f8870a411a3047c45b47ee72beb37"
+ dependencies = [
+- "pkg-config 0.0.1 (git+https://github.com/alexcrichton/pkg-config-rs)",
++ "pkg-config 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+ 
+ [[package]]
+ name = "pkg-config"
+-version = "0.0.1"
+-source = "git+https://github.com/alexcrichton/pkg-config-rs#d24a08d87d63df8dc9526c503944415b86719220"
++version = "0.1.0"
++source = "git+https://github.com/alexcrichton/pkg-config-rs#9b3b44a2e1a8ccc70c3f701aeb5154ad79e665e9"
++
++[[package]]
++name = "pkg-config"
++version = "0.1.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
+ 
+ [[package]]
+ name = "registry"
+@@ -136,15 +146,15 @@ source = "git+https://github.com/rust-lang/semver#29212953f839337c672d185dde74e1
+ 
+ [[package]]
+ name = "tar"
+-version = "0.0.3"
+-source = "git+https://github.com/alexcrichton/tar-rs#55fa87d43eaf2a54c55ddd245e1c13859a06193c"
++version = "0.1.0"
++source = "git+https://github.com/alexcrichton/tar-rs#d54cc716e6d809498941f38d8ab0759543402abe"
+ 
+ [[package]]
+ name = "time"
+-version = "0.0.3"
+-source = "git+https://github.com/rust-lang/time#533d3823dbe200aaa2a2599176a6b30579581232"
++version = "0.1.0"
++source = "git+https://github.com/rust-lang/time#afab521f3b91658a3ba2d3e877b7e01699733bef"
+ dependencies = [
+- "gcc 0.0.2 (git+https://github.com/alexcrichton/gcc-rs)",
++ "gcc 0.1.0 (git+https://github.com/alexcrichton/gcc-rs)",
+ ]
+ 
+ [[package]]
+@@ -155,5 +165,5 @@ source = "git+https://github.com/alexcrichton/toml-rs#1e35b001094b20d2452adff305
+ [[package]]
+ name = "url"
+ version = "0.1.0"
+-source = "git+https://github.com/servo/rust-url#a838a41263472de966f7ec8db758caa9cc4699a4"
++source = "git+https://github.com/servo/rust-url#9f05a0108025a1c9002e8977a42dce764895d170"
+ 
+diff --git a/src/bin/cargo.rs b/src/bin/cargo.rs
+index 2598bf3..3c52a80 100644
+--- a/src/bin/cargo.rs
++++ b/src/bin/cargo.rs
+@@ -220,7 +220,7 @@ fn list_commands() -> TreeSet<String> {
+ 
+ fn is_executable(path: &Path) -> bool {
+     match fs::stat(path) {
+-        Ok(io::FileStat{ kind: io::TypeFile, perm, ..}) =>
++        Ok(io::FileStat{ kind: io::FileType::RegularFile, perm, ..}) =>
+             perm.contains(io::OTHER_EXECUTE),
+         _ => false
+     }
+diff --git a/src/cargo/core/source.rs b/src/cargo/core/source.rs
+index 11d37f9..c811772 100644
+--- a/src/cargo/core/source.rs
++++ b/src/cargo/core/source.rs
+@@ -327,7 +327,7 @@ pub struct SourceMap<'src> {
+ pub type Sources<'a, 'src> = Values<'a, SourceId, Box<Source+'src>>;
+ pub type SourcesMut<'a, 'src> = iter::Map<'static, (&'a SourceId,
+                                                   &'a mut Box<Source+'src>),
+-                                    &'a mut Source+'src,
++                                    &'a mut (Source+'src),
+                                     MutEntries<'a, SourceId, Box<Source+'src>>>;
+ 
+ impl<'src> SourceMap<'src> {
+@@ -341,23 +341,23 @@ impl<'src> SourceMap<'src> {
+         self.map.contains_key(id)
+     }
+ 
+-    pub fn get(&self, id: &SourceId) -> Option<&Source+'src> {
++    pub fn get(&self, id: &SourceId) -> Option<&(Source+'src)> {
+         let source = self.map.get(id);
+ 
+         source.map(|s| {
+-            let s: &Source+'src = &**s;
++            let s: &(Source+'src) = &**s;
+             s
+         })
+     }
+ 
+-    pub fn get_mut(&mut self, id: &SourceId) -> Option<&mut Source+'src> {
++    pub fn get_mut(&mut self, id: &SourceId) -> Option<&mut (Source+'src)> {
+         self.map.get_mut(id).map(|s| {
+-            let s: &mut Source+'src = &mut **s;
++            let s: &mut (Source+'src) = &mut **s;
+             s
+         })
+     }
+ 
+-    pub fn get_by_package_id(&self, pkg_id: &PackageId) -> Option<&Source+'src> {
++    pub fn get_by_package_id(&self, pkg_id: &PackageId) -> Option<&(Source+'src)> {
+         self.get(pkg_id.get_source_id())
+     }
+ 
+diff --git a/src/cargo/sources/git/utils.rs b/src/cargo/sources/git/utils.rs
+index 83ebacb..7884453 100644
+--- a/src/cargo/sources/git/utils.rs
++++ b/src/cargo/sources/git/utils.rs
+@@ -297,7 +297,7 @@ impl<'a> GitCheckout<'a> {
+               self.revision.as_slice());
+         let oid = try!(git2::Oid::from_str(self.revision.as_slice()));
+         let object = try!(self.repo.find_object(oid, None));
+-        try!(self.repo.reset(&object, git2::Hard, None, None));
++        try!(self.repo.reset(&object, git2::ResetType::Hard, None, None));
+         Ok(())
+     }
+ 
+@@ -345,7 +345,7 @@ impl<'a> GitCheckout<'a> {
+                 }));
+ 
+                 let obj = try!(repo.find_object(head, None));
+-                try!(repo.reset(&obj, git2::Hard, None, None));
++                try!(repo.reset(&obj, git2::ResetType::Hard, None, None));
+                 try!(update_submodules(&repo));
+             }
+             Ok(())
+diff --git a/src/cargo/sources/registry.rs b/src/cargo/sources/registry.rs
+index 770259c..4dabec7 100644
+--- a/src/cargo/sources/registry.rs
++++ b/src/cargo/sources/registry.rs
+@@ -451,7 +451,7 @@ impl<'a, 'b> RegistrySource<'a, 'b> {
+         let oid = try!(repo.refname_to_id(reference));
+         log!(5, "[{}] updating to rev {}", self.source_id, oid);
+         let object = try!(repo.find_object(oid, None));
+-        try!(repo.reset(&object, git2::Hard, None, None));
++        try!(repo.reset(&object, git2::ResetType::Hard, None, None));
+         self.updated = true;
+         self.cache.clear();
+         Ok(())
+diff --git a/src/cargo/util/errors.rs b/src/cargo/util/errors.rs
+index c91a37e..fa215d4 100644
+--- a/src/cargo/util/errors.rs
++++ b/src/cargo/util/errors.rs
+@@ -253,7 +253,7 @@ from_error!(CliError)
+ impl CargoError for docopt::Error {
+     fn description(&self) -> String {
+         match *self {
+-            docopt::WithProgramUsage(ref other, _) => other.description(),
++            docopt::Error::WithProgramUsage(ref other, _) => other.description(),
+             ref e if e.fatal() => self.to_string(),
+             _ => "".to_string(),
+         }
+@@ -261,7 +261,7 @@ impl CargoError for docopt::Error {
+ 
+     fn detail(&self) -> Option<String> {
+         match *self {
+-            docopt::WithProgramUsage(_, ref usage) => Some(usage.clone()),
++            docopt::Error::WithProgramUsage(_, ref usage) => Some(usage.clone()),
+             ref e if e.fatal() => None,
+             ref e => Some(e.to_string()),
+         }
+diff --git a/src/cargo/util/paths.rs b/src/cargo/util/paths.rs
+index 6b84f19..5f1280c 100644
+--- a/src/cargo/util/paths.rs
++++ b/src/cargo/util/paths.rs
+@@ -27,7 +27,7 @@ pub fn realpath(original: &Path) -> io::IoResult<Path> {
+ 
+             match fs::lstat(&result) {
+                 Err(..) => break,
+-                Ok(ref stat) if stat.kind != io::TypeSymlink => break,
++                Ok(ref stat) if stat.kind != io::FileType::Symlink => break,
+                 Ok(..) => {
+                     followed += 1;
+                     let path = try!(fs::readlink(&result));
+diff --git a/src/cargo/util/profile.rs b/src/cargo/util/profile.rs
+index 1f56ce3..fbcf51e 100644
+--- a/src/cargo/util/profile.rs
++++ b/src/cargo/util/profile.rs
+@@ -2,9 +2,10 @@ use std::os;
+ use std::mem;
+ use std::fmt::Show;
+ use time;
++use std::cell::RefCell;
+ 
+-local_data_key!(PROFILE_STACK: Vec<u64>)
+-local_data_key!(MESSAGES: Vec<Message>)
++thread_local!(static PROFILE_STACK: RefCell<Vec<u64>> = RefCell::new(Vec::new()))
++thread_local!(static MESSAGES: RefCell<Vec<Message>> = RefCell::new(Vec::new()))
+ 
+ type Message = (uint, u64, String);
+ 
+@@ -17,9 +18,7 @@ fn enabled() -> bool { os::getenv("CARGO_PROFILE").is_some() }
+ pub fn start<T: Show>(desc: T) -> Profiler {
+     if !enabled() { return Profiler { desc: String::new() } }
+ 
+-    let mut stack = PROFILE_STACK.replace(None).unwrap_or(Vec::new());
+-    stack.push(time::precise_time_ns());
+-    PROFILE_STACK.replace(Some(stack));
++    PROFILE_STACK.with(|ref mut stack| stack.borrow_mut().push(time::precise_time_ns()));
+ 
+     Profiler {
+         desc: desc.to_string(),
+@@ -30,14 +29,11 @@ impl Drop for Profiler {
+     fn drop(&mut self) {
+         if !enabled() { return }
+ 
+-        let mut stack = PROFILE_STACK.replace(None).unwrap_or(Vec::new());
+-        let mut msgs = MESSAGES.replace(None).unwrap_or(Vec::new());
+-
+-        let start = stack.pop().unwrap();
++        let start = PROFILE_STACK.with(|ref mut stack| stack.borrow_mut().pop().unwrap());
+         let end = time::precise_time_ns();
+ 
+-        let msg = mem::replace(&mut self.desc, String::new());
+-        if stack.len() == 0 {
++        let stack_len = PROFILE_STACK.with(|ref stack| stack.borrow().len());
++        if stack_len == 0 {
+             fn print(lvl: uint, msgs: &[Message]) {
+                 let mut last = 0;
+                 for (i, &(l, time, ref msg)) in msgs.iter().enumerate() {
+@@ -50,13 +46,16 @@ impl Drop for Profiler {
+                 }
+ 
+             }
+-            msgs.push((0, end - start, msg));
+-            print(0, msgs.as_slice());
++            MESSAGES.with(|ref mut msgs_rc| {
++                let mut msgs = msgs_rc.borrow_mut();
++                msgs.push((0, end - start, mem::replace(&mut self.desc, String::new())));
++                print(0, msgs.as_slice());
++            });
+         } else {
+-            msgs.push((stack.len(), end - start, msg));
+-            MESSAGES.replace(Some(msgs));
++            MESSAGES.with(|ref mut msgs| {
++                let msg = mem::replace(&mut self.desc, String::new());
++                msgs.borrow_mut().push((stack_len, end - start, msg));
++            });
+         }
+-        PROFILE_STACK.replace(Some(stack));
+-
+     }
+ }
+diff --git a/src/registry/lib.rs b/src/registry/lib.rs
+index d2952ae..952612b 100644
+--- a/src/registry/lib.rs
++++ b/src/registry/lib.rs
+@@ -8,7 +8,8 @@ use std::io::util::ChainedReader;
+ use std::result;
+ 
+ use curl::http;
+-use curl::http::handle::{Put, Get, Delete, Method, Request};
++use curl::http::handle::Method::{Put, Get, Delete};
++use curl::http::handle::{Method, Request};
+ use serialize::json;
+ 
+ pub struct Registry {
+@@ -135,7 +136,7 @@ impl Registry {
+             w.write_le_u32(json.len() as u32).unwrap();
+             w.write_str(json.as_slice()).unwrap();
+             w.write_le_u32(stat.size as u32).unwrap();
+-            MemReader::new(w.unwrap())
++            MemReader::new(w.into_inner())
+         };
+         let tarball = try!(File::open(tarball).map_err(Error::Io));
+         let size = stat.size as uint + header.get_ref().len();
+diff --git a/src/rustversion.txt b/src/rustversion.txt
+index 6bad8ad..d0f00f0 100644
+--- a/src/rustversion.txt
++++ b/src/rustversion.txt
+@@ -1 +1 @@
+-2014-11-24
++2014-12-02
+diff --git a/tests/resolve.rs b/tests/resolve.rs
+index 4e78756..eede8d6 100644
+--- a/tests/resolve.rs
++++ b/tests/resolve.rs
+@@ -8,7 +8,7 @@ use std::collections::HashMap;
+ use hamcrest::{assert_that, equal_to, contains};
+ 
+ use cargo::core::source::SourceId;
+-use cargo::core::dependency::Development;
++use cargo::core::dependency::Kind::Development;
+ use cargo::core::{Dependency, PackageId, Summary, Registry};
+ use cargo::util::{CargoResult, ToUrl};
+ use cargo::core::resolver::{mod, Method};
+diff --git a/tests/support/mod.rs b/tests/support/mod.rs
+index 87a9caa..6ac5ef4 100644
+--- a/tests/support/mod.rs
++++ b/tests/support/mod.rs
+@@ -313,7 +313,7 @@ impl Execs {
+                 let e = out.lines();
+ 
+                 let diffs = zip_all(a, e).enumerate();
+-                let mut diffs = diffs.filter_map(|(i, (a,e))| {
++                let diffs = diffs.filter_map(|(i, (a,e))| {
+                     match (a, e) {
+                         (Some(a), Some(e)) => {
+                             if lines_match(e.as_slice(), a.as_slice()) {
+diff --git a/tests/support/paths.rs b/tests/support/paths.rs
+index 93078b2..0dde546 100644
+--- a/tests/support/paths.rs
++++ b/tests/support/paths.rs
+@@ -6,16 +6,13 @@ use std::{io, os};
+ use cargo::util::realpath;
+ 
+ static CARGO_INTEGRATION_TEST_DIR : &'static str = "cit";
+-
+-local_data_key!(task_id: uint)
+-
+ static NEXT_ID: atomic::AtomicUint = atomic::INIT_ATOMIC_UINT;
++thread_local!(static TASK_ID: uint = NEXT_ID.fetch_add(1, atomic::SeqCst))
+ 
+ pub fn root() -> Path {
+-    let my_id = *task_id.get().unwrap();
+     let path = os::self_exe_path().unwrap()
+                   .join(CARGO_INTEGRATION_TEST_DIR)
+-                  .join(format!("test-{}", my_id));
++                  .join(TASK_ID.with(|my_id| format!("test-{}", my_id)));
+     realpath(&path).unwrap()
+ }
+ 
+@@ -91,8 +88,6 @@ impl PathExt for Path {
+ 
+ /// Ensure required test directories exist and are empty
+ pub fn setup() {
+-    let my_id = NEXT_ID.fetch_add(1, atomic::SeqCst);
+-    task_id.replace(Some(my_id));
+     debug!("path setup; root={}; home={}", root().display(), home().display());
+     root().rm_rf().unwrap();
+     home().mkdir_p().unwrap();
+diff --git a/tests/support/registry.rs b/tests/support/registry.rs
+index 49f5ab2..3fd6cf0 100644
+--- a/tests/support/registry.rs
++++ b/tests/support/registry.rs
+@@ -1,6 +1,6 @@
+ use std::io::{mod, fs, File};
+ 
+-use flate2::Default;
++use flate2::CompressionLevel::Default;
+ use flate2::writer::GzEncoder;
+ use git2;
+ use serialize::hex::ToHex;
+diff --git a/tests/test_cargo_compile_git_deps.rs b/tests/test_cargo_compile_git_deps.rs
+index dbb8467..5797257 100644
+--- a/tests/test_cargo_compile_git_deps.rs
++++ b/tests/test_cargo_compile_git_deps.rs
+@@ -983,7 +983,7 @@ test!(dep_with_changed_submodule {
+         origin.save().unwrap();
+         let id = subrepo.refname_to_id("refs/remotes/origin/master").unwrap();
+         let obj = subrepo.find_object(id, None).unwrap();
+-        subrepo.reset(&obj, git2::Hard, None, None).unwrap();
++        subrepo.reset(&obj, git2::ResetType::Hard, None, None).unwrap();
+     }
+     sub.add_to_index(true).unwrap();
+     add(&repo);
+diff --git a/tests/test_cargo_test.rs b/tests/test_cargo_test.rs
+index 4b39e4d..f065c17 100644
+--- a/tests/test_cargo_test.rs
++++ b/tests/test_cargo_test.rs
+@@ -138,8 +138,8 @@ failures:
+ <tab>task 'test_hello' panicked at 'assertion failed: \
+     `(left == right) && (right == left)` (left: \
+     `hello`, right: `nope`)', src{sep}foo.rs:12
+-<tab>
+-<tab>
++
++
+ 
+ failures:
+     test_hello
+-- 
+2.0.4
+
