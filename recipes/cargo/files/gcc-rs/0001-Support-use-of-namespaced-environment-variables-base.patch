@@ -1,0 +1,90 @@
+From 364ff39932c6281cb90c5ebe8c9fd04e7b05a1f3 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Wed, 3 Dec 2014 13:41:11 -0500
+Subject: [PATCH] Support use of namespaced environment variables based on
+ target triplet and BUILD_KIND
+
+---
+ README.md  | 25 +++++++++++++++++++++++++
+ src/lib.rs | 18 +++++++++++++++---
+ 2 files changed, 40 insertions(+), 3 deletions(-)
+
+diff --git a/README.md b/README.md
+index bb7047d..73b72d7 100644
+--- a/README.md
++++ b/README.md
+@@ -11,6 +11,31 @@ fn main() {
+ }
+ ```
+ 
++# External configuration via environment variables
++
++To control the programs and flags used for building, the builder can set a number of different enviroment variables.
++* `CFLAGS` - a series of space seperated flags passed to "gcc". Note that
++             individual flags cannot currently contain spaces, so doing
++             something like: "-L=foo\ bar" is not possible.
++* `CC` - the actual c compiler used. Note that this is used as an exact
++         executable name, so (for example) no extra flags can be passed inside
++         this variable, and the builder must ensure that there aren't any
++         trailing spaces. This compiler must understand the `-c` flag. For
++         certain `TARGET`s, it also is assumed to know about other flags (most
++         common is `-fPIC`).
++* `AR` - the `ar` (archiver) executable to use to build the static library.
++
++Each of these variables can also be supplied with certain prefixes and suffixes, in the following prioritized order:
++
++1. `<var>_<target>` - for example, `CC_x86_64-unknown-linux-gnu`
++1. `<var>_<target_with_underscores>` - for example, `CC_x86_64_unknown_linux_gnu`
++1. `<build-kind>_<var>` - for example, `HOST_CC` or `TARGET_CFLAGS`
++1. `<var>` - a plain `CC`, `AR` as above.
++
++If none of these varaibles exist, gcc-rs uses built-in defaults
++
++In addition to the the above optional environment variables, `gcc-rs` has some functions with hard requirements on some variables supplied by [cargo's build-script driver][cargo] that it has the `TARGET`, `OUT_DIR`, `OPT_LEVEL`, and `BUILD_KIND` variables
++
+ # Windows notes
+ 
+ Currently use of this crate means that Windows users will require gcc to be
+diff --git a/src/lib.rs b/src/lib.rs
+index 51157c8..ffd5aef 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -109,8 +109,20 @@ fn run(cmd: &mut Command) {
+     }
+ }
+ 
++fn get_var(var_base: &str) -> Option<String> {
++    let target = os::getenv("TARGET").unwrap();
++    let target_u = target.split('-')
++        .collect::<Vec<&str>>()
++        .connect("_");
++    let kind   = os::getenv("BUILD_KIND").unwrap();
++    os::getenv(format!("{}_{}", var_base, target).as_slice())
++        .or_else(|| os::getenv(format!("{}_{}", var_base, target_u).as_slice()))
++        .or_else(|| os::getenv(format!("{}_{}", kind, var_base).as_slice()))
++        .or_else(|| os::getenv(var_base))
++}
++
+ fn gcc() -> String {
+-    os::getenv("CC").unwrap_or(if cfg!(windows) {
++    get_var("CC").unwrap_or(if cfg!(windows) {
+         "gcc".to_string()
+     } else {
+         "cc".to_string()
+@@ -118,11 +130,11 @@ fn gcc() -> String {
+ }
+ 
+ fn ar() -> String {
+-    os::getenv("AR").unwrap_or("ar".to_string())
++    get_var("AR").unwrap_or("ar".to_string())
+ }
+ 
+ fn cflags() -> Vec<String> {
+-    os::getenv("CFLAGS").unwrap_or(String::new())
++    get_var("CFLAGS").unwrap_or(String::new())
+        .as_slice().words().map(|s| s.to_string())
+        .collect()
+ }
+-- 
+2.1.3
+

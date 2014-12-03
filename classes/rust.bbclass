@@ -73,3 +73,10 @@ oe_runrustc () {
 	bbnote ${RUSTC} ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
 	"${RUSTC}" ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
 }
+
+# XXX: for some reason bitbake sets BUILD_* & TARGET_* but uses the bare
+# variables for HOST. Alias things to make it easier for us.
+HOST_LDFLAGS  ?= "${LDFLAGS}"
+HOST_CFLAGS   ?= "${CFLAGS}"
+HOST_CXXFLAGS ?= "${CXXFLAGS}"
+HOST_CPPFLAGS ?= "${CPPFLAGS}"

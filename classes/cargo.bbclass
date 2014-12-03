@@ -71,8 +71,8 @@ oe_cargo_build () {
 
 cargo_do_compile () {
 	cd "${B}"
-	export CC="${RUST_CC}"
-	export CFLAGS="${RUST_CFLAGS}"
+	export TARGET_CC="${RUST_CC}"
+	export TARGET_CFLAGS="${RUST_CFLAGS}"
 	export HOST_CC="${RUST_BUILD_CC}"
 	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
 	oe_cargo_build
