@@ -42,15 +42,17 @@ do_configure () {
 	oe_cargo_config
 }
 
-# Used by gcc-rs
-export CC_${TARGET_SYS}="${RUST_CC}"
-export CFLAGS_${TARGET_SYS}="${RUST_CFLAGS}"
-export AR_${TARGET_SYS}="${AR}"
-export CC_${BUILD_SYS}="${RUST_BUILD_CC}"
-export CFLAGS_${BUILD_SYS}="${RUST_BUILD_CFLAGS}"
-export AR_${BUILD_SYS}="${BUILD_AR}"
-
 do_compile () {
+	# env vars are used by gcc-rs
+	export CC="${RUST_CC}"
+	export CFLAGS="${RUST_CFLAGS}"
+	export AR="${AR}"
+	export TARGET_CC="${RUST_CC}"
+	export TARGET_CFLAGS="${RUST_CFLAGS}"
+	export TARGET_AR="${AR}"
+	export HOST_CC="${RUST_BUILD_CC}"
+	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
+	export HOST_AR="${BUILD_AR}"
 	oe_runmake ARGS="--verbose"
 }
 

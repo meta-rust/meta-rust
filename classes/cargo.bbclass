@@ -74,9 +74,12 @@ cargo_do_compile () {
 	export CC="${RUST_CC}"
 	export CFLAGS="${RUST_CFLAGS}"
 	export AR="${AR}"
-	#export HOST_CC="${RUST_BUILD_CC}"
-	#export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
-	#export HOST_AR="${BUILD_AR}"
+	export TARGET_CC="${RUST_CC}"
+	export TARGET_CFLAGS="${RUST_CFLAGS}"
+	export TARGET_AR="${AR}"
+	export HOST_CC="${RUST_BUILD_CC}"
+	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
+	export HOST_AR="${BUILD_AR}"
 	oe_cargo_build
 }
 
