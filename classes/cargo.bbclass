@@ -56,8 +56,10 @@ EOF
 # XXX: this is hard coded based on meta/conf/bitbake.conf
 # TODO: we do quite a bit very similar to this in rust.inc, see if it can be
 # generalized.
-export RUST_CC = "${CCACHE}${TARGET_PREFIX}gcc"
+export RUST_CC = "${CCACHE}${HOST_PREFIX}gcc"
 export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
+export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
+export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
 oe_cargo_build () {
 	which cargo
@@ -71,6 +73,8 @@ cargo_do_compile () {
 	cd "${B}"
 	export CC="${RUST_CC}"
 	export CFLAGS="${RUST_CFLAGS}"
+	export HOST_CC="${RUST_BUILD_CC}"
+	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
 	oe_cargo_build
 }
 
