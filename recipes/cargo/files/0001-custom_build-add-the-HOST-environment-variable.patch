@@ -1,55 +1,49 @@
-From ccbbb148c237bbd6bfb8b98e34fb3ad8404348f0 Mon Sep 17 00:00:00 2001
+From 41de2918fa69fa7e48bcfe7b3e68974befb0d5e6 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 3 Dec 2014 13:09:46 -0500
-Subject: [PATCH] custom_build: add BUILD_KIND env var
+Subject: [PATCH] custom_build: add the HOST environment variable
 
 ---
- src/cargo/ops/cargo_rustc/custom_build.rs | 6 +++++-
- src/doc/build-script.md                   | 3 +++
- tests/test_cargo_compile_custom_build.rs  | 3 +++
- 3 files changed, 11 insertions(+), 1 deletion(-)
+ src/cargo/ops/cargo_rustc/custom_build.rs | 3 ++-
+ src/doc/build-script.md                   | 1 +
+ tests/test_cargo_compile_custom_build.rs  | 2 ++
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/cargo/ops/cargo_rustc/custom_build.rs b/src/cargo/ops/cargo_rustc/custom_build.rs
-index 6791e66..b0d2bf7 100644
+index 6791e66..07ccbaf 100644
 --- a/src/cargo/ops/cargo_rustc/custom_build.rs
 +++ b/src/cargo/ops/cargo_rustc/custom_build.rs
-@@ -61,7 +61,11 @@ pub fn prepare(pkg: &Package, target: &Target, req: Platform,
+@@ -61,7 +61,8 @@ pub fn prepare(pkg: &Package, target: &Target, req: Platform,
                       }))
                       .env("DEBUG", Some(profile.get_debug().to_string()))
                       .env("OPT_LEVEL", Some(profile.get_opt_level().to_string()))
 -                     .env("PROFILE", Some(profile.get_env()));
 +                     .env("PROFILE", Some(profile.get_env()))
-+                     .env("BUILD_KIND", Some(match kind {
-+                         Kind::Host => "HOST",
-+                         Kind::Target => "TARGET",
-+                     }));
++                     .env("HOST", Some(cx.config.rustc_host()));
  
      // Be sure to pass along all enabled features for this package, this is the
      // last piece of statically known information that we have.
 diff --git a/src/doc/build-script.md b/src/doc/build-script.md
-index f5ece41..34de9cd 100644
+index f5ece41..3a3f0ea 100644
 --- a/src/doc/build-script.md
 +++ b/src/doc/build-script.md
-@@ -43,6 +43,9 @@ all passed in the form of environment variables:
+@@ -43,6 +43,7 @@ all passed in the form of environment variables:
  * `TARGET` - the target triple that is being compiled for. Native code should be
               compiled for this triple. Some more information about target
               triples can be found in [clang's own documentation][clang].
-+* `BUILD_KIND` - the kind of the build, one of "TARGET" or "HOST". Use
-+                 discretion when utilizing this, very often the `TARGET`
-+                 variable is preferable.
++* `HOST` - the host triple of the rust compiler.
  * `NUM_JOBS` - the parallelism specified as the top-level parallelism. This can
                 be useful to pass a `-j` parameter to a system like `make`.
  * `CARGO_MANIFEST_DIR` - The directory containing the manifest for the package
 diff --git a/tests/test_cargo_compile_custom_build.rs b/tests/test_cargo_compile_custom_build.rs
-index 9ea71f0..1dd3c6b 100644
+index 9ea71f0..aef3c77 100644
 --- a/tests/test_cargo_compile_custom_build.rs
 +++ b/tests/test_cargo_compile_custom_build.rs
-@@ -99,6 +99,9 @@ test!(custom_build_env_vars {
+@@ -99,6 +99,8 @@ test!(custom_build_env_vars {
                  assert!(out.as_slice().starts_with(r"{0}"));
                  assert!(Path::new(out).is_dir());
  
-+                let kind = os::getenv("BUILD_KIND").unwrap();
-+                assert_eq!(kind.as_slice(), "TARGET");
++                let _host = os::getenv("HOST").unwrap();
 +
                  let _feat = os::getenv("CARGO_FEATURE_FOO").unwrap();
              }}

@@ -1,16 +1,16 @@
-From 5f5cb84a50a505a7876999729d4f53f59fa913ec Mon Sep 17 00:00:00 2001
+From 94205321c27fc40f7c9604558e08db345cd5a81a Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 3 Dec 2014 13:41:11 -0500
 Subject: [PATCH] Support use of namespaced environment variables based on
- target triplet and BUILD_KIND
+ TARGET and HOST
 
 ---
  README.md  | 25 +++++++++++++++++++++++++
- src/lib.rs | 20 +++++++++++++++++---
- 2 files changed, 42 insertions(+), 3 deletions(-)
+ src/lib.rs | 21 ++++++++++++++++++---
+ 2 files changed, 43 insertions(+), 3 deletions(-)
 
 diff --git a/README.md b/README.md
-index bb7047d..73b72d7 100644
+index bb7047d..0268ce1 100644
 --- a/README.md
 +++ b/README.md
 @@ -11,6 +11,31 @@ fn main() {
@@ -40,27 +40,28 @@ index bb7047d..73b72d7 100644
 +
 +If none of these varaibles exist, gcc-rs uses built-in defaults
 +
-+In addition to the the above optional environment variables, `gcc-rs` has some functions with hard requirements on some variables supplied by [cargo's build-script driver][cargo] that it has the `TARGET`, `OUT_DIR`, `OPT_LEVEL`, and `BUILD_KIND` variables
++In addition to the the above optional environment variables, `gcc-rs` has some functions with hard requirements on some variables supplied by [cargo's build-script driver][cargo] that it has the `TARGET`, `OUT_DIR`, `OPT_LEVEL`, and `HOST` variables
 +
  # Windows notes
  
  Currently use of this crate means that Windows users will require gcc to be
 diff --git a/src/lib.rs b/src/lib.rs
-index 51157c8..18718b9 100644
+index 51157c8..bb0cb3c 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -109,8 +109,22 @@ fn run(cmd: &mut Command) {
+@@ -109,8 +109,23 @@ fn run(cmd: &mut Command) {
      }
  }
  
 +fn get_var(var_base: &str) -> Option<String> {
 +    let target = os::getenv("TARGET")
 +        .expect("Environment variable 'TARGET' is unset");
++    let host = os::getenv("HOST")
++        .expect("Environment variable 'HOST' is unset");
++    let kind = if host == target { "HOST" } else { "TARGET" };
 +    let target_u = target.split('-')
 +        .collect::<Vec<&str>>()
 +        .connect("_");
-+    let kind   = os::getenv("BUILD_KIND")
-+        .expect("Environment variable 'BUILD_KIND' is unset");
 +    os::getenv(format!("{}_{}", var_base, target).as_slice())
 +        .or_else(|| os::getenv(format!("{}_{}", var_base, target_u).as_slice()))
 +        .or_else(|| os::getenv(format!("{}_{}", kind, var_base).as_slice()))
@@ -73,7 +74,7 @@ index 51157c8..18718b9 100644
          "gcc".to_string()
      } else {
          "cc".to_string()
-@@ -118,11 +132,11 @@ fn gcc() -> String {
+@@ -118,11 +133,11 @@ fn gcc() -> String {
  }
  
  fn ar() -> String {

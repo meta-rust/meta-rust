@@ -2,7 +2,7 @@ SRCREV_cargo = "a0f0abca4f718e36ddc7cc23f9bce4c51d93cbe5"
 require cargo.inc
 
 SRC_URI += " \
-	file://0001-custom_build-add-BUILD_KIND-env-var.patch \
+	file://0001-custom_build-add-the-HOST-environment-variable.patch \
 \
 	git://github.com/carllerche/curl-rust.git;protocol=https;name=curl-rust;destsuffix=curl-rust \
 	file://curl-rust/0001-curl-sys-avoid-explicitly-linking-in-openssl-If-it-.patch;patchdir=../curl-rust \
@@ -13,7 +13,6 @@ SRC_URI += " \
 \
 	git://github.com/alexcrichton/gcc-rs.git;protocol=https;name=gcc-rs;destsuffix=gcc-rs \
 	file://gcc-rs/0001-Support-use-of-namespaced-environment-variables-base.patch;patchdir=../gcc-rs \
-	file://gcc-rs/0001-Avoid-death-when-lacking-BUILD_KIND.patch;patchdir=../gcc-rs \
 "
 
 SRCREV_curl-rust = "5d0f5c8848e3cf1e12480a1923ae888e24d58f63"
