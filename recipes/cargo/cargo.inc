@@ -44,9 +44,9 @@ do_configure () {
 
 do_compile () {
 	# env vars are used by gcc-rs
-	export CC="${RUST_CC}"
-	export CFLAGS="${RUST_CFLAGS}"
-	export AR="${AR}"
+	# HOST is set once we have this cargo, but we need to manually
+	# set it for the bootstrap.
+	export HOST="${BUILD_SYS}"
 	export TARGET_CC="${RUST_CC}"
 	export TARGET_CFLAGS="${RUST_CFLAGS}"
 	export TARGET_AR="${AR}"
