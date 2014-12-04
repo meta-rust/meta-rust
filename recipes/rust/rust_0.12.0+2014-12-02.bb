@@ -13,4 +13,5 @@ SRC_URI_append = "\
 	file://0009-XXX-remove-conflicting-realpath-hack.patch \
 	file://0010-XXX-configure-unneeded-windows-check.patch \
 	file://0011-Parallelize-submake-invocations.patch \
+	file://0020-std-thread_local-workaround-for-NULL-__dso_handle.patch \
 "
