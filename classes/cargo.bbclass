@@ -94,12 +94,17 @@ cargo_do_compile () {
 
 # All but the most simple projects will need to override this.
 cargo_do_install () {
+	local have_installed=false
 	install -d "${D}${bindir}"
 	for tgt in "${B}/target/${CARGO_TARGET_DIR}/"*; do
 		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
 			install -m755 "$tgt" "${D}${bindir}"
+			have_installed=true
 		fi
 	done
+	if ! $have_installed; then
+		die "Did not find anything to install"
+	fi
 }
 
 EXPORT_FUNCTIONS do_compile do_install do_configure
