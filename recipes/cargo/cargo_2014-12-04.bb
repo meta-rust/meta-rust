@@ -2,7 +2,7 @@ SRCREV_cargo = "70f5205dba9887d8dab07f72dbc507aa74b12c1f"
 require cargo.inc
 
 SRC_URI += " \
-	file:///0001-custom_build-build-output-goes-in-the-directory-for-.patch \
+	file://0001-custom_build-build-output-goes-in-the-directory-for-.patch \
 \
 	git://github.com/carllerche/curl-rust.git;protocol=https;name=curl-rust;destsuffix=curl-rust \
 	file://curl-rust/0001-curl-sys-avoid-explicitly-linking-in-openssl-If-it-.patch;patchdir=../curl-rust \

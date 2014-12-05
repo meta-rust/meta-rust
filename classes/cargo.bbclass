@@ -1,6 +1,6 @@
 inherit rust
 
-CARGO = "cargo"
+export CARGO ?= "cargo"
 
 def cargo_base_dep(d):
     deps = ""
@@ -23,7 +23,7 @@ export RUST_BACKTRACE = "1"
 
 EXTRA_OECARGO_PATHS ??= ""
 
-oe_cargo_config () {
+cargo_do_configure () {
 	mkdir -p .cargo
 	# FIXME: we currently blow away the entire config because duplicate
 	# sections are treated as a parse error by cargo (causing the entire
@@ -61,16 +61,15 @@ export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
+export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 oe_cargo_build () {
 	which cargo
 	which rustc
-	bbnote ${CARGO} build --target ${TARGET_SYS} "$@"
-	oe_cargo_config
-	"${CARGO}" build -v --target "${TARGET_SYS}" --release "$@"
+	bbnote ${CARGO} build ${CARGO_BUILD_FLAGS} "$@"
+	"${CARGO}" build ${CARGO_BUILD_FLAGS} "$@"
 }
 
-cargo_do_compile () {
-	cd "${B}"
+oe_cargo_fix_env () {
 	export CC="${RUST_CC}"
 	export CFLAGS="${RUST_CFLAGS}"
 	export AR="${AR}"
@@ -80,9 +79,15 @@ cargo_do_compile () {
 	export HOST_CC="${RUST_BUILD_CC}"
 	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
 	export HOST_AR="${BUILD_AR}"
+}
+
+cargo_do_compile () {
+	cd "${B}"
+	oe_cargo_fix_env
 	oe_cargo_build
 }
 
+# All but the most simple projects will need to override this.
 cargo_do_install () {
 	install -d "${D}${bindir}"
 	for tgt in "${B}/target/${HOST_SYS}/release/"*; do
@@ -92,4 +97,4 @@ cargo_do_install () {
 	done
 }
 
-EXPORT_FUNCTIONS do_compile do_install
+EXPORT_FUNCTIONS do_compile do_install do_configure

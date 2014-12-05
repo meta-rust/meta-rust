@@ -39,7 +39,7 @@ do_configure () {
 
 	# cargo downloads a cargo snapshot to build itself using cargo, we need
 	# to override it's arch info.
-	oe_cargo_config
+	cargo_do_configure
 }
 
 do_compile () {
@@ -47,12 +47,7 @@ do_compile () {
 	# HOST is set once we have this cargo, but we need to manually
 	# set it for the bootstrap.
 	export HOST="${BUILD_SYS}"
-	export TARGET_CC="${RUST_CC}"
-	export TARGET_CFLAGS="${RUST_CFLAGS}"
-	export TARGET_AR="${AR}"
-	export HOST_CC="${RUST_BUILD_CC}"
-	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
-	export HOST_AR="${BUILD_AR}"
+	oe_cargo_fix_env
 	oe_runmake ARGS="--verbose"
 }
 
