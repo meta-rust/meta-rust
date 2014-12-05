@@ -1,7 +1,7 @@
-From 9af37c0bae0925de62b106b8bad3c8b3c81a20b9 Mon Sep 17 00:00:00 2001
+From 26e8dcbdca19b167f69611322e761a315e869580 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 15:50:13 -0500
-Subject: [PATCH 02/11] std/io/process: add Show tests
+Subject: [PATCH 02/10] std/io/process: add Show tests
 
 ---
  src/libstd/io/process.rs | 12 ++++++++++++

@@ -1,7 +1,7 @@
-From 49d9ff71a7ab92c28241f599af0b2343f2d9f442 Mon Sep 17 00:00:00 2001
+From 592d635387c99882fe0a8204b4efa6177e3473c3 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 08/11] configure: support --bindir, and extend libdir to
+Subject: [PATCH 08/10] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -10,33 +10,80 @@ Allows --bindir and --libdir to have multiple elements in their paths
 relative to sysroot, and allows libdir to end in an arbitrary directory
 (previously it was limited to lib, lib32, and lib64).
 
-Note that this adds the requirement of the 'realpath' tool
+Note that this assumes absolute paths start with '/', which may break
+windows platforms
 ---
- configure                           | 10 +++++
+ configure                           | 51 +++++++++++++++++-------
  mk/host.mk                          |  6 ++-
  mk/install.mk                       |  4 +-
  mk/main.mk                          | 11 ++++++
  mk/perf.mk                          |  4 +-
  mk/prepare.mk                       |  4 +-
- src/etc/install.sh                  | 29 +++++++++++---
+ src/etc/install.sh                  | 54 ++++++++++++++++++++++---
  src/librustc/metadata/filesearch.rs | 78 ++++++++++++++-----------------------
  src/librustc_trans/back/link.rs     |  3 +-
- 9 files changed, 85 insertions(+), 64 deletions(-)
+ 9 files changed, 137 insertions(+), 78 deletions(-)
 
 diff --git a/configure b/configure
-index 613f62d..bc92474 100755
+index 70d6ba3..c79a218 100755
 --- a/configure
 +++ b/configure
-@@ -340,6 +340,7 @@ need_cmd date
- need_cmd tr
- need_cmd sed
- need_cmd file
-+need_cmd realpath
+@@ -309,6 +309,31 @@ envopt() {
+     fi
+ }
  
- msg "inspecting environment"
++abspath () {
++	case "$1" in
++	/*) echo "$1" ;;
++	*)  echo "$PWD/$1" ;;
++	esac
++}
++
++relpath () {
++	local src=$(abspath "$1")
++	local dst=$(abspath "$2")
++	local common=$src
++	local result=
++
++	# Start by checking if the whole src is common, then strip off pack
++	# components until we find the common element.
++	while [ "${dst#"$common"}" = "$dst" ]; do
++		common=$(dirname "$common")
++		result="../$result"
++	done
++
++	local down="${dst#"$common"}"
++	result="${result}${down#/}"
++	echo "$result"
++}
++
+ to_llvm_triple() {
+     case $1 in
+         i686-w64-mingw32) echo i686-pc-windows-gnu ;;
+@@ -549,31 +574,28 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
+ then
+     CFG_LIBDIR_RELATIVE=bin
+-else
+-    CFG_LIBDIR_RELATIVE=lib
+ fi
  
-@@ -568,12 +569,20 @@ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ];
-     err "libdir on windows should be set to 'bin'"
+-valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (do not set it on windows platform)"
++valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries"
+ 
+-case "$CFG_LIBDIR" in
+-    "$CFG_PREFIX"/*) CAT_INC=2;;
+-    "$CFG_PREFIX"*)  CAT_INC=1;;
+-    *)
+-        err "libdir must begin with the prefix. Use --prefix to set it accordingly.";;
+-esac
+-
+-CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
+-
+-if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
+-    err "libdir on windows should be set to 'bin'"
++if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "$CFG_BINDIR_RELATIVE" ]; then
++  err "Windows builds currently require that LIBDIR == BINDIR (we have libdir{$CFG_LIBDIR_RELATIVE} != bindir{$CFG_BINDIR_RELATIVE} )"
  fi
  
 +CFG_BINDIR_RELATIVE=bin
@@ -50,13 +97,13 @@ index 613f62d..bc92474 100755
  
 +# Determine libdir and bindir relative to prefix
 +step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
-+CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
-+CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++CFG_BINDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_LIBDIR}")
 +
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1333,6 +1342,7 @@ putvar CFG_PREFIX
+@@ -1332,6 +1354,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -174,18 +221,43 @@ index d404d3d..afc6d81 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 diff --git a/src/etc/install.sh b/src/etc/install.sh
-index 8bc48fc..e524510 100644
+index 8bc48fc..05dd983 100644
 --- a/src/etc/install.sh
 +++ b/src/etc/install.sh
-@@ -213,6 +213,7 @@ need_cmd grep
- need_cmd uname
- need_cmd tr
- need_cmd sed
-+need_cmd realpath
+@@ -205,6 +205,32 @@ absolutify() {
+     ABSOLUTIFIED="${FILE_PATH}"
+ }
  
- CFG_SRC_DIR="$(cd $(dirname $0) && pwd)"
- CFG_SELF="$0"
-@@ -285,6 +286,8 @@ then
++abspath () {
++	case "$1" in
++	/*) echo "$1" ;;
++	*)  echo "$PWD/$1" ;;
++	esac
++}
++
++relpath () {
++	local src=$(abspath "$1")
++	local dst=$(abspath "$2")
++	local common=$src
++	local result=
++
++	# Start by checking if the whole src is common, then strip off pack
++	# components until we find the common element.
++	while [ "${dst#"$common"}" = "$dst" ]; do
++		common=$(dirname "$common")
++		result="../$result"
++	done
++
++	local down="${dst#"$common"}"
++	result="${result}${down#/}"
++	echo "$result"
++}
++
++
+ msg "looking for install programs"
+ need_cmd mkdir
+ need_cmd printf
+@@ -285,6 +311,8 @@ then
      CFG_LIBDIR_RELATIVE=bin
  fi
  
@@ -194,7 +266,7 @@ index 8bc48fc..e524510 100644
  if [ "$CFG_OSTYPE" = "pc-mingw32" ] || [ "$CFG_OSTYPE" = "w64-mingw32" ]
  then
      CFG_LD_PATH_VAR=PATH
-@@ -311,6 +314,7 @@ case "$CFG_LIBDIR" in
+@@ -311,6 +339,7 @@ case "$CFG_LIBDIR" in
  esac
  CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
  
@@ -202,19 +274,19 @@ index 8bc48fc..e524510 100644
  valopt mandir "${CFG_PREFIX}/share/man" "install man pages in PATH"
  
  if [ $HELP -eq 1 ]
-@@ -319,6 +323,11 @@ then
+@@ -319,6 +348,11 @@ then
      exit 0
  fi
  
 +# Determine libdir and bindir relative to prefix
 +step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
-+CFG_BINDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_BINDIR}")
-+CFG_LIBDIR_RELATIVE=$(realpath -m --relative-to="${CFG_PREFIX}" "${CFG_LIBDIR}")
++CFG_BINDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_BINDIR}")
++CFG_LIBDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_LIBDIR}")
 +
  step_msg "validating $CFG_SELF args"
  validate_opt
  
-@@ -332,8 +341,8 @@ then
+@@ -332,8 +366,8 @@ then
      if [ -z "${CFG_UNINSTALL}" ]
      then
          msg "verifying platform can run binaries"
@@ -225,7 +297,7 @@ index 8bc48fc..e524510 100644
          if [ $? -ne 0 ]
          then
              err "can't execute rustc binary on this platform"
-@@ -431,6 +440,7 @@ need_ok "failed to create installed manifest"
+@@ -431,6 +465,7 @@ need_ok "failed to create installed manifest"
  
  # Now install, iterate through the new manifest and copy files
  while read p; do
@@ -233,7 +305,7 @@ index 8bc48fc..e524510 100644
  
      # Decide the destination of the file
      FILE_INSTALL_PATH="${CFG_PREFIX}/$p"
-@@ -441,6 +451,13 @@ while read p; do
+@@ -441,6 +476,13 @@ while read p; do
          FILE_INSTALL_PATH="${CFG_LIBDIR}/$pp"
      fi
  
@@ -247,7 +319,7 @@ index 8bc48fc..e524510 100644
      if echo "$p" | grep "^share/man/" > /dev/null
      then
          pp=`echo $p | sed 's/^share\/man\///'`
-@@ -458,7 +475,7 @@ while read p; do
+@@ -458,7 +500,7 @@ while read p; do
  
      # Install the file
      msg "${FILE_INSTALL_PATH}"
@@ -256,7 +328,7 @@ index 8bc48fc..e524510 100644
      then
          install -m755 "${CFG_SRC_DIR}/$p" "${FILE_INSTALL_PATH}"
      else
-@@ -493,11 +510,11 @@ fi
+@@ -493,11 +535,11 @@ fi
  if [ -z "${CFG_DISABLE_VERIFY}" ]
  then
      msg "verifying installed binaries are executable"
@@ -403,10 +475,10 @@ index 89f3343..b626308 100644
  
  // The name of rustc's own place to organize libraries.
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 3715256..efa7ed4 100644
+index d8cdffe..76c2bd8 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -1014,11 +1014,10 @@ fn link_args(cmd: &mut Command,
+@@ -1002,11 +1002,10 @@ fn link_args(cmd: &mut Command,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {

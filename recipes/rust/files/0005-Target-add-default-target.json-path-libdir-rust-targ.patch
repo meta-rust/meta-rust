@@ -1,7 +1,7 @@
-From 57865c3a06909470918db23e3d5c5b0fa925a29c Mon Sep 17 00:00:00 2001
+From e6faded5eb13349f4d7aba02d39f3fef0d8b1ef6 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 05/11] Target: add default target.json path:
+Subject: [PATCH 05/10] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH 05/11] Target: add default target.json path:
  3 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 3c2dbae..e99bf2c 100644
+index 33de2c9..bc90f90 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
 @@ -546,8 +546,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {

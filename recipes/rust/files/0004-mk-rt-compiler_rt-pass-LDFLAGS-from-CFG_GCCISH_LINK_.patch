@@ -1,7 +1,7 @@
-From 9f5da84a1bfc2f17c56af11c98e03f80cdd0505c Mon Sep 17 00:00:00 2001
+From 1f6acefac88b2a175472415295bf75d51b36cfb8 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 16:14:15 -0500
-Subject: [PATCH 04/11] mk/rt/compiler_rt: pass LDFLAGS from
+Subject: [PATCH 04/10] mk/rt/compiler_rt: pass LDFLAGS from
  CFG_GCCISH_LINK_FLAGS
 
 ---
