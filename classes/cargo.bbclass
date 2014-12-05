@@ -17,6 +17,7 @@ PATCHTOOL = "patch"
 # Cargo only supports in-tree builds at the moment
 B = "${S}"
 
+
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
 export RUST_BACKTRACE = "1"
@@ -62,6 +63,10 @@ export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
 export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
+
+# This is based on the content of CARGO_BUILD_FLAGS and generally will need to
+# change if CARGO_BUILD_FLAGS changes.
+export CARGO_TARGET_DIR="${HOST_SYS}/release"
 oe_cargo_build () {
 	which cargo
 	which rustc
@@ -90,7 +95,7 @@ cargo_do_compile () {
 # All but the most simple projects will need to override this.
 cargo_do_install () {
 	install -d "${D}${bindir}"
-	for tgt in "${B}/target/${HOST_SYS}/release/"*; do
+	for tgt in "${B}/target/${CARGO_TARGET_DIR}/"*; do
 		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
 			install -m755 "$tgt" "${D}${bindir}"
 		fi
