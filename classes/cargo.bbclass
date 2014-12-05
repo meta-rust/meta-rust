@@ -1,6 +1,6 @@
 inherit rust
 
-export CARGO ?= "cargo"
+CARGO ?= "cargo"
 
 def cargo_base_dep(d):
     deps = ""
