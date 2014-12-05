@@ -1,0 +1,26 @@
+From 9b4cbb5a0faaa8fac85e8703ab67cac26cb7f99d Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Fri, 5 Dec 2014 01:54:33 -0500
+Subject: [PATCH] custom_build: build output goes in the directory for the req,
+ not hard coded to Target
+
+---
+ src/cargo/ops/cargo_rustc/custom_build.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/cargo/ops/cargo_rustc/custom_build.rs b/src/cargo/ops/cargo_rustc/custom_build.rs
+index 07ccbaf..ed03074 100644
+--- a/src/cargo/ops/cargo_rustc/custom_build.rs
++++ b/src/cargo/ops/cargo_rustc/custom_build.rs
+@@ -39,7 +39,7 @@ pub fn prepare(pkg: &Package, target: &Target, req: Platform,
+     let kind = match req { Platform::Plugin => Kind::Host, _ => Kind::Target, };
+     let (script_output, build_output) = {
+         (cx.layout(pkg, Kind::Host).build(pkg),
+-         cx.layout(pkg, Kind::Target).build_out(pkg))
++         cx.layout(pkg, kind).build_out(pkg))
+     };
+ 
+     // Building the command to execute
+-- 
+2.0.4
+
