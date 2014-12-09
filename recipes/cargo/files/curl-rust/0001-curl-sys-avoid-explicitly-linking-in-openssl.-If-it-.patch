@@ -1,19 +1,19 @@
-From b5c97df71c3ed0a6a31281e679cb77440293ef55 Mon Sep 17 00:00:00 2001
+From 56ce13c48b28b85071e234317cc90371bac1fd48 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 11:50:28 -0500
-Subject: [PATCH] curl-sys: avoid explicitly linking in openssl. If it is
+Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
  needed, pkgconfig will pull it in
 
 ---
- curl-sys/Cargo.toml | 14 --------------
+ curl-sys/Cargo.toml | 16 ----------------
  curl-sys/lib.rs     |  1 -
- 2 files changed, 15 deletions(-)
+ 2 files changed, 17 deletions(-)
 
 diff --git a/curl-sys/Cargo.toml b/curl-sys/Cargo.toml
-index 20bb49a..80a320f 100644
+index d166ae9..80a320f 100644
 --- a/curl-sys/Cargo.toml
 +++ b/curl-sys/Cargo.toml
-@@ -14,17 +14,3 @@ path = "lib.rs"
+@@ -14,19 +14,3 @@ path = "lib.rs"
  
  [dependencies.libz-sys]
  git = "https://github.com/alexcrichton/libz-sys"
@@ -26,6 +26,8 @@ index 20bb49a..80a320f 100644
 -[target.i686-unknown-linux-gnu.dependencies.openssl-sys]
 -  git = "https://github.com/sfackler/rust-openssl"
 -[target.x86_64-unknown-linux-gnu.dependencies.openssl-sys]
+-  git = "https://github.com/sfackler/rust-openssl"
+-[target.arm-unknown-linux-gnueabihf.dependencies.openssl-sys]
 -  git = "https://github.com/sfackler/rust-openssl"
 -[target.i686-unknown-freebsd.dependencies.openssl-sys]
 -  git = "https://github.com/sfackler/rust-openssl"

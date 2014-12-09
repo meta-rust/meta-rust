@@ -1,8 +1,8 @@
-From c8c54e266bad3e568f55caea4f061182a0d9fd23 Mon Sep 17 00:00:00 2001
+From d71d6fa0b9be06cd84eb6c8f7411c624725431c4 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 12:26:48 -0500
-Subject: [PATCH] openssl-sys is used in curl-rust, so include it explicitly
- here
+Subject: [PATCH 2/2] openssl-sys is used in curl-rust, so include it
+ explicitly here
 
 ---
  Cargo.toml | 3 +++
