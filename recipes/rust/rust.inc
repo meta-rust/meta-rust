@@ -272,11 +272,14 @@ do_configure () {
 	# where we're reinstalling the compiler. May want to try for a real
 	# path based on bitbake vars
         # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-        local_rust_root=$(dirname $(dirname $(which rustc)))
-        if [ -e "$local_rust_root/bin/rustc" ]; then
-            local_maybe_enable=enable
-        else
-            local_maybe_enable=disable
+        local_rustc=$(which rustc)
+        local_maybe_enable=disable
+        local_rust_root=/not/set/do/not/use
+        if [ -n "$local_rustc" ]; then
+            local_rust_root=$(dirname $(dirname $local_rustc))
+            if [ -e "$local_rust_root/bin/rustc" ]; then
+                local_maybe_enable=enable
+            fi
         fi
 
 	# - rpath is required otherwise rustc fails to resolve symbols
