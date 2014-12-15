@@ -1,10 +1,8 @@
 inherit cross
 
 # Otherwise we'll depend on what we provide
-INHIBIT_DEFAULT_DEPS = "1"
-
-# XXX: will this glibc be correctly parsed? (glibc doesn't provice a virtual/${TARGET_PREFIX}libc)
-DEPENDS += "virtual/${TARGET_PREFIX}gcc rust-native glibc"
+INHIBIT_DEFAULT_RUST_DEPS = "1"
+DEPENDS += "rust-native"
 PROVIDES = "virtual/${TARGET_PREFIX}rust"
 PN = "rust-cross-${TARGET_ARCH}"
 
