@@ -3,40 +3,22 @@
 This openembedded layer provides the rust compiler, tools for building packages
 (cargo), and a few example projects.
 
-By default we assume that there is a local `cargo` (ie: `cargo-native`). To disable this and try to build cargo, add:
-
-    CARGO_PROVIDED = ""
-
-To a conf file (probably local.conf)
-
 ## What works:
 
  - MACHINE="beaglebone" (TARGET_SYS=arm-poky-linux-gnueabi)
  - Building rust-native, rust-cross, rust-hello-world, cargo-native
  - Running/using all of these (including rust-hello-world)
+ - cargo-native (use a local package for -native)
 
 ## What doesn't:
 
  - Probably some of the untested things
- - cargo and cargo-native (use a local package for -native)
-
-### What about cargo?:
-
-We provide .bb files for cargo (-target) and cargo-native, and they are working
-every now-and-then.
-Unfortunately, rust moves a bit too quickly for cargo to keep up, and it ends
-up broken fairly often.
-
-Very often we'll want newer versions of rust than cargo is able to build with.
-Thankfully, we don't need any custom cargo configuration, and can use a vanilla
-cargo binary.
-
-We add "cargo-native" to ASSUME_PROVIDED unless overridden by clearing CARGO_PROVIDED (via conf/layer.conf)
 
 ## What's untested:
 
  - rust (built for target)
  - Other TARGETs
+ - cargo
 
 ## Common issues when packaging things using cargo
 

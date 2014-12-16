@@ -14,7 +14,7 @@ def rust_base_dep(d):
             deps += " rust-native"
     return deps
 
-BASEDEPENDS_append = " ${@rust_base_dep(d)}"
+DEPENDS_append = " ${@rust_base_dep(d)}"
 
 def rust_base_triple(d, thing):
     '''
