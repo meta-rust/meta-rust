@@ -2,7 +2,7 @@ inherit native
 PN = "rust-native"
 
 # Otherwise we'll depend on what we provide
-INHIBIT_DEFAULT_DEPS = "1"
+INHIBIT_DEFAULT_RUST_DEPS = "1"
 # We don't need to depend on gcc-native because yocto assumes it exists
 PROVIDES = "virtual/${TARGET_PREFIX}rust"
 
