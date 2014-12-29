@@ -23,7 +23,12 @@ PV .= "+git${SRCPV}"
 S = "${WORKDIR}/git"
 B = "${S}"
 
+PACKAGECONFIG ??= ""
+PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
+
 do_configure () {
+	${@bb.utils.contains('PACKAGECONFIG', 'rust-snapshot', '${S}/.travis.install.deps.sh', ':', d)}
+
 	"${S}/configure" \
 		"--prefix=${prefix}"			\
 		"--build=${BUILD_SYS}"			\
@@ -35,6 +40,8 @@ do_configure () {
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
+		"--disable-verify-install"		\
+		${EXTRA_OECONF} \
 		|| die "Could not configure cargo"
 
 	# cargo downloads a cargo snapshot to build itself using cargo, we need
