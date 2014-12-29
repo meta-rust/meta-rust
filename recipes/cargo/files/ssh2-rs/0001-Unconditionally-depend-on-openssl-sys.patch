@@ -1,39 +1,39 @@
-From 95e10eb73f61a3aef83fb387f22ea6c33732bc8d Mon Sep 17 00:00:00 2001
+From fc9101ce66e93118dfbdf9897715e2c09f5c7abc Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 10:51:31 -0500
 Subject: [PATCH] Unconditionally depend on openssl-sys
 
 ---
- libssh2-sys/Cargo.toml | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
+ libssh2-sys/Cargo.toml | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
 
 diff --git a/libssh2-sys/Cargo.toml b/libssh2-sys/Cargo.toml
-index 74fa893..c3fa4db 100644
+index e03f1db..515abb4 100644
 --- a/libssh2-sys/Cargo.toml
 +++ b/libssh2-sys/Cargo.toml
-@@ -12,20 +12,8 @@ path = "lib.rs"
- [dependencies.libz-sys]
-   git = "https://github.com/alexcrichton/libz-sys"
+@@ -14,21 +14,7 @@ path = "lib.rs"
  
--[target.i686-apple-darwin.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
--[target.x86_64-apple-darwin.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
--[target.i686-unknown-linux-gnu.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
--[target.x86_64-unknown-linux-gnu.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
--[target.arm-unknown-linux-gnueabihf.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
--[target.i686-unknown-freebsd.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
--[target.x86_64-unknown-freebsd.dependencies.openssl-sys]
--  git = "https://github.com/sfackler/rust-openssl"
-+[dependencies.openssl-sys]
-+ git = "https://github.com/sfackler/rust-openssl"
+ [dependencies]
+ libz-sys = "0.1.0"
+-
+-[target.i686-apple-darwin.dependencies]
+-openssl-sys = "0.2.0"
+-[target.x86_64-apple-darwin.dependencies]
+-openssl-sys = "0.2.0"
+-[target.i686-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.2.0"
+-[target.x86_64-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.2.0"
+-[target.arm-unknown-linux-gnueabihf.dependencies]
+-openssl-sys = "0.2.0"
+-[target.i686-unknown-freebsd.dependencies]
+-openssl-sys = "0.2.0"
+-[target.x86_64-unknown-freebsd.dependencies]
+-openssl-sys = "0.2.0"
++openssl-sys = "*"
  
- [build-dependencies.pkg-config]
- git = "https://github.com/alexcrichton/pkg-config-rs"
+ [build-dependencies]
+ pkg-config = "0.1.0"
 -- 
-2.1.3
+2.2.1
 
