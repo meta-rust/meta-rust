@@ -334,6 +334,13 @@ do_compile () {
 rust_do_install () {
 	rust_runmake DESTDIR="${D}" install
 
+        # Rust's install.sh doesn't mark executables as executable because
+        # we're using a custom bindir, do it ourselves.
+        chmod +x "${D}/${bindir}/rustc"
+        chmod +x "${D}/${bindir}/rustdoc"
+        chmod +x "${D}/${bindir}/rust-lldb"
+
+        # Install our custon target.json files
 	local td="${D}${libdir}/rust/targets/"
 	install -d "$td"
 	for tgt in "${WORKDIR}/targets/"* ; do
