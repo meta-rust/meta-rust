@@ -1,4 +1,4 @@
-SRCREV = "77cd5cc54eda4243614be32b893db512beab0f8e"
+SRCREV = "71123902e17ad339649f33423995eac78da40e3c"
 require rust-git.inc
 
 SRC_URI_append = "\
@@ -12,4 +12,6 @@ SRC_URI_append = "\
 	file://0008-configure-support-bindir-and-extend-libdir-to-non-bl.patch \
 	file://0009-Parallelize-submake-invocations.patch \
 	file://0010-std-thread_local-workaround-for-NULL-__dso_handle.patch \
+\
+	file://rust-0.13.0-no-ldconfig.patch \
 "

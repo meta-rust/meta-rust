@@ -1,4 +1,4 @@
-From 26e8dcbdca19b167f69611322e761a315e869580 Mon Sep 17 00:00:00 2001
+From 5ec27dbc4ad64d837e15ff30c4489e8bdd045ed9 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 15:50:13 -0500
 Subject: [PATCH 02/10] std/io/process: add Show tests
@@ -8,7 +8,7 @@ Subject: [PATCH 02/10] std/io/process: add Show tests
  1 file changed, 12 insertions(+)
 
 diff --git a/src/libstd/io/process.rs b/src/libstd/io/process.rs
-index 90e5567..67476f0 100644
+index 3319408..3f8c7ff 100644
 --- a/src/libstd/io/process.rs
 +++ b/src/libstd/io/process.rs
 @@ -1237,4 +1237,16 @@ mod tests {
@@ -29,5 +29,5 @@ index 90e5567..67476f0 100644
 +    }
  }
 -- 
-2.1.3
+2.2.1
 

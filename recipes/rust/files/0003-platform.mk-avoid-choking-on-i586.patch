@@ -1,4 +1,4 @@
-From fdff8ab61314dcb89c4868f9508714ca3bb35999 Mon Sep 17 00:00:00 2001
+From a3192892b91d1df606f4b237b1cc08118d66658c Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Sat, 15 Nov 2014 20:12:48 -0500
 Subject: [PATCH 03/10] platform.mk: avoid choking on i586
@@ -23,5 +23,5 @@ index 7ca2473..cc69851 100644
  $(foreach t,$(CFG_TARGET),$(eval $(call DEF_HOST_VAR,$(t))))
  $(foreach t,$(CFG_TARGET),$(info cfg: host for $(t) is $(HOST_$(t))))
 -- 
-2.1.3
+2.2.1
 

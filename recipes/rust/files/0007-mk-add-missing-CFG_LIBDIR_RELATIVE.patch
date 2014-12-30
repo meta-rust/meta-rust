@@ -1,4 +1,4 @@
-From fda66b4ff221ef687878fa32792d5e1718882402 Mon Sep 17 00:00:00 2001
+From 544d3997edacfd414664c14cc628d573023af28e Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:48:14 -0500
 Subject: [PATCH 07/10] mk: add missing CFG_LIBDIR_RELATIVE
@@ -23,5 +23,5 @@ index a9f4590..d254941 100644
  
  # Run the reference lexer against libsyntax and compare the tokens and spans.
 -- 
-2.1.3
+2.2.1
 

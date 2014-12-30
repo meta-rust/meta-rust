@@ -1,4 +1,4 @@
-From acf5bafb0c2c2fcb35932c94a7faf2f62aa0eb3f Mon Sep 17 00:00:00 2001
+From b127eaf1de5c38a98aadc3fe9fcac952c850504e Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:52:56 -0500
 Subject: [PATCH 06/10] mk: for stage0, use RUSTFLAGS to override target libs
@@ -64,5 +64,5 @@ index 4aed1ce..867d919 100644
  
  endef
 -- 
-2.1.3
+2.2.1
 
