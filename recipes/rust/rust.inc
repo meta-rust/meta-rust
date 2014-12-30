@@ -310,7 +310,7 @@ do_configure () {
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
-		${@base_conditional('USE_LOCAL_RUST', '1', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '', d)} \
+		${@base_conditional('USE_LOCAL_RUST', '1', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
 		${EXTRA_OECONF}
 }
 
