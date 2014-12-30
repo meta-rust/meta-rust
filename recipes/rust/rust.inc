@@ -14,7 +14,9 @@ LIC_FILES_CHKSUM ="\
 # Controls whether we use the local rust.
 # For -native, we set this to "0" by default.
 # This avoids us downloading and using the snapshot for every rust build.
-USE_LOCAL_RUST ??= "1"
+## XXX: temporarily disabled while there are breaking changes conditional on
+## stage0 (format_args!() change)
+USE_LOCAL_RUST ??= "0"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
