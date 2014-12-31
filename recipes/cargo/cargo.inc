@@ -23,7 +23,7 @@ PV .= "+git${SRCPV}"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-PACKAGECONFIG ??= ""
+# PACKAGECONFIG is set in .bb files
 PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
 
 do_configure () {
@@ -50,10 +50,6 @@ do_configure () {
 }
 
 do_compile () {
-	# env vars are used by gcc-rs
-	# HOST is set once we have this cargo, but we need to manually
-	# set it for the bootstrap.
-	export HOST="${BUILD_SYS}"
 	oe_cargo_fix_env
 	oe_runmake ARGS="--verbose"
 }

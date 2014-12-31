@@ -1,4 +1,6 @@
 SRCREV = "71123902e17ad339649f33423995eac78da40e3c"
+# pre-ascii reform
+#SRCREV = "0201334439393bed205c1148bed425b80aab8c22"
 require rust-git.inc
 
 SRC_URI_append = "\

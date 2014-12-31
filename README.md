@@ -36,6 +36,23 @@ ecosystem get their act together, you'll need to supply patches to the
 misbehaving packages. See `recipies/cargo/cargo_*.bb` for an example of how to
 do this.
 
+## Cargo
+
+Cargo may not work with the latest rust.
+You can either:
+
+  - use the system cargo:
+
+    CARGO_PROVIDED = "cargo-native"
+    ASSUME_PROVIDED += "${CARGO_PROVIDED}"
+
+  - or have cargo use a rust snapshot
+
+    PACKAGECONFIG_append_pn-cargo-native = " rust-snapshot"
+
+For now, we default to using the 'rust-snapshot' PACKAGECONFIG to avoid lots of
+failures.
+
 ## TODO
 
  - Include downloaded stage0 snapshot in `SRC_URI`
