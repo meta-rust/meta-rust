@@ -25,7 +25,7 @@ export RUST_TARGET_PATH="${WORKDIR}/targets/"
 DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
 LLVM_TARGET[arm] = "arm-unknown-linux-gnueabihf"
 TARGET_ENDIAN[arm] = "little"
-TARGET_WORD_SIZE[arm] = "32"
+TARGET_POINTER_WIDTH[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
 PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
 
@@ -33,21 +33,21 @@ PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
 DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
-TARGET_WORD_SIZE[x86_64] = "64"
+TARGET_POINTER_WIDTH[x86_64] = "64"
 PRE_LINK_ARGS[x86_64] = "-Wl,--as-needed -m64"
 
 ## i686-unknown-linux-gnu
 DATA_LAYOUT[i686] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
-TARGET_WORD_SIZE[i686] = "32"
+TARGET_POINTER_WIDTH[i686] = "32"
 PRE_LINK_ARGS[i686] = "-Wl,--as-needed -m32"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
 DATA_LAYOUT[i586] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
-TARGET_WORD_SIZE[i586] = "32"
+TARGET_POINTER_WIDTH[i586] = "32"
 PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
 # XXX: BITBAKE-BUG: *_PRE_LINK_ARGS used to be set via function invocation, but
@@ -146,7 +146,7 @@ def rust_gen_target(d, thing, wd):
     if not data_layout:
         bb.utils.fatal("DATA_LAYOUT[{}] required but not set for {}".format(arch, thing))
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
-    target_word_size = d.getVarFlag('TARGET_WORD_SIZE', arch, True)
+    target_pointer_width = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
     endian = d.getVarFlag('TARGET_ENDIAN', arch, True)
     prefix = d.getVar('{}_PREFIX'.format(thing), True)
     ccache = d.getVar('CCACHE', True)
@@ -160,7 +160,7 @@ def rust_gen_target(d, thing, wd):
          "data-layout": "{}",
          "llvm-target": "{}",
          "target-endian": "{}",
-         "target-word-size": "{}",
+         "target-pointer-width": "{}",
          "arch": "{}",
          "os": "linux",
          "linker": "{}",
@@ -177,7 +177,7 @@ def rust_gen_target(d, thing, wd):
         data_layout,
         llvm_target,
         endian,
-        target_word_size,
+        target_pointer_width,
         arch_to_rust_target_arch(arch),
         linker,
         features,
@@ -343,7 +343,7 @@ rust_do_install () {
         chmod +x "${D}/${bindir}/rust-lldb"
 
         # Install our custon target.json files
-	local td="${D}${libdir}/rust/targets/"
+	local td="${D}${libdir}/rustlib/"
 	install -d "$td"
 	for tgt in "${WORKDIR}/targets/"* ; do
 	    install -m 0644 "$tgt" "$td"
@@ -360,19 +360,44 @@ do_install () {
 	rust_do_install
 }
 
+## {{{ native bits
+
+# Otherwise we'll depend on what we provide
+INHIBIT_DEFAULT_RUST_DEPS_class-native = "1"
+# We don't need to depend on gcc-native because yocto assumes it exists
+PROVIDES_class-native = "virtual/${TARGET_PREFIX}rust"
+USE_LOCAL_NATIVE_RUST_class-native ??= "0"
+USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0', '0', '1', d)}"
+
+## }}}
+
+## {{{ cross bits
+
+# Otherwise we'll depend on what we provide
+INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
+DEPENDS_class-cross += "rust-native"
+PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
+PN_class-cross = "rust-cross-${TARGET_ARCH}"
+
+HOST_PRE_LINK_ARGS_append_class-cross = " -Wl,-rpath=${libdir}"
+BUILD_PRE_LINK_ARGS_append_class-cross = " -Wl,-rpath=${libdir}"
+
+# We need the same thing for the calls to the compiler when building the runtime crap
+TARGET_CC_ARCH_append_class-cross = " --sysroot=${STAGING_DIR_TARGET}"
+
+# cross.bbclass is "helpful" and overrides our do_install. Tell it not to.
+do_install_class-cross () {
+	rust_do_install
+}
+
+## }}}
+
+BBCLASSEXTEND = "cross native"
+
 # FIXME: use FILES to create a -runtime (not -native) package
 # $PREFIX/lib/rustlib/`rust_triple`/lib/* contains the runtime libraries (and rlibs)
 # Need to copy the *.so files to the appropriate target path
 # cp $prefix/lib/rustlib/`rust_triple "${TARGET_ARCH}" "${TARGET_VENDOR}" "${TARGET_OS}"`/lib/*.so ${target_libdir}/
-
-## We abuse the BBCLASSEXTEND system to avoid creating multiple .bb for every
-## rust version (which is what gcc does).
-##
-## Right now 'target' doesn't need any special settings, but at some point we may need to:
-##  - add an internal-rust-target
-##  - set the PN of this package to something like "rust-internal" or otherwise
-##	make the base unbuildable.
-BBCLASSEXTEND = "internal-rust-cross internal-rust-native"
 
 ## This is a hack to have -cross provide -native, which doesn't quite work
 #python cross_virtclass_provides_native_handler () {
