@@ -345,7 +345,7 @@ rust_do_install () {
         # we're using a custom bindir, do it ourselves.
         chmod +x "${D}/${bindir}/rustc"
         chmod +x "${D}/${bindir}/rustdoc"
-        chmod +x "${D}/${bindir}/rust-lldb"
+        chmod +x "${D}/${bindir}/rust-gdb"
 
         # Install our custon target.json files
 	local td="${D}${libdir}/rustlib/"
