@@ -1,7 +1,7 @@
-From 1bfe46dd62c1a72b20be921eba8fcd57c56974ef Mon Sep 17 00:00:00 2001
+From f8ec11a7e7420d740b41179976c44163f4a6c5f4 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
-Subject: [PATCH 09/10] Parallelize submake invocations
+Subject: [PATCH 09/11] Parallelize submake invocations
 
 ---
  mk/clean.mk   | 2 +-
@@ -12,10 +12,10 @@ Subject: [PATCH 09/10] Parallelize submake invocations
  5 files changed, 12 insertions(+), 10 deletions(-)
 
 diff --git a/mk/clean.mk b/mk/clean.mk
-index aadc55b..f671745 100644
+index 5b90d41..2a7ba6d 100644
 --- a/mk/clean.mk
 +++ b/mk/clean.mk
-@@ -121,7 +121,7 @@ $(foreach host, $(CFG_HOST), \
+@@ -122,7 +122,7 @@ $(foreach host, $(CFG_HOST), \
  define DEF_CLEAN_LLVM_HOST
  ifeq ($(CFG_LLVM_ROOT),)
  clean-llvm$(1):
@@ -25,7 +25,7 @@ index aadc55b..f671745 100644
  clean-llvm$(1): ;
  
 diff --git a/mk/install.mk b/mk/install.mk
-index 632df3c..954d494 100644
+index 60c0a6b..a3a44ed 100644
 --- a/mk/install.mk
 +++ b/mk/install.mk
 @@ -17,9 +17,9 @@ endif
@@ -38,9 +38,9 @@ index 632df3c..954d494 100644
 -	$(Q)$(MAKE) prepare_install
 +	$(Q)$(P)$(MAKE) prepare_install
  endif
- 	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)"
- # Remove tmp files because it's a decent amount of disk space
-@@ -30,9 +30,9 @@ prepare_install: dist/$(PKG_NAME)-$(CFG_BUILD).tar.gz | tmp/empty_dir
+ ifeq ($(CFG_DISABLE_DOCS),)
+ 	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)"
+@@ -33,9 +33,9 @@ prepare_install: dist-tar-bins | tmp/empty_dir
  uninstall:
  ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
  # Build the dist as the original user
@@ -50,8 +50,8 @@ index 632df3c..954d494 100644
 -	$(Q)$(MAKE) prepare_uninstall
 +	$(Q)$(P)$(MAKE) prepare_uninstall
  endif
- 	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
- # Remove tmp files because it's a decent amount of disk space
+ ifeq ($(CFG_DISABLE_DOCS),)
+ 	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
 diff --git a/mk/llvm.mk b/mk/llvm.mk
 index ba2e073..3998806 100644
 --- a/mk/llvm.mk
@@ -75,10 +75,10 @@ index ba2e073..3998806 100644
  	touch $$@
  
 diff --git a/mk/rt.mk b/mk/rt.mk
-index 65b6ae1..a064ee1 100644
+index a8ac839..d609cd2 100644
 --- a/mk/rt.mk
 +++ b/mk/rt.mk
-@@ -181,7 +181,7 @@ $$(JEMALLOC_LOCAL_$(1)): $$(JEMALLOC_DEPS) $$(MKFILE_DEPS)
+@@ -183,7 +183,7 @@ $$(JEMALLOC_LOCAL_$(1)): $$(JEMALLOC_DEPS) $$(MKFILE_DEPS)
  		RANLIB="$$(AR_$(1)) s" \
  		CPPFLAGS="-I $(S)src/rt/" \
  		EXTRA_CFLAGS="-g1 -ffunction-sections -fdata-sections"
@@ -87,7 +87,7 @@ index 65b6ae1..a064ee1 100644
  
  ifeq ($$(CFG_DISABLE_JEMALLOC),)
  RUSTFLAGS_alloc := --cfg jemalloc
-@@ -223,7 +223,7 @@ COMPRT_BUILD_DIR_$(1) := $$(RT_OUTPUT_DIR_$(1))/compiler-rt
+@@ -225,7 +225,7 @@ COMPRT_BUILD_DIR_$(1) := $$(RT_OUTPUT_DIR_$(1))/compiler-rt
  
  $$(COMPRT_LIB_$(1)): $$(COMPRT_DEPS) $$(MKFILE_DEPS)
  	@$$(call E, make: compiler-rt)
@@ -96,7 +96,7 @@ index 65b6ae1..a064ee1 100644
  		ProjSrcRoot="$(S)src/compiler-rt" \
  		ProjObjRoot="$$(abspath $$(COMPRT_BUILD_DIR_$(1)))" \
  		CC="$$(CC_$(1))" \
-@@ -301,7 +301,7 @@ $$(BACKTRACE_BUILD_DIR_$(1))/Makefile: $$(BACKTRACE_DEPS) $$(MKFILE_DEPS)
+@@ -303,7 +303,7 @@ $$(BACKTRACE_BUILD_DIR_$(1))/Makefile: $$(BACKTRACE_DEPS) $$(MKFILE_DEPS)
  
  $$(BACKTRACE_LIB_$(1)): $$(BACKTRACE_BUILD_DIR_$(1))/Makefile $$(MKFILE_DEPS)
  	@$$(call E, make: libbacktrace)
@@ -118,5 +118,5 @@ index 3bbc8f4..4300b02 100644
  S := $(CFG_SRC_DIR)
  
 -- 
-2.2.1
+2.3.0
 

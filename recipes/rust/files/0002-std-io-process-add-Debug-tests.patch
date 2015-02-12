@@ -1,0 +1,33 @@
+From b1761599f03139070a3354ec2b6f2f25db27bac8 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 1 Dec 2014 15:50:13 -0500
+Subject: [PATCH 02/11] std/io/process: add Debug tests
+
+---
+ src/libstd/old_io/process.rs | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/libstd/old_io/process.rs b/src/libstd/old_io/process.rs
+index db0dd91..d715848 100644
+--- a/src/libstd/old_io/process.rs
++++ b/src/libstd/old_io/process.rs
+@@ -1254,4 +1254,16 @@ mod tests {
+         let val = env.get(&EnvKey(CString::from_slice(b"PATH")));
+         assert!(val.unwrap() == &CString::from_slice(b"bar"));
+     }
++
++    fn check_debug<D : fmt::Debug>(c: D, v: &str) {
++        assert_eq!(format!("{:?}", c), v)
++    }
++
++    #[test]
++    fn debug() {
++        check_debug(Command::new("gcc ").arg("-Ifoo'bar"), "'gcc ' '-Ifoo'\\''bar'");
++        check_debug(Command::new("c99"), "'c99'");
++        check_debug(Command::new("c99 "), "'c99 '");
++        check_debug(Command::new("Can't buy me love"), "'Can'\\''t buy me love'");
++    }
+ }
+-- 
+2.3.0
+
