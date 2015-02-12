@@ -8,7 +8,7 @@ LICENSE = "MIT | Apache-2.0"
 B = "${WORKDIR}/build"
 
 LIC_FILES_CHKSUM ="\
-	file://COPYRIGHT;md5=0e8e4a3b5d8e1c90eb243d406369763a \
+	file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3 \
 "
 
 # Controls whether we use the local rust.
