@@ -23,7 +23,10 @@ PV .= "+git${SRCPV}"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-# PACKAGECONFIG is set in .bb files
+PACKAGECONFIG ??= ""
+
+# Note: this does not appear to work very well due to our use of bitbake triples
+# & rust's use of cooked triples
 PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
 
 do_configure () {
