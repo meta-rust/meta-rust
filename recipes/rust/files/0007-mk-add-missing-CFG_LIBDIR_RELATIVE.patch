@@ -1,14 +1,14 @@
-From 544d3997edacfd414664c14cc628d573023af28e Mon Sep 17 00:00:00 2001
+From 67e86a885f0361f7e69476d017337df56cfa6fc7 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:48:14 -0500
-Subject: [PATCH 07/10] mk: add missing CFG_LIBDIR_RELATIVE
+Subject: [PATCH 07/11] mk: add missing CFG_LIBDIR_RELATIVE
 
 ---
  mk/grammar.mk | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/mk/grammar.mk b/mk/grammar.mk
-index a9f4590..d254941 100644
+index d9c66e2..585206d 100644
 --- a/mk/grammar.mk
 +++ b/mk/grammar.mk
 @@ -11,8 +11,8 @@
@@ -20,8 +20,8 @@ index a9f4590..d254941 100644
 +L = $(B)$(CFG_LIBDIR_RELATIVE)/rustlib/$(CFG_BUILD)/lib
 +LD = $(CFG_BUILD)/stage2/$(CFG_LIBDIR_RELATIVE)/rustlib/$(CFG_BUILD)/lib/
  RUSTC = $(STAGE2_T_$(CFG_BUILD)_H_$(CFG_BUILD))
- 
- # Run the reference lexer against libsyntax and compare the tokens and spans.
+ ifeq ($(CFG_OSTYPE),apple-darwin)
+ 	FLEX_LDFLAGS=-ll
 -- 
-2.2.1
+2.3.0
 

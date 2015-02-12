@@ -1,7 +1,7 @@
-From b850685d1411a03164401db202b9e85ac42d3b26 Mon Sep 17 00:00:00 2001
+From 3355850b0f387355e83bbdcdbbab7850c898d711 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 26 Nov 2014 10:00:32 -0500
-Subject: [PATCH 01/10] libstd/io/process/Command: fully quote and escape the
+Subject: [PATCH 01/11] libstd/io/process/Command: fully quote and escape the
  command and all args
 
 This makes the command (which may have trailing or leading white space
@@ -11,54 +11,64 @@ It also makes any usage of a literal ' (single quote) in arguments or
 the command name unambiguous by escaping them in the same style as posix
 shell.
 ---
- src/libstd/io/process.rs | 28 ++++++++++++++++++++++++++--
- 1 file changed, 26 insertions(+), 2 deletions(-)
+ src/libstd/old_io/process.rs | 31 ++++++++++++++++++++++++++++---
+ 1 file changed, 28 insertions(+), 3 deletions(-)
 
-diff --git a/src/libstd/io/process.rs b/src/libstd/io/process.rs
-index 93aa627..3319408 100644
---- a/src/libstd/io/process.rs
-+++ b/src/libstd/io/process.rs
-@@ -384,14 +384,38 @@ impl Command {
+diff --git a/src/libstd/old_io/process.rs b/src/libstd/old_io/process.rs
+index 195d33c..db0dd91 100644
+--- a/src/libstd/old_io/process.rs
++++ b/src/libstd/old_io/process.rs
+@@ -31,6 +31,7 @@ use sys::fs::FileDesc;
+ use sys::process::Process as ProcessImp;
+ use sys;
+ use thread::Thread;
++use string::CowString;
+ 
+ #[cfg(windows)] use hash;
+ #[cfg(windows)] use str;
+@@ -394,15 +395,39 @@ impl Command {
      }
  }
  
 +struct SingleQuotedStr<'a> {
-+    s: &'a str
++    s: CowString<'a>
 +}
 +
 +impl<'b> SingleQuotedStr<'b> {
-+    fn new<'a>(i: &'a str) -> SingleQuotedStr<'a> {
++    fn new<'a>(i: CowString<'a>) -> SingleQuotedStr<'a> {
 +        SingleQuotedStr { s: i }
 +    }
 +}
 +
-+impl<'a> fmt::Show for SingleQuotedStr<'a> {
++impl<'a> fmt::Debug for SingleQuotedStr<'a> {
 +    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 +        let mut elems = self.s.split('\'');
 +        let fst = elems.next().unwrap_or("");
-+        try!(write!(f, "'{}", fst));
++        try!(write!(f, "'{:?}", fst));
 +        for elem in elems {
-+            try!(write!(f, "'\\''{}", elem));
++            try!(write!(f, "'\\''{:?}", elem));
 +        }
 +        write!(f, "'")
 +    }
 +}
 +
- impl fmt::Show for Command {
+ #[stable(feature = "rust1", since = "1.0.0")]
+ impl fmt::Debug for Command {
      /// Format the program and arguments of a Command for display. Any
      /// non-utf8 data is lossily converted using the utf8 replacement
      /// character.
      fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
--        try!(write!(f, "{}", String::from_utf8_lossy(self.program.as_bytes_no_nul())));
-+        try!(write!(f, "{}", SingleQuotedStr::new(String::from_utf8_lossy(
-+                        self.program.as_bytes_no_nul()).as_slice())));
-         for arg in self.args.iter() {
--            try!(write!(f, " '{}'", String::from_utf8_lossy(arg.as_bytes_no_nul())));
-+            try!(write!(f, " {}", SingleQuotedStr::new(String::from_utf8_lossy(
-+                            arg.as_bytes_no_nul()).as_slice())));
+-        try!(write!(f, "{:?}", self.program));
+-        for arg in &self.args {
+-            try!(write!(f, " '{:?}'", arg));
++        try!(write!(f, "{:?}", SingleQuotedStr::new(String::from_utf8_lossy(
++                        self.program.as_bytes()))));
++        for arg in self.args.iter() {
++            try!(write!(f, " {:?}", SingleQuotedStr::new(String::from_utf8_lossy(
++                            arg.as_bytes()))));
          }
          Ok(())
      }
 -- 
-2.2.1
+2.3.0
 

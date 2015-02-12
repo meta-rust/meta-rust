@@ -1,7 +1,7 @@
-From 269155039002d97223d0053f6436c47da07c3d4e Mon Sep 17 00:00:00 2001
+From 497fb616163eabd5ed8a08ec0fc22ed75091c38d Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 16:14:15 -0500
-Subject: [PATCH 04/10] mk/rt/compiler_rt: pass LDFLAGS from
+Subject: [PATCH 04/11] mk/rt/compiler_rt: pass LDFLAGS from
  CFG_GCCISH_LINK_FLAGS
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 04/10] mk/rt/compiler_rt: pass LDFLAGS from
  1 file changed, 1 insertion(+)
 
 diff --git a/mk/rt.mk b/mk/rt.mk
-index 6a7be26..65b6ae1 100644
+index a8bbeb4..a8ac839 100644
 --- a/mk/rt.mk
 +++ b/mk/rt.mk
-@@ -230,6 +230,7 @@ $$(COMPRT_LIB_$(1)): $$(COMPRT_DEPS) $$(MKFILE_DEPS)
+@@ -232,6 +232,7 @@ $$(COMPRT_LIB_$(1)): $$(COMPRT_DEPS) $$(MKFILE_DEPS)
  		AR="$$(AR_$(1))" \
  		RANLIB="$$(AR_$(1)) s" \
  		CFLAGS="$$(CFG_GCCISH_CFLAGS_$(1))" \
@@ -21,5 +21,5 @@ index 6a7be26..65b6ae1 100644
  		triple-builtins
  	$$(Q)cp $$(COMPRT_BUILD_DIR_$(1))/triple/builtins/libcompiler_rt.a $$(COMPRT_LIB_$(1))
 -- 
-2.2.1
+2.3.0
 

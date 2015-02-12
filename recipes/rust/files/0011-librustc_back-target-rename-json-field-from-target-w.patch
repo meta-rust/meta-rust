@@ -1,0 +1,96 @@
+From 937d33a68d367bd67060b8a57082324ef7589878 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Thu, 12 Feb 2015 10:29:21 -0500
+Subject: [PATCH 11/11] librustc_back/target: rename json field from
+ target-word-size to target-pointer-width to match rust struct field
+
+Completes #20421 (which renamed the struct field but not the json field)
+
+If you're using the json target specificating interface, this is
+potentially a:
+[breaking-change]
+---
+ src/librustc/session/config.rs                               | 2 +-
+ src/librustc_back/target/mod.rs                              | 4 ++--
+ src/test/run-make/target-specs/my-awesome-platform.json      | 2 +-
+ src/test/run-make/target-specs/my-incomplete-platform.json   | 2 +-
+ src/test/run-make/target-specs/x86_64-unknown-linux-gnu.json | 2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
+index 54d995c..b6d901c 100644
+--- a/src/librustc/session/config.rs
++++ b/src/librustc/session/config.rs
+@@ -645,7 +645,7 @@ pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) ->
+         "32" => (ast::TyI32, ast::TyU32),
+         "64" => (ast::TyI64, ast::TyU64),
+         w    => sp.handler().fatal(&format!("target specification was invalid: unrecognized \
+-                                            target-word-size {}", w)[])
++                                            target-pointer-width {}", w)[])
+     };
+ 
+     Config {
+diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
+index c27afcb..0fad037 100644
+--- a/src/librustc_back/target/mod.rs
++++ b/src/librustc_back/target/mod.rs
+@@ -40,7 +40,7 @@
+ //! this module defines the format the JSON file should take, though each
+ //! underscore in the field names should be replaced with a hyphen (`-`) in the
+ //! JSON file. Some fields are required in every target specification, such as
+-//! `data-layout`, `llvm-target`, `target-endian`, `target-word-size`, and
++//! `data-layout`, `llvm-target`, `target-endian`, `target-pointer-width`, and
+ //! `arch`. In general, options passed to rustc with `-C` override the target's
+ //! settings, though `target-feature` and `link-args` will *add* to the list
+ //! specified by the target, rather than replace.
+@@ -241,7 +241,7 @@ impl Target {
+             data_layout: get_req_field("data-layout"),
+             llvm_target: get_req_field("llvm-target"),
+             target_endian: get_req_field("target-endian"),
+-            target_pointer_width: get_req_field("target-word-size"),
++            target_pointer_width: get_req_field("target-pointer-width"),
+             arch: get_req_field("arch"),
+             target_os: get_req_field("os"),
+             options: Default::default(),
+diff --git a/src/test/run-make/target-specs/my-awesome-platform.json b/src/test/run-make/target-specs/my-awesome-platform.json
+index f5f622b..d7cf713 100644
+--- a/src/test/run-make/target-specs/my-awesome-platform.json
++++ b/src/test/run-make/target-specs/my-awesome-platform.json
+@@ -2,7 +2,7 @@
+     "data-layout": "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32",
+     "llvm-target": "i686-unknown-linux-gnu",
+     "target-endian": "little",
+-    "target-word-size": "32",
++    "target-pointer-width": "32",
+     "arch": "x86",
+     "os": "linux",
+     "morestack": false
+diff --git a/src/test/run-make/target-specs/my-incomplete-platform.json b/src/test/run-make/target-specs/my-incomplete-platform.json
+index 5005a9f..053f2dd 100644
+--- a/src/test/run-make/target-specs/my-incomplete-platform.json
++++ b/src/test/run-make/target-specs/my-incomplete-platform.json
+@@ -1,7 +1,7 @@
+ {
+     "data-layout": "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32",
+     "target-endian": "little",
+-    "target-word-size": "32",
++    "target-pointer-width": "32",
+     "arch": "x86",
+     "os": "foo",
+     "morestack": false
+diff --git a/src/test/run-make/target-specs/x86_64-unknown-linux-gnu.json b/src/test/run-make/target-specs/x86_64-unknown-linux-gnu.json
+index 5e0f0f4..688bbe4 100644
+--- a/src/test/run-make/target-specs/x86_64-unknown-linux-gnu.json
++++ b/src/test/run-make/target-specs/x86_64-unknown-linux-gnu.json
+@@ -3,7 +3,7 @@
+     "data-layout": "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128",
+     "llvm-target": "x86_64-unknown-linux-gnu",
+     "target-endian": "little",
+-    "target-word-size": "64",
++    "target-pointer-width": "64",
+     "arch": "x86_64",
+     "os": "linux",
+     "morestack": false
+-- 
+2.3.0
+
