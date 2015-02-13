@@ -17,7 +17,6 @@ This openembedded layer provides the rust compiler, tools for building packages
 
  - rust (built for target)
  - Other TARGETs
- - cargo
 
 ## Common issues when packaging things using cargo
 
@@ -39,7 +38,7 @@ do this.
 ## Cargo
 
 Cargo may not work with the latest rust.
-You can either:
+You can try either:
 
   - use the system cargo:
 
@@ -50,8 +49,9 @@ You can either:
 
     PACKAGECONFIG_append_pn-cargo-native = " rust-snapshot"
 
-For now, we default to using the 'rust-snapshot' PACKAGECONFIG to avoid lots of
-failures.
+Note that using the rust-snapshot currently has issues with the targets
+provided by bitbake, for it to work we need to generate the same target.json
+that we do for the main compiler.
 
 ## TODO
 
