@@ -8,7 +8,7 @@ LICENSE = "MIT | Apache-2.0"
 B = "${WORKDIR}/build"
 
 # Avoid having the default bitbake.conf disable sub-make parallelization
-EXTRA_OEMAKE = "-e"
+EXTRA_OEMAKE = ""
 
 LIC_FILES_CHKSUM ="\
 	file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3 \
