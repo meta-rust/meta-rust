@@ -1,5 +1,5 @@
-# 2014-02-10
-SRCREV = "88d8ba5ab3b1d22288b021708c3d87464e43b880"
+# 2014-02-12
+SRCREV = "cf636c233dfeef5abf0de8fb35e23c0a161810d2"
 require rust-git.inc
 
 SRC_URI_append = "\

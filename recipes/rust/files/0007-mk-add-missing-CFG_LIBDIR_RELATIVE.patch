@@ -1,4 +1,4 @@
-From 67e86a885f0361f7e69476d017337df56cfa6fc7 Mon Sep 17 00:00:00 2001
+From ab3ace1fda3abb216d538b86b4110cd4a25e3b4f Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:48:14 -0500
 Subject: [PATCH 07/11] mk: add missing CFG_LIBDIR_RELATIVE

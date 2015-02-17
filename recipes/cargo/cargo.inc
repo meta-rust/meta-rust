@@ -8,7 +8,7 @@ HOMEPAGE = "http://crates.io"
 SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
 
-DEPENDS = "openssl zlib libgit2 curl ca-certificates"
+DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
 SRC_URI = "git://github.com/rust-lang/cargo.git;protocol=https;name=cargo"
 

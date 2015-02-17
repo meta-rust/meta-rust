@@ -1,4 +1,4 @@
-From 937d33a68d367bd67060b8a57082324ef7589878 Mon Sep 17 00:00:00 2001
+From 59b74e4f745a979d57eaa78c30f3e6777f4d0eba Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Thu, 12 Feb 2015 10:29:21 -0500
 Subject: [PATCH 11/11] librustc_back/target: rename json field from
@@ -18,7 +18,7 @@ potentially a:
  5 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 54d995c..b6d901c 100644
+index 20f2762..62dd732 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
 @@ -645,7 +645,7 @@ pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) ->
@@ -31,7 +31,7 @@ index 54d995c..b6d901c 100644
  
      Config {
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index c27afcb..0fad037 100644
+index ba8bf1e..cc89356 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
 @@ -40,7 +40,7 @@

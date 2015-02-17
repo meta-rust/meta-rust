@@ -1,4 +1,4 @@
-From c8c79e972cdc2529acbdf5403feda71666f30e60 Mon Sep 17 00:00:00 2001
+From 9b5ca76506f84c1e8df5da39255d050969f225ec Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
 Subject: [PATCH 08/11] configure: support --bindir, and extend libdir to
@@ -24,7 +24,7 @@ windows platforms
  8 files changed, 87 insertions(+), 70 deletions(-)
 
 diff --git a/configure b/configure
-index a80dafc..e0efaf2 100755
+index e6b8d23..1216964 100755
 --- a/configure
 +++ b/configure
 @@ -309,6 +309,31 @@ envopt() {
@@ -59,7 +59,7 @@ index a80dafc..e0efaf2 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -561,23 +586,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+@@ -562,23 +587,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
  then
      CFG_LIBDIR_RELATIVE=bin
@@ -88,7 +88,7 @@ index a80dafc..e0efaf2 100755
  fi
  
  if [ $HELP -eq 1 ]
-@@ -586,6 +603,11 @@ then
+@@ -587,6 +604,11 @@ then
      exit 0
  fi
  
@@ -100,7 +100,7 @@ index a80dafc..e0efaf2 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1342,6 +1364,7 @@ putvar CFG_PREFIX
+@@ -1343,6 +1365,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -196,7 +196,7 @@ index f1c4aa6..37c0a1a 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index 1b2d82e..0405d67 100644
+index 3caa0f5..39dafa2 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
 @@ -67,8 +67,7 @@ impl<'a> FileSearch<'a> {
@@ -327,7 +327,7 @@ index 1b2d82e..0405d67 100644
  
  // The name of rustc's own place to organize libraries.
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 51537bd..54d995c 100644
+index 2219b3c..20f2762 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
 @@ -633,7 +633,7 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
