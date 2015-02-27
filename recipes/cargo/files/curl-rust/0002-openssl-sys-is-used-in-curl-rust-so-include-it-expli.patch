@@ -1,4 +1,4 @@
-From 09e25bc8799eb05d7fade240d6a12d9b7642046a Mon Sep 17 00:00:00 2001
+From 8e66b372f0e2ac5818ec5de14324451fc2357234 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 12:26:48 -0500
 Subject: [PATCH 2/3] openssl-sys is used in curl-rust, so include it
@@ -9,7 +9,7 @@ Subject: [PATCH 2/3] openssl-sys is used in curl-rust, so include it
  1 file changed, 3 insertions(+)
 
 diff --git a/Cargo.toml b/Cargo.toml
-index f9671e4..c845da1 100644
+index c813796..9fd56f5 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -15,6 +15,9 @@ libc = "0.1"

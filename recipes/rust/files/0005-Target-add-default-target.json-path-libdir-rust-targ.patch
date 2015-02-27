@@ -1,17 +1,17 @@
-From a598b496c1298b5a861a8cf7ce0d1ff14dc6dc64 Mon Sep 17 00:00:00 2001
+From 6f53a8bd370f1e9984c49736219193bac8f9d9e5 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 05/11] Target: add default target.json path:
+Subject: [PATCH 05/10] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
- src/librustc/session/config.rs  | 6 +++---
+ src/librustc/session/config.rs  | 4 ++--
  src/librustc/session/mod.rs     | 8 ++++++--
  src/librustc_back/target/mod.rs | 9 ++++++---
- 3 files changed, 15 insertions(+), 8 deletions(-)
+ 3 files changed, 14 insertions(+), 7 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 8340a49..2219b3c 100644
+index 93a25de..7897379 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
 @@ -633,12 +633,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
@@ -19,9 +19,8 @@ index 8340a49..2219b3c 100644
  }
  
 -pub fn build_target_config(opts: &Options, sp: &SpanHandler) -> Config {
--    let target = match Target::search(&opts.target_triple[]) {
-+pub fn build_target_config(sysroot: &std::old_io::Path, opts: &Options, sp: &SpanHandler) -> Config {
-+    let target = match Target::search(sysroot, &opts.target_triple[]) {
++pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
+     let target = match Target::search(&opts.target_triple[]) {
          Ok(t) => t,
          Err(e) => {
              sp.handler().fatal(&format!("Error loading target specification: {}", e));
@@ -31,7 +30,7 @@ index 8340a49..2219b3c 100644
  
      let (int_type, uint_type) = match &target.target_pointer_width[] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index bd44dbe..cb7b709 100644
+index c1c5518..2de99e7 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
 @@ -328,14 +328,18 @@ pub fn build_session_(sopts: config::Options,
@@ -56,10 +55,10 @@ index bd44dbe..cb7b709 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 4d90c49..ba8bf1e 100644
+index 01a5f0d..4f6a75b 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
-@@ -302,12 +302,13 @@ impl Target {
+@@ -306,12 +306,13 @@ impl Target {
      ///
      /// The error string could come from any of the APIs called, including filesystem access and
      /// JSON decoding.
@@ -74,9 +73,9 @@ index 4d90c49..ba8bf1e 100644
  
          fn load_file(path: &Path) -> Result<Target, String> {
              let mut f = try!(File::open(path).map_err(|e| format!("{:?}", e)));
-@@ -387,9 +388,11 @@ impl Target {
-         let target_path = env::var_os("RUST_TARGET_PATH")
-                               .unwrap_or(OsString::from_str(""));
+@@ -391,9 +392,11 @@ impl Target {
+ 
+         let target_path = env::var_os("RUST_TARGET_PATH").unwrap_or(OsString::from_str(""));
  
 -        // FIXME 16351: add a sane default search path?
 +        let paths = env::split_paths(&target_path)

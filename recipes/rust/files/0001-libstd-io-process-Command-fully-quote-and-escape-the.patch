@@ -1,7 +1,7 @@
-From 9c7368781c5ea57ee6dadd5e985f12a76fe74dc4 Mon Sep 17 00:00:00 2001
+From 9011cf63782130e0acc72b9f53878dc2d3ac3971 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 26 Nov 2014 10:00:32 -0500
-Subject: [PATCH 01/11] libstd/io/process/Command: fully quote and escape the
+Subject: [PATCH 01/10] libstd/io/process/Command: fully quote and escape the
  command and all args
 
 This makes the command (which may have trailing or leading white space
@@ -15,18 +15,18 @@ shell.
  1 file changed, 28 insertions(+), 3 deletions(-)
 
 diff --git a/src/libstd/old_io/process.rs b/src/libstd/old_io/process.rs
-index 195d33c..db0dd91 100644
+index c803cfb..e875435 100644
 --- a/src/libstd/old_io/process.rs
 +++ b/src/libstd/old_io/process.rs
-@@ -31,6 +31,7 @@ use sys::fs::FileDesc;
+@@ -30,6 +30,7 @@ use sync::mpsc::{channel, Receiver};
+ use sys::fs::FileDesc;
  use sys::process::Process as ProcessImp;
  use sys;
- use thread::Thread;
 +use string::CowString;
+ use thread;
  
  #[cfg(windows)] use hash;
- #[cfg(windows)] use str;
-@@ -394,15 +395,39 @@ impl Command {
+@@ -406,15 +407,39 @@ impl Command {
      }
  }
  

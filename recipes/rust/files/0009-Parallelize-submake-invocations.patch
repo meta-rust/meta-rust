@@ -1,7 +1,7 @@
-From 58cfcc79553014c3c335885f2bd141b1e564f9fb Mon Sep 17 00:00:00 2001
+From 80aecbad6306514ce20222e7c542f7f51468be0e Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
-Subject: [PATCH 09/11] Parallelize submake invocations
+Subject: [PATCH 09/10] Parallelize submake invocations
 
 ---
  mk/clean.mk   | 2 +-
@@ -25,7 +25,7 @@ index 5b90d41..2a7ba6d 100644
  clean-llvm$(1): ;
  
 diff --git a/mk/install.mk b/mk/install.mk
-index 60c0a6b..a3a44ed 100644
+index 8850cd7..8878cf5 100644
 --- a/mk/install.mk
 +++ b/mk/install.mk
 @@ -17,9 +17,9 @@ endif
@@ -75,10 +75,10 @@ index ba2e073..3998806 100644
  	touch $$@
  
 diff --git a/mk/rt.mk b/mk/rt.mk
-index a8ac839..d609cd2 100644
+index 21280be..7f5af72 100644
 --- a/mk/rt.mk
 +++ b/mk/rt.mk
-@@ -183,7 +183,7 @@ $$(JEMALLOC_LOCAL_$(1)): $$(JEMALLOC_DEPS) $$(MKFILE_DEPS)
+@@ -181,7 +181,7 @@ $$(JEMALLOC_LOCAL_$(1)): $$(JEMALLOC_DEPS) $$(MKFILE_DEPS)
  		RANLIB="$$(AR_$(1)) s" \
  		CPPFLAGS="-I $(S)src/rt/" \
  		EXTRA_CFLAGS="-g1 -ffunction-sections -fdata-sections"
@@ -87,7 +87,7 @@ index a8ac839..d609cd2 100644
  
  ifeq ($$(CFG_DISABLE_JEMALLOC),)
  RUSTFLAGS_alloc := --cfg jemalloc
-@@ -225,7 +225,7 @@ COMPRT_BUILD_DIR_$(1) := $$(RT_OUTPUT_DIR_$(1))/compiler-rt
+@@ -223,7 +223,7 @@ COMPRT_BUILD_DIR_$(1) := $$(RT_OUTPUT_DIR_$(1))/compiler-rt
  
  $$(COMPRT_LIB_$(1)): $$(COMPRT_DEPS) $$(MKFILE_DEPS)
  	@$$(call E, make: compiler-rt)
@@ -96,7 +96,7 @@ index a8ac839..d609cd2 100644
  		ProjSrcRoot="$(S)src/compiler-rt" \
  		ProjObjRoot="$$(abspath $$(COMPRT_BUILD_DIR_$(1)))" \
  		CC="$$(CC_$(1))" \
-@@ -303,7 +303,7 @@ $$(BACKTRACE_BUILD_DIR_$(1))/Makefile: $$(BACKTRACE_DEPS) $$(MKFILE_DEPS)
+@@ -301,7 +301,7 @@ $$(BACKTRACE_BUILD_DIR_$(1))/Makefile: $$(BACKTRACE_DEPS) $$(MKFILE_DEPS)
  
  $$(BACKTRACE_LIB_$(1)): $$(BACKTRACE_BUILD_DIR_$(1))/Makefile $$(MKFILE_DEPS)
  	@$$(call E, make: libbacktrace)

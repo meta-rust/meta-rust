@@ -22,6 +22,11 @@ B = "${S}"
 # where the issue occured
 export RUST_BACKTRACE = "1"
 
+# The pkg-config-rs library used by cargo build scripts disables itself when
+# cross compiling unless this is defined. We set up pkg-config appropriately
+# for cross compilation, so tell it we know better than it.
+export PKG_CONFIG_ALLOW_CROSS = "1"
+
 EXTRA_OECARGO_PATHS ??= ""
 
 cargo_do_configure () {

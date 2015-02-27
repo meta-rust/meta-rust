@@ -1,0 +1,71 @@
+From 0214ac430f8dcd31ef4dbb88540da3c805d4ccf6 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Fri, 13 Feb 2015 13:34:11 -0500
+Subject: [PATCH 3/3] remove per-triple deps on openssl-sys
+
+---
+ Cargo.toml | 48 ++++++++++++++----------------------------------
+ 1 file changed, 14 insertions(+), 34 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 9fd56f5..3b58919 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,40 +1,20 @@
+ [package]
+-
+-name = "curl"
+-version = "0.1.17"
+-authors = ["Carl Lerche <me@carllerche.com>"]
++name = "curl-sys"
++version = "0.1.10"
++authors = ["Carl Lerche <me@carllerche.com"]
++links = "curl"
++build = "build.rs"
+ license = "MIT"
+ repository = "https://github.com/carllerche/curl-rust"
+-description = "Rust bindings to libcurl for making HTTP requests"
+-
+-[dependencies]
+-url = "0.2.0"
+-libc = "0.1"
++description = "Native bindings to the libcurl library"
+ 
+-[dependencies.curl-sys]
+-path = "curl-sys"
+-version = "0.1.0"
++[build-dependencies]
++pkg-config = "0.1.0"
+ 
+-[dependencies.openssl-sys]
+-version = "*"
++[lib]
++name = "curl-sys"
++path = "lib.rs"
+ 
+-[dev-dependencies]
+-log = "0.2"
+-
+-# Unix platforms use OpenSSL for now to provide SSL functionality
+-[target.i686-apple-darwin.dependencies]
+-openssl-sys = "0.4.0"
+-[target.x86_64-apple-darwin.dependencies]
+-openssl-sys = "0.4.0"
+-[target.i686-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.4.0"
+-[target.x86_64-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.4.0"
+-[target.arm-unknown-linux-gnueabihf.dependencies]
+-openssl-sys = "0.4.0"
+-[target.aarch64-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.4.0"
+-[target.i686-unknown-freebsd.dependencies]
+-openssl-sys = "0.4.0"
+-[target.x86_64-unknown-freebsd.dependencies]
+-openssl-sys = "0.4.0"
++[dependencies]
++libz-sys = "0.1.0"
++libc = "0.1"
+-- 
+2.3.0
+

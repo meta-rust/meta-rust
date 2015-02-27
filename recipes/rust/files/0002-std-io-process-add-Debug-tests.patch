@@ -1,19 +1,19 @@
-From cc9dd9db3f96de835226c955d0ed979c68f85841 Mon Sep 17 00:00:00 2001
+From 26ddca33f8ef01680f74f81177017bc94a38a8cd Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 15:50:13 -0500
-Subject: [PATCH 02/11] std/io/process: add Debug tests
+Subject: [PATCH 02/10] std/io/process: add Debug tests
 
 ---
  src/libstd/old_io/process.rs | 12 ++++++++++++
  1 file changed, 12 insertions(+)
 
 diff --git a/src/libstd/old_io/process.rs b/src/libstd/old_io/process.rs
-index db0dd91..d715848 100644
+index e875435..0e7394d 100644
 --- a/src/libstd/old_io/process.rs
 +++ b/src/libstd/old_io/process.rs
-@@ -1254,4 +1254,16 @@ mod tests {
-         let val = env.get(&EnvKey(CString::from_slice(b"PATH")));
-         assert!(val.unwrap() == &CString::from_slice(b"bar"));
+@@ -1266,4 +1266,16 @@ mod tests {
+         let val = env.get(&EnvKey(CString::new(b"PATH").unwrap()));
+         assert!(val.unwrap() == &CString::new(b"bar").unwrap());
      }
 +
 +    fn check_debug<D : fmt::Debug>(c: D, v: &str) {

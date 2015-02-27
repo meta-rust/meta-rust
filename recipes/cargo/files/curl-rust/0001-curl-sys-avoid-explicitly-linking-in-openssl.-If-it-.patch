@@ -1,4 +1,4 @@
-From f975a2796178c840d54cb1070cabf84b79829388 Mon Sep 17 00:00:00 2001
+From 979f3ed5cff5356b67d8bbf946d51b0132272c87 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 11:50:28 -0500
 Subject: [PATCH 1/3] curl-sys: avoid explicitly linking in openssl. If it is
@@ -10,7 +10,7 @@ Subject: [PATCH 1/3] curl-sys: avoid explicitly linking in openssl. If it is
  2 files changed, 19 deletions(-)
 
 diff --git a/curl-sys/Cargo.toml b/curl-sys/Cargo.toml
-index 13c8425..6b0c22a 100644
+index dfd001f..3b58919 100644
 --- a/curl-sys/Cargo.toml
 +++ b/curl-sys/Cargo.toml
 @@ -18,21 +18,3 @@ path = "lib.rs"
@@ -20,26 +20,26 @@ index 13c8425..6b0c22a 100644
 -
 -# Unix platforms use OpenSSL for now to provide SSL functionality
 -[target.i686-apple-darwin.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.x86_64-apple-darwin.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.i686-unknown-linux-gnu.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.x86_64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.arm-unknown-linux-gnueabihf.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.aarch64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.i686-unknown-freebsd.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 -[target.x86_64-unknown-freebsd.dependencies]
--openssl-sys = "0.3.0"
+-openssl-sys = "0.4.0"
 diff --git a/curl-sys/lib.rs b/curl-sys/lib.rs
-index ea21503..99dab99 100644
+index 0a224a4..1328834 100644
 --- a/curl-sys/lib.rs
 +++ b/curl-sys/lib.rs
-@@ -3,7 +3,6 @@
+@@ -2,7 +2,6 @@
  
  extern crate libc;
  extern crate "libz-sys" as libz;

@@ -1,7 +1,7 @@
-From 9b5ca76506f84c1e8df5da39255d050969f225ec Mon Sep 17 00:00:00 2001
+From a6ad7db7efb8b3501e965a080be833933e11db85 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 08/11] configure: support --bindir, and extend libdir to
+Subject: [PATCH 08/10] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -24,7 +24,7 @@ windows platforms
  8 files changed, 87 insertions(+), 70 deletions(-)
 
 diff --git a/configure b/configure
-index e6b8d23..1216964 100755
+index d1b27a9..b8a89f0 100755
 --- a/configure
 +++ b/configure
 @@ -309,6 +309,31 @@ envopt() {
@@ -100,7 +100,7 @@ index e6b8d23..1216964 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1343,6 +1365,7 @@ putvar CFG_PREFIX
+@@ -1344,6 +1366,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -128,10 +128,10 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index ab75a47..6659dc9 100644
+index 8f09d7c..0252e18 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -326,7 +326,9 @@ export CFG_RELEASE_CHANNEL
+@@ -330,7 +330,9 @@ export CFG_RELEASE_CHANNEL
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -141,7 +141,7 @@ index ab75a47..6659dc9 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  ifdef CFG_DISABLE_UNSTABLE_FEATURES
  CFG_INFO := $(info cfg: disabling unstable features (CFG_DISABLE_UNSTABLE_FEATURES))
-@@ -356,7 +358,16 @@ define SREQ
+@@ -360,7 +362,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -327,20 +327,20 @@ index 3caa0f5..39dafa2 100644
  
  // The name of rustc's own place to organize libraries.
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 2219b3c..20f2762 100644
+index 7897379..4b2ca89 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -633,7 +633,7 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
-     v
+@@ -634,7 +634,7 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
  }
  
--pub fn build_target_config(sysroot: &std::old_io::Path, opts: &Options, sp: &SpanHandler) -> Config {
-+pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
-     let target = match Target::search(sysroot, &opts.target_triple[]) {
+ pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
+-    let target = match Target::search(&opts.target_triple[]) {
++    let target = match Target::search(sysroot, &opts.target_triple[]) {
          Ok(t) => t,
          Err(e) => {
+             sp.handler().fatal(&format!("Error loading target specification: {}", e));
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 9f26e91..7f50224 100644
+index ef849bb..57cc5c9 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
 @@ -1004,11 +1004,10 @@ fn link_args(cmd: &mut Command,

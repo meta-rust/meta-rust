@@ -1,5 +1,5 @@
-# 2014-02-12
-SRCREV = "cf636c233dfeef5abf0de8fb35e23c0a161810d2"
+# 2015-02-21
+SRCREV = "2b01a37ec38db9301239f0c0abcf3c695055b0ff"
 require rust-git.inc
 
 SRC_URI_append = "\
@@ -13,5 +13,4 @@ SRC_URI_append = "\
 	file://0008-configure-support-bindir-and-extend-libdir-to-non-bl.patch \
 	file://0009-Parallelize-submake-invocations.patch \
 	file://0010-std-thread_local-workaround-for-NULL-__dso_handle.patch \
-	file://0011-librustc_back-target-rename-json-field-from-target-w.patch \
 "
