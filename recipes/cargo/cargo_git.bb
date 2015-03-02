@@ -37,8 +37,6 @@ SRCREV_git2-rs = "4f2757055ecb3c52346d7163e321eb9d510f94ba"
 ## 2 versions of openssl-sys linked in
 # 0.4.3 +2015-02-22
 SRCREV_rust-openssl = "ebd906293376ee8ed3b7ddafa4573d2a9222d8b7"
-SRCREV_rustc-serialize = "213ef7b16e21a8b1a84e4d7c120e317ec0a66824"
-
 
 SRCREV_FORMAT = "cargo_curl-rust_curl_ssh2-rs_git2-rs_rust-openssl"
 EXTRA_OECARGO_PATHS = "\
