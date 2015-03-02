@@ -10,7 +10,6 @@ SRC_URI += " \
 \
 	git://github.com/alexcrichton/ssh2-rs.git;protocol=https;name=ssh2-rs;destsuffix=ssh2-rs \
 	file://ssh2-rs/0001-Unconditionally-depend-on-openssl-sys.patch;patchdir=../ssh2-rs \
-	file://ssh2-rs/0002-libssh2-sys-only-support-pkg-config.patch;patchdir=../ssh2-rs \
 \
 	git://github.com/alexcrichton/git2-rs.git;protocol=https;name=git2-rs;destsuffix=git2-rs \
 	file://git2-rs/0001-Add-generic-openssl-sys-dep.patch;patchdir=../git2-rs \
