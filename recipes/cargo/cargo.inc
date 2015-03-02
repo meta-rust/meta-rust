@@ -2,6 +2,7 @@ INHIBIT_CARGO_DEP = "1"
 
 inherit cargo
 inherit patch
+inherit rust-installer
 
 SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
 HOMEPAGE = "http://crates.io"
@@ -10,14 +11,17 @@ LICENSE = "MIT | Apache-2.0"
 
 DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
-SRC_URI = "git://github.com/rust-lang/cargo.git;protocol=https;name=cargo"
+SRC_URI = "\
+	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
+	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=git/src/rust-installer \
+"
 
 LIC_FILES_CHKSUM ="\
 	file://LICENSE-MIT;md5=362255802eb5aa87810d12ddf3cfedb4 \
 	file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
 	file://LICENSE-THIRD-PARTY;md5=afbb7ae0aa70c8e437a007314eae5f3b \
 "
-SRCREV_FORMAT ?= "cargo"
+SRCREV_FORMAT = "cargo_rust-installer"
 PV .= "+git${SRCPV}"
 
 S = "${WORKDIR}/git"

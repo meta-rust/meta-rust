@@ -1,5 +1,6 @@
 # 2015-3-01
 SRCREV_cargo = "efa4bd0897c4adb46169f2b2359613d394e55759"
+SRCREV_rust-installer = "60fd8abfcae50629a3fc664bd809238fed039617"
 
 require cargo.inc
 
@@ -28,7 +29,7 @@ SRCREV_ssh2-rs = "bb0c71792799d7261ae6356a26aabd39c9e78430"
 # 0.2.2 / -sys 0.2.1
 SRCREV_git2-rs = "8b52e3c86cec585038513116654d308f101e4582"
 
-SRCREV_FORMAT = "cargo_curl-rust_curl_ssh2-rs_git2-rs"
+SRCREV_FORMAT .= "_curl-rust_curl_ssh2-rs_git2-rs"
 EXTRA_OECARGO_PATHS = "\
 	${WORKDIR}/curl-rust \
 	${WORKDIR}/ssh2-rs \
