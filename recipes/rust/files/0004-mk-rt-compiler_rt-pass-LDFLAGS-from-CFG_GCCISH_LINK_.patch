@@ -1,4 +1,4 @@
-From 2aea9850a8bbeb51e3e0daed015843b00718bea1 Mon Sep 17 00:00:00 2001
+From 5d06d2f437e94e4ece0a5fb2b03674d1424caff6 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 16:14:15 -0500
 Subject: [PATCH 04/10] mk/rt/compiler_rt: pass LDFLAGS from
@@ -21,5 +21,5 @@ index 527485c..21280be 100644
  		triple-builtins
  	$$(Q)cp $$(COMPRT_BUILD_DIR_$(1))/triple/builtins/libcompiler_rt.a $$(COMPRT_LIB_$(1))
 -- 
-2.3.0
+2.3.1
 

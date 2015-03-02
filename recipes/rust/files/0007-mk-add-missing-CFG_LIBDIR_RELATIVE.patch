@@ -1,4 +1,4 @@
-From 0788fd7a54cc24aad08959230dab460eaa4429e8 Mon Sep 17 00:00:00 2001
+From 3a906749e88538aa4b5755603cdc0345da38dbe8 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 13:48:14 -0500
 Subject: [PATCH 07/10] mk: add missing CFG_LIBDIR_RELATIVE
@@ -23,5 +23,5 @@ index d9c66e2..585206d 100644
  ifeq ($(CFG_OSTYPE),apple-darwin)
  	FLEX_LDFLAGS=-ll
 -- 
-2.3.0
+2.3.1
 

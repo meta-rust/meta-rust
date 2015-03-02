@@ -1,4 +1,4 @@
-From 80aecbad6306514ce20222e7c542f7f51468be0e Mon Sep 17 00:00:00 2001
+From 0f5a6c9b8707ff81813e0dcf75370e05ebafddbf Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
 Subject: [PATCH 09/10] Parallelize submake invocations
@@ -118,5 +118,5 @@ index 3bbc8f4..4300b02 100644
  S := $(CFG_SRC_DIR)
  
 -- 
-2.3.0
+2.3.1
 

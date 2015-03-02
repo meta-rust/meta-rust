@@ -1,4 +1,4 @@
-From a6ad7db7efb8b3501e965a080be833933e11db85 Mon Sep 17 00:00:00 2001
+From 5b549eb926d3bac9570a847774334548d1a5bd94 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
 Subject: [PATCH 08/10] configure: support --bindir, and extend libdir to
@@ -13,18 +13,17 @@ relative to sysroot, and allows libdir to end in an arbitrary directory
 Note that this assumes absolute paths start with '/', which may break
 windows platforms
 ---
- configure                           | 49 ++++++++++++++++-------
+ configure                           | 49 +++++++++++++++++------
  mk/host.mk                          |  6 ++-
- mk/main.mk                          | 11 ++++++
+ mk/main.mk                          | 11 +++++
  mk/perf.mk                          |  4 +-
  mk/prepare.mk                       |  4 +-
- src/librustc/metadata/filesearch.rs | 78 ++++++++++++++-----------------------
- src/librustc/session/config.rs      |  2 +-
+ src/librustc/metadata/filesearch.rs | 80 ++++++++++++++-----------------------
  src/librustc_trans/back/link.rs     |  3 +-
- 8 files changed, 87 insertions(+), 70 deletions(-)
+ 7 files changed, 87 insertions(+), 70 deletions(-)
 
 diff --git a/configure b/configure
-index d1b27a9..b8a89f0 100755
+index e5333b4..cdd2b05 100755
 --- a/configure
 +++ b/configure
 @@ -309,6 +309,31 @@ envopt() {
@@ -59,7 +58,7 @@ index d1b27a9..b8a89f0 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -562,23 +587,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+@@ -566,23 +591,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
  then
      CFG_LIBDIR_RELATIVE=bin
@@ -88,7 +87,7 @@ index d1b27a9..b8a89f0 100755
  fi
  
  if [ $HELP -eq 1 ]
-@@ -587,6 +604,11 @@ then
+@@ -591,6 +608,11 @@ then
      exit 0
  fi
  
@@ -100,7 +99,7 @@ index d1b27a9..b8a89f0 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1344,6 +1366,7 @@ putvar CFG_PREFIX
+@@ -1355,6 +1377,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -196,10 +195,10 @@ index f1c4aa6..37c0a1a 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index 3caa0f5..39dafa2 100644
+index a8d39f9..836bb6b 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
-@@ -67,8 +67,7 @@ impl<'a> FileSearch<'a> {
+@@ -68,8 +68,7 @@ impl<'a> FileSearch<'a> {
          if !found {
              let rustpath = rust_path();
              for path in &rustpath {
@@ -209,7 +208,7 @@ index 3caa0f5..39dafa2 100644
                  debug!("is {} in visited_dirs? {}", tlib_path.display(),
                          visited_dirs.contains(&tlib_path.as_vec().to_vec()));
  
-@@ -154,7 +153,7 @@ impl<'a> FileSearch<'a> {
+@@ -155,7 +154,7 @@ impl<'a> FileSearch<'a> {
      // Returns a list of directories where target-specific tool binaries are located.
      pub fn get_tools_search_paths(&self) -> Vec<Path> {
          let mut p = Path::new(self.sysroot);
@@ -218,7 +217,7 @@ index 3caa0f5..39dafa2 100644
          p.push(rustlibdir());
          p.push(self.triple);
          p.push("bin");
-@@ -162,8 +161,8 @@ impl<'a> FileSearch<'a> {
+@@ -163,8 +162,8 @@ impl<'a> FileSearch<'a> {
      }
  }
  
@@ -229,7 +228,7 @@ index 3caa0f5..39dafa2 100644
      assert!(p.is_relative());
      p.push(rustlibdir());
      p.push(target_triple);
-@@ -173,17 +172,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
+@@ -174,17 +173,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
  
  fn make_target_lib_path(sysroot: &Path,
                          target_triple: &str) -> Path {
@@ -258,11 +257,13 @@ index 3caa0f5..39dafa2 100644
  pub fn get_or_default_sysroot() -> Path {
      // Follow symlinks.  If the resolved path is relative, make it absolute.
      fn canonicalize(path: Option<Path>) -> Option<Path> {
-@@ -195,7 +201,17 @@ pub fn get_or_default_sysroot() -> Path {
+@@ -195,8 +201,18 @@ pub fn get_or_default_sysroot() -> Path {
+             })
      }
  
-     match canonicalize(env::current_exe().ok()) {
+-    match canonicalize(os::self_exe_name()) {
 -        Some(mut p) => { p.pop(); p.pop(); p }
++    match canonicalize(env::current_exe().ok()) {
 +        Some(mut p) => {
 +            // Remove the exe name
 +            p.pop();
@@ -277,7 +278,7 @@ index 3caa0f5..39dafa2 100644
          None => panic!("can't determine value for sysroot")
      }
  }
-@@ -252,45 +268,9 @@ pub fn rust_path() -> Vec<Path> {
+@@ -253,45 +269,9 @@ pub fn rust_path() -> Vec<Path> {
      env_rust_path
  }
  
@@ -326,21 +327,8 @@ index 3caa0f5..39dafa2 100644
  }
  
  // The name of rustc's own place to organize libraries.
-diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 7897379..4b2ca89 100644
---- a/src/librustc/session/config.rs
-+++ b/src/librustc/session/config.rs
-@@ -634,7 +634,7 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
- }
- 
- pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
--    let target = match Target::search(&opts.target_triple[]) {
-+    let target = match Target::search(sysroot, &opts.target_triple[]) {
-         Ok(t) => t,
-         Err(e) => {
-             sp.handler().fatal(&format!("Error loading target specification: {}", e));
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index ef849bb..57cc5c9 100644
+index ea5001a..3050ff3 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
 @@ -1004,11 +1004,10 @@ fn link_args(cmd: &mut Command,
@@ -348,7 +336,7 @@ index ef849bb..57cc5c9 100644
      // addl_lib_search_paths
      if sess.opts.cg.rpath {
 -        let sysroot = sess.sysroot();
-         let target_triple = &sess.opts.target_triple[];
+         let target_triple = &sess.opts.target_triple;
          let get_install_prefix_lib_path = || {
              let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
 -            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
@@ -357,5 +345,5 @@ index ef849bb..57cc5c9 100644
              path.push(&tlib);
  
 -- 
-2.3.0
+2.3.1
 

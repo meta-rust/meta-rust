@@ -1,4 +1,4 @@
-From 9011cf63782130e0acc72b9f53878dc2d3ac3971 Mon Sep 17 00:00:00 2001
+From 6cf42137235a198163c4a4930e6ae773a9367102 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 26 Nov 2014 10:00:32 -0500
 Subject: [PATCH 01/10] libstd/io/process/Command: fully quote and escape the
@@ -15,7 +15,7 @@ shell.
  1 file changed, 28 insertions(+), 3 deletions(-)
 
 diff --git a/src/libstd/old_io/process.rs b/src/libstd/old_io/process.rs
-index c803cfb..e875435 100644
+index a13295b..fe12546 100644
 --- a/src/libstd/old_io/process.rs
 +++ b/src/libstd/old_io/process.rs
 @@ -30,6 +30,7 @@ use sync::mpsc::{channel, Receiver};
@@ -26,7 +26,7 @@ index c803cfb..e875435 100644
  use thread;
  
  #[cfg(windows)] use hash;
-@@ -406,15 +407,39 @@ impl Command {
+@@ -394,15 +395,39 @@ impl Command {
      }
  }
  
@@ -70,5 +70,5 @@ index c803cfb..e875435 100644
          Ok(())
      }
 -- 
-2.3.0
+2.3.1
 

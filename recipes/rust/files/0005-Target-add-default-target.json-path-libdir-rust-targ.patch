@@ -1,26 +1,27 @@
-From 6f53a8bd370f1e9984c49736219193bac8f9d9e5 Mon Sep 17 00:00:00 2001
+From 46eeadcd2010498fcff6778b487d7bb32b7b9aa4 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
 Subject: [PATCH 05/10] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
- src/librustc/session/config.rs  | 4 ++--
+ src/librustc/session/config.rs  | 6 +++---
  src/librustc/session/mod.rs     | 8 ++++++--
- src/librustc_back/target/mod.rs | 9 ++++++---
- 3 files changed, 14 insertions(+), 7 deletions(-)
+ src/librustc_back/target/mod.rs | 8 +++++---
+ 3 files changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 93a25de..7897379 100644
+index efcde8b..dba6f98 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -633,12 +633,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+@@ -637,12 +637,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
 -pub fn build_target_config(opts: &Options, sp: &SpanHandler) -> Config {
+-    let target = match Target::search(&opts.target_triple) {
 +pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
-     let target = match Target::search(&opts.target_triple[]) {
++    let target = match Target::search(sysroot, &opts.target_triple[]) {
          Ok(t) => t,
          Err(e) => {
              sp.handler().fatal(&format!("Error loading target specification: {}", e));
@@ -28,12 +29,12 @@ index 93a25de..7897379 100644
 +        }
      };
  
-     let (int_type, uint_type) = match &target.target_pointer_width[] {
+     let (int_type, uint_type) = match &target.target_pointer_width[..] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index c1c5518..2de99e7 100644
+index 67c39bc..17a28a7 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
-@@ -328,14 +328,18 @@ pub fn build_session_(sopts: config::Options,
+@@ -336,14 +336,18 @@ pub fn build_session_(sopts: config::Options,
                        local_crate_source_file: Option<Path>,
                        span_diagnostic: diagnostic::SpanHandler)
                        -> Session {
@@ -55,16 +56,17 @@ index c1c5518..2de99e7 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 01a5f0d..4f6a75b 100644
+index d09a7c3..7bfabac 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
-@@ -306,12 +306,13 @@ impl Target {
+@@ -308,13 +308,14 @@ impl Target {
      ///
      /// The error string could come from any of the APIs called, including filesystem access and
      /// JSON decoding.
 -    pub fn search(target: &str) -> Result<Target, String> {
 +    pub fn search(sysroot: &Path, target: &str) -> Result<Target, String> {
          use std::env;
+         use std::os;
          use std::ffi::OsString;
          use std::old_io::File;
          use std::old_path::Path;
@@ -73,7 +75,7 @@ index 01a5f0d..4f6a75b 100644
  
          fn load_file(path: &Path) -> Result<Target, String> {
              let mut f = try!(File::open(path).map_err(|e| format!("{:?}", e)));
-@@ -391,9 +392,11 @@ impl Target {
+@@ -395,9 +396,10 @@ impl Target {
  
          let target_path = env::var_os("RUST_TARGET_PATH").unwrap_or(OsString::from_str(""));
  
@@ -81,12 +83,11 @@ index 01a5f0d..4f6a75b 100644
 +        let paths = env::split_paths(&target_path)
 +            .chain(Some(sysroot.join_many(&[env!("CFG_LIBDIR_RELATIVE"), "rustlib"])).into_iter());
  
--        for dir in env::split_paths(&target_path) {
-+
+-        for dir in os::split_paths(target_path.to_str().unwrap()).iter() {
 +        for dir in paths {
              let p =  dir.join(path.clone());
              if p.is_file() {
                  return load_file(&p);
 -- 
-2.3.0
+2.3.1
 
