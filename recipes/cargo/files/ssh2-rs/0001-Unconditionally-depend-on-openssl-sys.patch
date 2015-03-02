@@ -1,14 +1,14 @@
-From 7e7a5527024dbc0e45c1d4b284466a499c9580fe Mon Sep 17 00:00:00 2001
+From 9abdf2a4f8acdc432e83f62d7ac7d0e2eb57bc2e Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 10:51:31 -0500
-Subject: [PATCH 1/2] Unconditionally depend on openssl-sys
+Subject: [PATCH] Unconditionally depend on openssl-sys
 
 ---
  libssh2-sys/Cargo.toml | 18 ------------------
  1 file changed, 18 deletions(-)
 
 diff --git a/libssh2-sys/Cargo.toml b/libssh2-sys/Cargo.toml
-index a91df02..e58515a 100644
+index e22f03f..9cd10ee 100644
 --- a/libssh2-sys/Cargo.toml
 +++ b/libssh2-sys/Cargo.toml
 @@ -15,24 +15,6 @@ path = "lib.rs"
@@ -17,25 +17,25 @@ index a91df02..e58515a 100644
  libc = "0.1"
 -
 -[target.i686-apple-darwin.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.x86_64-apple-darwin.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.i686-unknown-linux-gnu.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.x86_64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.aarch64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.arm-unknown-linux-gnueabihf.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.i686-unknown-freebsd.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.x86_64-unknown-freebsd.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -[target.x86_64-unknown-dragonfly.dependencies]
- openssl-sys = "0.4.0"
+ openssl-sys = "0.5.0"
  
  [build-dependencies]
 -- 
-2.3.0
+2.3.1
 

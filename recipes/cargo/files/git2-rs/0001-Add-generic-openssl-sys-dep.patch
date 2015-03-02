@@ -1,49 +1,50 @@
-From b8dc01fd6e70d9e0dcc883fe7e2167c4830d0724 Mon Sep 17 00:00:00 2001
+From 6a25e761cb76b303e2a5ddd1e91872b30b76f5ee Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 10 Nov 2014 15:06:29 -0500
 Subject: [PATCH] Add generic openssl-sys dep
 
 ---
- libgit2-sys/Cargo.toml | 26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ libgit2-sys/Cargo.toml | 27 ++-------------------------
+ 1 file changed, 2 insertions(+), 25 deletions(-)
 
 diff --git a/libgit2-sys/Cargo.toml b/libgit2-sys/Cargo.toml
-index d4e36ee..0e08422 100644
+index 41b6bcb..8018d8f 100644
 --- a/libgit2-sys/Cargo.toml
 +++ b/libgit2-sys/Cargo.toml
-@@ -15,31 +15,7 @@ description = "Native bindings to the libgit2 library"
- 
+@@ -16,31 +16,8 @@ description = "Native bindings to the libgit2 library"
  [dependencies]
  libssh2-sys = "0.1.0"
-+openssl-sys = "*"
+ libc = "0.1"
++openssl-sys = "0.5.0"
++libz-sys = "0.1.0"
  
  [build-dependencies]
- pkg-config = "0.2"
+ pkg-config = "0.3"
 -
 -[target.i686-apple-darwin.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.x86_64-apple-darwin.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.i686-unknown-linux-gnu.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.x86_64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.aarch64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.arm-unknown-linux-gnueabihf.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.i686-unknown-freebsd.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -[target.x86_64-unknown-freebsd.dependencies]
--openssl-sys = "0.4.0"
+-openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -- 
-2.3.0
+2.3.1
 

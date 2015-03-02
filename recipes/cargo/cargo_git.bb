@@ -6,8 +6,7 @@ require cargo.inc
 SRC_URI += " \
 	git://github.com/carllerche/curl-rust.git;protocol=https;destsuffix=curl-rust;name=curl-rust \
 	file://curl-rust/0001-curl-sys-avoid-explicitly-linking-in-openssl.-If-it-.patch;patchdir=../curl-rust \
-	file://curl-rust/0002-openssl-sys-is-used-in-curl-rust-so-include-it-expli.patch;patchdir=../curl-rust \
-	file://curl-rust/0003-remove-per-triple-deps-on-openssl-sys.patch;patchdir=../curl-rust \
+	file://curl-rust/0002-remove-per-triple-deps-on-openssl-sys.patch;patchdir=../curl-rust \
 \
 	git://github.com/alexcrichton/ssh2-rs.git;protocol=https;name=ssh2-rs;destsuffix=ssh2-rs \
 	file://ssh2-rs/0001-Unconditionally-depend-on-openssl-sys.patch;patchdir=../ssh2-rs \
@@ -17,33 +16,24 @@ SRC_URI += " \
 	file://git2-rs/0001-Add-generic-openssl-sys-dep.patch;patchdir=../git2-rs \
 \
 \
-	git://github.com/sfackler/rust-openssl.git;protocol=https;name=rust-openssl;destsuffix=rust-openssl \
-\
-\
 	git://github.com/alexcrichton/curl.git;protocol=https;destsuffix=curl-rust/curl-sys/curl;name=curl;branch=configure \
 	git://github.com/alexcrichton/libgit2.git;protocol=https;destsuffix=git2-rs/libgit2-sys/libgit2;name=libgit2;branch=libgit2-2014-12-19 \
 "
 
-# 0.1.17
-SRCREV_curl-rust = "b7089a71fba5757e36f8cb1b3767183d4b79c20f"
+# 0.2.1  / -sys 0.1.14
+SRCREV_curl-rust = "e05dcfa59813f2d8c443afa3e37e26482e41091b"
 
 # 0.1.11 / -sys 0.1.8
-SRCREV_ssh2-rs = "c4c46c2d68dd207371c0565e2de2439bac583edc"
+SRCREV_ssh2-rs = "bb0c71792799d7261ae6356a26aabd39c9e78430"
 
-# 0.1.20
-SRCREV_git2-rs = "4f2757055ecb3c52346d7163e321eb9d510f94ba"
+# 0.2.2 / -sys 0.2.1
+SRCREV_git2-rs = "8b52e3c86cec585038513116654d308f101e4582"
 
-## This is only included to avoid cargo spuriously complaining about us having
-## 2 versions of openssl-sys linked in
-# 0.4.3 +2015-02-22
-SRCREV_rust-openssl = "ebd906293376ee8ed3b7ddafa4573d2a9222d8b7"
-
-SRCREV_FORMAT = "cargo_curl-rust_curl_ssh2-rs_git2-rs_rust-openssl"
+SRCREV_FORMAT = "cargo_curl-rust_curl_ssh2-rs_git2-rs"
 EXTRA_OECARGO_PATHS = "\
 	${WORKDIR}/curl-rust \
 	${WORKDIR}/ssh2-rs \
 	${WORKDIR}/git2-rs \
-	${WORKDIR}/rust-openssl \
 "
 
 # FIXME: we don't actually use these, and shouldn't need to fetch it, but not having it results in:
