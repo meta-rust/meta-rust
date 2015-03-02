@@ -1,7 +1,7 @@
 From c227b05fab797ec7c03ffafea171af0d46a928ff Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 15:50:13 -0500
-Subject: [PATCH 02/10] std/io/process: add Debug tests
+Subject: [PATCH 02/12] std/io/process: add Debug tests
 
 ---
  src/libstd/old_io/process.rs | 12 ++++++++++++

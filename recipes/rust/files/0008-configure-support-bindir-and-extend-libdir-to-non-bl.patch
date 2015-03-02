@@ -1,7 +1,7 @@
 From 5ed89e6b244e9b41b4fc86652a64d086738c50b6 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 08/10] configure: support --bindir, and extend libdir to
+Subject: [PATCH 08/12] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:

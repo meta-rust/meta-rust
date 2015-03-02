@@ -1,0 +1,58 @@
+From f37052ffa86e16faa90d368129c4dcaf6f1a82e3 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 2 Mar 2015 13:27:49 -0500
+Subject: [PATCH] add option to disable rewriting of install paths
+
+This is intended for use by rust & cargo's `make install`, as in that
+case:
+
+ - these paths are typically built into the pre-install layout already
+ - attempting to do the replacement will be incorrect subdirectory
+   cases (ie: libdir=lib/foo)
+---
+ install-template.sh | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/install-template.sh b/install-template.sh
+index 11bf392..9b9d75c 100644
+--- a/install-template.sh
++++ b/install-template.sh
+@@ -328,6 +328,7 @@ valopt prefix "/usr/local" "set installation prefix"
+ valopt libdir "${CFG_DESTDIR}${CFG_PREFIX}/lib" "install libraries"
+ valopt mandir "${CFG_DESTDIR}${CFG_PREFIX}/share/man" "install man pages in PATH"
+ opt ldconfig 1 "run ldconfig after installation (Linux only)"
++opt rewrite-paths 1 "enable rewriting install paths for libdir & mandir"
+ 
+ if [ $HELP -eq 1 ]
+ then
+@@ -624,16 +625,18 @@ for component in $COMPONENTS; do
+ 	# Decide the destination of the file
+ 	FILE_INSTALL_PATH="${CFG_DESTDIR}${CFG_PREFIX}/$FILE"
+ 
+-	if echo "$FILE" | grep "^lib/" > /dev/null
+-	then
+-            f=`echo $FILE | sed 's/^lib\///'`
+-            FILE_INSTALL_PATH="${CFG_LIBDIR}/$f"
+-	fi
++	if [ -z "${CFG_DISABLE_REWRITE_PATHS}" ]; then
++	    if echo "$FILE" | grep "^lib/" > /dev/null
++	    then
++		f=`echo $FILE | sed 's/^lib\///'`
++		FILE_INSTALL_PATH="${CFG_LIBDIR}/$f"
++	    fi
+ 
+-	if echo "$FILE" | grep "^share/man/" > /dev/null
+-	then
+-            f=`echo $FILE | sed 's/^share\/man\///'`
+-            FILE_INSTALL_PATH="${CFG_MANDIR}/$f"
++	    if echo "$FILE" | grep "^share/man/" > /dev/null
++	    then
++		f=`echo $FILE | sed 's/^share\/man\///'`
++		FILE_INSTALL_PATH="${CFG_MANDIR}/$f"
++	    fi
+ 	fi
+ 
+ 	# Make sure there's a directory for it
+-- 
+2.3.1
+

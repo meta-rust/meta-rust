@@ -1,7 +1,7 @@
 From 9d4c54f58e86009b4a550d92de5e741da30ac4f4 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 05/10] Target: add default target.json path:
+Subject: [PATCH 05/12] Target: add default target.json path:
  $libdir/rust/targets
 
 ---

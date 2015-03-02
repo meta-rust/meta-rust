@@ -1,0 +1,65 @@
+From 00b9d5870cb1ceb09ca0a2a5de765565afc9ac03 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Mon, 2 Mar 2015 12:57:24 -0500
+Subject: [PATCH 11/12] configure & install: support disabling calling of
+ ldconfig
+
+---
+ configure     |  1 +
+ mk/install.mk | 12 ++++++++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/configure b/configure
+index 6674664..e948c06 100755
+--- a/configure
++++ b/configure
+@@ -550,6 +550,7 @@ opt llvm-static-stdcpp 0 "statically link to libstdc++ for LLVM"
+ opt rpath 0 "build rpaths into rustc itself"
+ opt nightly 0 "build nightly packages"
+ opt verify-install 1 "verify installed binaries work"
++opt ldconfig 1 "try to run ldconfig on linux systems to complete the install"
+ # This is used by the automation to produce single-target nightlies
+ opt dist-host-only 0 "only install bins for the host architecture"
+ opt inject-std-version 1 "inject the current compiler version of libstd into programs"
+diff --git a/mk/install.mk b/mk/install.mk
+index 8878cf5..c8bed09 100644
+--- a/mk/install.mk
++++ b/mk/install.mk
+@@ -14,6 +14,10 @@ else
+ MAYBE_DISABLE_VERIFY=
+ endif
+ 
++ifdef CFG_DISABLE_LDCONFIG
++CFG_INSTALL_OPTS +=--disable-ldconfig
++endif
++
+ install:
+ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+ # Build the dist as the original user
+@@ -22,9 +26,9 @@ else
+ 	$(Q)$(P)$(MAKE) prepare_install
+ endif
+ ifeq ($(CFG_DISABLE_DOCS),)
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)" $(CFG_INSTALL_OPTS)
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" "$(MAYBE_DISABLE_VERIFY)" $(CFG_INSTALL_OPTS)
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+@@ -38,9 +42,9 @@ else
+ 	$(Q)$(P)$(MAKE) prepare_uninstall
+ endif
+ ifeq ($(CFG_DISABLE_DOCS),)
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" $(CFG_INSTALL_OPTS)
+ endif
+-	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
++	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)" $(CFG_INSTALL_OPTS)
+ # Remove tmp files because it's a decent amount of disk space
+ 	$(Q)rm -R tmp/dist
+ 
+-- 
+2.3.1
+

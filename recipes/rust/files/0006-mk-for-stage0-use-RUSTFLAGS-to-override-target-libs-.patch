@@ -1,7 +1,7 @@
 From 591aa737a5c5ab9b488b7a3379c30ee46b717f28 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:52:56 -0500
-Subject: [PATCH 06/10] mk: for stage0, use RUSTFLAGS to override target libs
+Subject: [PATCH 06/12] mk: for stage0, use RUSTFLAGS to override target libs
  dir
 
 Setting HLIB specially for stage0 (and even more specially for windows)

@@ -348,7 +348,7 @@ rust_do_install () {
         chmod +x "${D}/${bindir}/rustdoc"
         chmod +x "${D}/${bindir}/rust-gdb"
 
-        # Install our custon target.json files
+        # Install our custom target.json files
 	local td="${D}${libdir}/rustlib/"
 	install -d "$td"
 	for tgt in "${WORKDIR}/targets/"* ; do
