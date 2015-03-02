@@ -301,6 +301,7 @@ do_configure () {
 		"--disable-docs"			\
 		"--disable-manage-submodules"           \
 		"--disable-debug"			\
+                "--disable-ldconfig"                    \
 		"--enable-optimize"			\
 		"--enable-optimize-cxx"			\
 		"--enable-optimize-llvm"		\
