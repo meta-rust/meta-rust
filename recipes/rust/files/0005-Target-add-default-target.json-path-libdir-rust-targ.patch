@@ -1,4 +1,4 @@
-From 46eeadcd2010498fcff6778b487d7bb32b7b9aa4 Mon Sep 17 00:00:00 2001
+From 9d4c54f58e86009b4a550d92de5e741da30ac4f4 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
 Subject: [PATCH 05/10] Target: add default target.json path:
@@ -31,10 +31,10 @@ index efcde8b..dba6f98 100644
  
      let (int_type, uint_type) = match &target.target_pointer_width[..] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index 67c39bc..17a28a7 100644
+index 99b2fce..780b863 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
-@@ -336,14 +336,18 @@ pub fn build_session_(sopts: config::Options,
+@@ -337,14 +337,18 @@ pub fn build_session_(sopts: config::Options,
                        local_crate_source_file: Option<Path>,
                        span_diagnostic: diagnostic::SpanHandler)
                        -> Session {
@@ -56,7 +56,7 @@ index 67c39bc..17a28a7 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index d09a7c3..7bfabac 100644
+index d09a7c3..7a8e293 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
 @@ -308,13 +308,14 @@ impl Target {
@@ -80,7 +80,7 @@ index d09a7c3..7bfabac 100644
          let target_path = env::var_os("RUST_TARGET_PATH").unwrap_or(OsString::from_str(""));
  
 -        // FIXME 16351: add a sane default search path?
-+        let paths = env::split_paths(&target_path)
++        let paths = os::split_paths(target_path.to_str().unwrap()).into_iter()
 +            .chain(Some(sysroot.join_many(&[env!("CFG_LIBDIR_RELATIVE"), "rustlib"])).into_iter());
  
 -        for dir in os::split_paths(target_path.to_str().unwrap()).iter() {

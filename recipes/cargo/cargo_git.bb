@@ -1,5 +1,5 @@
-# 2015-2-19
-SRCREV_cargo = "43755c00e8a93a3478a1179bca98a7f8b56ecbca"
+# 2015-3-01
+SRCREV_cargo = "efa4bd0897c4adb46169f2b2359613d394e55759"
 
 require cargo.inc
 

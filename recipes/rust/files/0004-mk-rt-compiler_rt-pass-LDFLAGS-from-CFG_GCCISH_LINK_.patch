@@ -1,4 +1,4 @@
-From 5d06d2f437e94e4ece0a5fb2b03674d1424caff6 Mon Sep 17 00:00:00 2001
+From 6e54f848c836fe95401672c8a4696e885cd6becf Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 17 Nov 2014 16:14:15 -0500
 Subject: [PATCH 04/10] mk/rt/compiler_rt: pass LDFLAGS from
