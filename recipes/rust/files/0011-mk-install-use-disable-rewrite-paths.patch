@@ -1,7 +1,7 @@
-From 4c4bce191ec06eddd237481dcb1c3489e9b03921 Mon Sep 17 00:00:00 2001
+From 513486437ad3ee406edf87ba95651542180df119 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 13:34:59 -0500
-Subject: [PATCH 12/12] mk/install: use disable-rewrite-paths
+Subject: [PATCH 11/11] mk/install: use disable-rewrite-paths
 
 This stops the install scripts from doing work we've already handled.
 

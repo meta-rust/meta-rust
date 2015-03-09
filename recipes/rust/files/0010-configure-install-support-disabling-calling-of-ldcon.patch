@@ -1,7 +1,7 @@
-From 99bff656142992e54bbf6bec1fa0d532fce13e8d Mon Sep 17 00:00:00 2001
+From c672135095f7335b98d46f2e378d4dc5b335bbf7 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 12:57:24 -0500
-Subject: [PATCH 11/12] configure & install: support disabling calling of
+Subject: [PATCH 10/11] configure & install: support disabling calling of
  ldconfig
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH 11/12] configure & install: support disabling calling of
  2 files changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/configure b/configure
-index c59c6f2..8200544 100755
+index 9026ae1..92858c3 100755
 --- a/configure
 +++ b/configure
 @@ -554,6 +554,7 @@ opt llvm-static-stdcpp 0 "statically link to libstdc++ for LLVM"

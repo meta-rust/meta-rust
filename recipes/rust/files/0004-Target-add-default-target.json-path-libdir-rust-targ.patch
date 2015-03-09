@@ -1,19 +1,28 @@
-From fd1f1f2df5f9e3549e90191574b3e1bc515a0c5c Mon Sep 17 00:00:00 2001
+From fc801fb0ea65149fcea4ba015338f43d6fb74be2 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 05/12] Target: add default target.json path:
+Subject: [PATCH 04/11] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
- src/librustc/session/config.rs  | 6 +++---
- src/librustc/session/mod.rs     | 8 ++++++--
- src/librustc_back/target/mod.rs | 8 +++++---
- 3 files changed, 14 insertions(+), 8 deletions(-)
+ src/librustc/session/config.rs  |  8 ++++----
+ src/librustc/session/mod.rs     |  8 ++++++--
+ src/librustc_back/target/mod.rs | 14 +++++++++++---
+ 3 files changed, 21 insertions(+), 9 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 1b09be0..81a690b 100644
+index 1b09be0..055e733 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
+@@ -38,7 +38,7 @@ use std::collections::HashMap;
+ use std::collections::hash_map::Entry::{Occupied, Vacant};
+ use std::env;
+ use std::fmt;
+-use std::path::PathBuf;
++use std::path::{Path, PathBuf};
+ 
+ use llvm;
+ 
 @@ -661,12 +661,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
@@ -21,7 +30,7 @@ index 1b09be0..81a690b 100644
 -pub fn build_target_config(opts: &Options, sp: &SpanHandler) -> Config {
 -    let target = match Target::search(&opts.target_triple) {
 +pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &SpanHandler) -> Config {
-+    let target = match Target::search(sysroot, &opts.target_triple[]) {
++    let target = match Target::search(sysroot, &opts.target_triple[..]) {
          Ok(t) => t,
          Err(e) => {
              sp.handler().fatal(&format!("Error loading target specification: {}", e));
@@ -31,7 +40,7 @@ index 1b09be0..81a690b 100644
  
      let (int_type, uint_type) = match &target.target_pointer_width[..] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index 8bc8426..5ccb50a 100644
+index 8bc8426..fff142e 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
 @@ -346,14 +346,18 @@ pub fn build_session_(sopts: config::Options,
@@ -40,7 +49,7 @@ index 8bc8426..5ccb50a 100644
                        -> Session {
 -    let host = match Target::search(config::host_triple()) {
 +    let sysroot = match sopts.maybe_sysroot {
-+        Some(ref x) => Path::new(x),
++        Some(ref x) => PathBuf::new(x),
 +        None => filesearch::get_or_default_sysroot()
 +    };
 +    let host = match Target::search(&sysroot, config::host_triple()) {
@@ -56,10 +65,19 @@ index 8bc8426..5ccb50a 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 4663901..a77b166 100644
+index 4663901..f8e00c3 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
-@@ -309,12 +309,13 @@ impl Target {
+@@ -49,6 +49,8 @@ use serialize::json::Json;
+ use syntax::{diagnostic, abi};
+ use std::default::Default;
+ use std::io::prelude::*;
++use std::path::Path;
++use std::borrow::ToOwned;
+ 
+ mod windows_base;
+ mod linux_base;
+@@ -309,12 +311,13 @@ impl Target {
      ///
      /// The error string could come from any of the APIs called, including
      /// filesystem access and JSON decoding.
@@ -74,15 +92,19 @@ index 4663901..a77b166 100644
  
          fn load_file(path: &Path) -> Result<Target, String> {
              let mut f = try!(File::open(path).map_err(|e| e.to_string()));
-@@ -399,9 +400,10 @@ impl Target {
+@@ -399,9 +402,14 @@ impl Target {
          let target_path = env::var_os("RUST_TARGET_PATH")
                                .unwrap_or(OsString::from_str(""));
  
 -        // FIXME 16351: add a sane default search path?
-+        let paths = env::split_paths(&target_path)
-+            .chain(Some(sysroot.join_many(&[env!("CFG_LIBDIR_RELATIVE"), "rustlib"])).into_iter());
++        let mut default_path = sysroot.to_owned();
++        default_path.push(env!("CFG_LIBDIR_RELATIVE"));
++        default_path.push("rustlib");
  
 -        for dir in env::split_paths(&target_path) {
++        let paths = env::split_paths(&target_path)
++            .chain(Some(default_path).into_iter());
++
 +        for dir in paths {
              let p =  dir.join(&path);
              if p.is_file() {

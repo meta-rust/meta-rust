@@ -1,7 +1,7 @@
-From d113c693a7218f49b7e0f21b125df92bffb57c5e Mon Sep 17 00:00:00 2001
+From f0e1084b376a00de29a881b3f3a27eefa7ea0a26 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Sat, 15 Nov 2014 20:12:48 -0500
-Subject: [PATCH 03/12] platform.mk: avoid choking on i586
+Subject: [PATCH 03/11] platform.mk: avoid choking on i586
 
 ---
  mk/platform.mk | 4 +++-

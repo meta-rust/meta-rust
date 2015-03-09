@@ -1,7 +1,7 @@
-From 85b07a028ac5719da41ece758b114408a1e0c79a Mon Sep 17 00:00:00 2001
+From 6aa48e1c7e299eda8cc40e95f9027d9c61eabd54 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 08/12] configure: support --bindir, and extend libdir to
+Subject: [PATCH 07/11] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -13,17 +13,17 @@ relative to sysroot, and allows libdir to end in an arbitrary directory
 Note that this assumes absolute paths start with '/', which may break
 windows platforms
 ---
- configure                           | 49 +++++++++++++++++------
+ configure                           | 51 +++++++++++++++++-------
  mk/host.mk                          |  6 ++-
- mk/main.mk                          | 11 +++++
+ mk/main.mk                          | 11 ++++++
  mk/perf.mk                          |  4 +-
  mk/prepare.mk                       |  4 +-
- src/librustc/metadata/filesearch.rs | 80 ++++++++++++++-----------------------
+ src/librustc/metadata/filesearch.rs | 78 ++++++++++++++-----------------------
  src/librustc_trans/back/link.rs     |  3 +-
- 7 files changed, 87 insertions(+), 70 deletions(-)
+ 7 files changed, 88 insertions(+), 69 deletions(-)
 
 diff --git a/configure b/configure
-index d56000b..c59c6f2 100755
+index d56000b..9026ae1 100755
 --- a/configure
 +++ b/configure
 @@ -309,6 +309,31 @@ envopt() {
@@ -58,7 +58,16 @@ index d56000b..c59c6f2 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -570,23 +595,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+@@ -563,6 +588,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
+ CFG_HOST=$(to_llvm_triple $CFG_HOST)
+ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+ 
++CFG_LIBDIR_RELATIVE=lib
++
+ # On windows we just store the libraries in the bin directory because
+ # there's no rpath. This is where the build system itself puts libraries;
+ # --libdir is used to configure the installation directory.
+@@ -570,23 +597,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
  then
      CFG_LIBDIR_RELATIVE=bin
@@ -87,7 +96,7 @@ index d56000b..c59c6f2 100755
  fi
  
  if [ $HELP -eq 1 ]
-@@ -595,6 +612,11 @@ then
+@@ -595,6 +614,11 @@ then
      exit 0
  fi
  
@@ -99,7 +108,7 @@ index d56000b..c59c6f2 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1361,6 +1383,7 @@ putvar CFG_PREFIX
+@@ -1361,6 +1385,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -195,7 +204,7 @@ index f1c4aa6..37c0a1a 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index 22a4a6f..c9148bc 100644
+index 22a4a6f..ed21d50 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
 @@ -68,8 +68,7 @@ impl<'a> FileSearch<'a> {
@@ -228,13 +237,11 @@ index 22a4a6f..c9148bc 100644
      assert!(p.is_relative());
      p.push(&rustlibdir());
      p.push(target_triple);
-@@ -175,18 +174,25 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
- }
+@@ -176,17 +175,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
  
  fn make_target_lib_path(sysroot: &Path,
--                        target_triple: &str) -> PathBuf {
+                         target_triple: &str) -> PathBuf {
 -    sysroot.join(&relative_target_lib_path(sysroot, target_triple))
-+                        target_triple: &str) -> BufPath {
 +    sysroot.join(&relative_target_lib_path(target_triple))
  }
  
