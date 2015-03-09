@@ -1,4 +1,4 @@
-From 9d4c54f58e86009b4a550d92de5e741da30ac4f4 Mon Sep 17 00:00:00 2001
+From fd1f1f2df5f9e3549e90191574b3e1bc515a0c5c Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
 Subject: [PATCH 05/12] Target: add default target.json path:
@@ -11,10 +11,10 @@ Subject: [PATCH 05/12] Target: add default target.json path:
  3 files changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index efcde8b..dba6f98 100644
+index 1b09be0..81a690b 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -637,12 +637,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+@@ -661,12 +661,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
@@ -31,11 +31,11 @@ index efcde8b..dba6f98 100644
  
      let (int_type, uint_type) = match &target.target_pointer_width[..] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index 99b2fce..780b863 100644
+index 8bc8426..5ccb50a 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
-@@ -337,14 +337,18 @@ pub fn build_session_(sopts: config::Options,
-                       local_crate_source_file: Option<Path>,
+@@ -346,14 +346,18 @@ pub fn build_session_(sopts: config::Options,
+                       local_crate_source_file: Option<PathBuf>,
                        span_diagnostic: diagnostic::SpanHandler)
                        -> Session {
 -    let host = match Target::search(config::host_triple()) {
@@ -56,36 +56,35 @@ index 99b2fce..780b863 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index d09a7c3..7a8e293 100644
+index 4663901..a77b166 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
-@@ -308,13 +308,14 @@ impl Target {
+@@ -309,12 +309,13 @@ impl Target {
      ///
-     /// The error string could come from any of the APIs called, including filesystem access and
-     /// JSON decoding.
+     /// The error string could come from any of the APIs called, including
+     /// filesystem access and JSON decoding.
 -    pub fn search(target: &str) -> Result<Target, String> {
 +    pub fn search(sysroot: &Path, target: &str) -> Result<Target, String> {
          use std::env;
-         use std::os;
          use std::ffi::OsString;
-         use std::old_io::File;
-         use std::old_path::Path;
+         use std::fs::File;
+         use std::path::{Path, PathBuf};
          use serialize::json;
 +        use std::iter::IntoIterator;
  
          fn load_file(path: &Path) -> Result<Target, String> {
-             let mut f = try!(File::open(path).map_err(|e| format!("{:?}", e)));
-@@ -395,9 +396,10 @@ impl Target {
- 
-         let target_path = env::var_os("RUST_TARGET_PATH").unwrap_or(OsString::from_str(""));
+             let mut f = try!(File::open(path).map_err(|e| e.to_string()));
+@@ -399,9 +400,10 @@ impl Target {
+         let target_path = env::var_os("RUST_TARGET_PATH")
+                               .unwrap_or(OsString::from_str(""));
  
 -        // FIXME 16351: add a sane default search path?
-+        let paths = os::split_paths(target_path.to_str().unwrap()).into_iter()
++        let paths = env::split_paths(&target_path)
 +            .chain(Some(sysroot.join_many(&[env!("CFG_LIBDIR_RELATIVE"), "rustlib"])).into_iter());
  
--        for dir in os::split_paths(target_path.to_str().unwrap()).iter() {
+-        for dir in env::split_paths(&target_path) {
 +        for dir in paths {
-             let p =  dir.join(path.clone());
+             let p =  dir.join(&path);
              if p.is_file() {
                  return load_file(&p);
 -- 

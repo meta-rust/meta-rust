@@ -1,4 +1,4 @@
-From 5ed89e6b244e9b41b4fc86652a64d086738c50b6 Mon Sep 17 00:00:00 2001
+From 85b07a028ac5719da41ece758b114408a1e0c79a Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
 Subject: [PATCH 08/12] configure: support --bindir, and extend libdir to
@@ -13,17 +13,17 @@ relative to sysroot, and allows libdir to end in an arbitrary directory
 Note that this assumes absolute paths start with '/', which may break
 windows platforms
 ---
- configure                           | 49 ++++++++++++++++-------
+ configure                           | 49 +++++++++++++++++------
  mk/host.mk                          |  6 ++-
- mk/main.mk                          | 11 ++++++
+ mk/main.mk                          | 11 +++++
  mk/perf.mk                          |  4 +-
  mk/prepare.mk                       |  4 +-
- src/librustc/metadata/filesearch.rs | 78 ++++++++++++++-----------------------
+ src/librustc/metadata/filesearch.rs | 80 ++++++++++++++-----------------------
  src/librustc_trans/back/link.rs     |  3 +-
- 7 files changed, 86 insertions(+), 69 deletions(-)
+ 7 files changed, 87 insertions(+), 70 deletions(-)
 
 diff --git a/configure b/configure
-index e722fe8..6674664 100755
+index d56000b..c59c6f2 100755
 --- a/configure
 +++ b/configure
 @@ -309,6 +309,31 @@ envopt() {
@@ -58,7 +58,7 @@ index e722fe8..6674664 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -566,23 +591,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+@@ -570,23 +595,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
  then
      CFG_LIBDIR_RELATIVE=bin
@@ -87,7 +87,7 @@ index e722fe8..6674664 100755
  fi
  
  if [ $HELP -eq 1 ]
-@@ -591,6 +608,11 @@ then
+@@ -595,6 +612,11 @@ then
      exit 0
  fi
  
@@ -99,7 +99,7 @@ index e722fe8..6674664 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1355,6 +1377,7 @@ putvar CFG_PREFIX
+@@ -1361,6 +1383,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -127,7 +127,7 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index 8f09d7c..0252e18 100644
+index 984f9c0..65d6f70 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
 @@ -330,7 +330,9 @@ export CFG_RELEASE_CHANNEL
@@ -195,7 +195,7 @@ index f1c4aa6..37c0a1a 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index a8d39f9..c0f6189 100644
+index 22a4a6f..c9148bc 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
 @@ -68,8 +68,7 @@ impl<'a> FileSearch<'a> {
@@ -206,41 +206,43 @@ index a8d39f9..c0f6189 100644
 -                    self.sysroot, path, self.triple);
 +                let tlib_path = make_rustpkg_lib_path(path, self.triple);
                  debug!("is {} in visited_dirs? {}", tlib_path.display(),
-                         visited_dirs.contains(&tlib_path.as_vec().to_vec()));
+                         visited_dirs.contains(&tlib_path));
  
-@@ -155,7 +154,7 @@ impl<'a> FileSearch<'a> {
+@@ -157,7 +156,7 @@ impl<'a> FileSearch<'a> {
      // Returns a list of directories where target-specific tool binaries are located.
-     pub fn get_tools_search_paths(&self) -> Vec<Path> {
-         let mut p = Path::new(self.sysroot);
--        p.push(find_libdir(self.sysroot));
+     pub fn get_tools_search_paths(&self) -> Vec<PathBuf> {
+         let mut p = PathBuf::new(self.sysroot);
+-        p.push(&find_libdir(self.sysroot));
 +        p.push(libdir_str());
-         p.push(rustlibdir());
-         p.push(self.triple);
+         p.push(&rustlibdir());
+         p.push(&self.triple);
          p.push("bin");
-@@ -163,8 +162,8 @@ impl<'a> FileSearch<'a> {
+@@ -165,8 +164,8 @@ impl<'a> FileSearch<'a> {
      }
  }
  
--pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
--    let mut p = Path::new(find_libdir(sysroot));
-+pub fn relative_target_lib_path(target_triple: &str) -> Path {
-+    let mut p = Path::new(libdir_str());
+-pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf {
+-    let mut p = PathBuf::new(&find_libdir(sysroot));
++pub fn relative_target_lib_path(target_triple: &str) -> PathBuf {
++    let mut p = PathBuf::new(&libdir_str());
      assert!(p.is_relative());
-     p.push(rustlibdir());
+     p.push(&rustlibdir());
      p.push(target_triple);
-@@ -174,17 +173,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> Path {
+@@ -175,18 +174,25 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
+ }
  
  fn make_target_lib_path(sysroot: &Path,
-                         target_triple: &str) -> Path {
+-                        target_triple: &str) -> PathBuf {
 -    sysroot.join(&relative_target_lib_path(sysroot, target_triple))
++                        target_triple: &str) -> BufPath {
 +    sysroot.join(&relative_target_lib_path(target_triple))
  }
  
 -fn make_rustpkg_lib_path(sysroot: &Path,
 -                         dir: &Path,
 +fn make_rustpkg_lib_path(dir: &Path,
-                          triple: &str) -> Path {
--    let mut p = dir.join(find_libdir(sysroot));
+                          triple: &str) -> PathBuf {
+-    let mut p = dir.join(&find_libdir(sysroot));
 +    let mut p = dir.join(libdir_str());
      p.push(triple);
      p
@@ -250,17 +252,17 @@ index a8d39f9..c0f6189 100644
 +    env!("CFG_BINDIR_RELATIVE")
 +}
 +
-+pub fn bindir_relative_path() -> Path {
-+    Path::new(bindir_relative_str())
++pub fn bindir_relative_path() -> PathBuf {
++    PathBuf::new(bindir_relative_str())
 +}
 +
- pub fn get_or_default_sysroot() -> Path {
+ pub fn get_or_default_sysroot() -> PathBuf {
      // Follow symlinks.  If the resolved path is relative, make it absolute.
-     fn canonicalize(path: Option<Path>) -> Option<Path> {
-@@ -196,7 +202,17 @@ pub fn get_or_default_sysroot() -> Path {
+     fn canonicalize(path: Option<PathBuf>) -> Option<PathBuf> {
+@@ -199,7 +205,17 @@ pub fn get_or_default_sysroot() -> PathBuf {
      }
  
-     match canonicalize(os::self_exe_name()) {
+     match canonicalize(env::current_exe().ok()) {
 -        Some(mut p) => { p.pop(); p.pop(); p }
 +        Some(mut p) => {
 +            // Remove the exe name
@@ -276,7 +278,7 @@ index a8d39f9..c0f6189 100644
          None => panic!("can't determine value for sysroot")
      }
  }
-@@ -253,45 +269,9 @@ pub fn rust_path() -> Vec<Path> {
+@@ -254,45 +270,9 @@ pub fn rust_path() -> Vec<PathBuf> {
      env_rust_path
  }
  
@@ -294,7 +296,7 @@ index a8d39f9..c0f6189 100644
 -
 -    match option_env!("CFG_LIBDIR_RELATIVE") {
 -        Some(libdir) if libdir != "lib" => return libdir.to_string(),
--        _ => if sysroot.join(primary_libdir_name()).join(rustlibdir()).exists() {
+-        _ => if sysroot.join(&primary_libdir_name()).join(&rustlibdir()).exists() {
 -            return primary_libdir_name();
 -        } else {
 -            return secondary_libdir_name();
@@ -326,20 +328,20 @@ index a8d39f9..c0f6189 100644
  
  // The name of rustc's own place to organize libraries.
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index ea5001a..3050ff3 100644
+index 3087a8e..891698a 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -1004,11 +1004,10 @@ fn link_args(cmd: &mut Command,
+@@ -1020,11 +1020,10 @@ fn link_args(cmd: &mut Command,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {
 -        let sysroot = sess.sysroot();
          let target_triple = &sess.opts.target_triple;
-         let get_install_prefix_lib_path = || {
+         let mut get_install_prefix_lib_path = || {
              let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
 -            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
 +            let tlib = filesearch::relative_target_lib_path(target_triple);
-             let mut path = Path::new(install_prefix);
+             let mut path = PathBuf::new(install_prefix);
              path.push(&tlib);
  
 -- 

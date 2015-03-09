@@ -1,4 +1,4 @@
-From 00b9d5870cb1ceb09ca0a2a5de765565afc9ac03 Mon Sep 17 00:00:00 2001
+From 99bff656142992e54bbf6bec1fa0d532fce13e8d Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 12:57:24 -0500
 Subject: [PATCH 11/12] configure & install: support disabling calling of
@@ -10,10 +10,10 @@ Subject: [PATCH 11/12] configure & install: support disabling calling of
  2 files changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/configure b/configure
-index 6674664..e948c06 100755
+index c59c6f2..8200544 100755
 --- a/configure
 +++ b/configure
-@@ -550,6 +550,7 @@ opt llvm-static-stdcpp 0 "statically link to libstdc++ for LLVM"
+@@ -554,6 +554,7 @@ opt llvm-static-stdcpp 0 "statically link to libstdc++ for LLVM"
  opt rpath 0 "build rpaths into rustc itself"
  opt nightly 0 "build nightly packages"
  opt verify-install 1 "verify installed binaries work"

@@ -1,4 +1,4 @@
-From 257bdad6c0252b5f57aa9c61da71afd47ddfb4af Mon Sep 17 00:00:00 2001
+From ebe9f1d9d76c62317858d9643ab6baf0e15fd267 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
 Subject: [PATCH 09/12] Parallelize submake invocations
@@ -6,10 +6,10 @@ Subject: [PATCH 09/12] Parallelize submake invocations
 ---
  mk/clean.mk   | 2 +-
  mk/install.mk | 8 ++++----
- mk/llvm.mk    | 4 ++--
+ mk/llvm.mk    | 6 +++---
  mk/rt.mk      | 6 +++---
  mk/util.mk    | 2 ++
- 5 files changed, 12 insertions(+), 10 deletions(-)
+ 5 files changed, 13 insertions(+), 11 deletions(-)
 
 diff --git a/mk/clean.mk b/mk/clean.mk
 index 5b90d41..2a7ba6d 100644
@@ -53,7 +53,7 @@ index 8850cd7..8878cf5 100644
  ifeq ($(CFG_DISABLE_DOCS),)
  	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
 diff --git a/mk/llvm.mk b/mk/llvm.mk
-index ba2e073..3998806 100644
+index b07c2a1..683dc60 100644
 --- a/mk/llvm.mk
 +++ b/mk/llvm.mk
 @@ -28,7 +28,7 @@ LLVM_STAMP_$(1) = $$(CFG_LLVM_BUILD_DIR_$(1))/llvm-auto-clean-stamp
@@ -65,14 +65,16 @@ index ba2e073..3998806 100644
  	$$(Q)touch $$(LLVM_CONFIG_$(1))
  endif
  
-@@ -38,7 +38,7 @@ endif
+@@ -38,8 +38,8 @@ endif
  # the stamp in the source dir.
  $$(LLVM_STAMP_$(1)): $(S)src/rustllvm/llvm-auto-clean-trigger
  	@$$(call E, make: cleaning llvm)
+-	$(Q)touch $$@.start_time
 -	$(Q)$(MAKE) clean-llvm$(1)
++	$$(Q)touch $$@.start_time
 +	$$(Q)$$(P)$$(MAKE) clean-llvm$(1)
  	@$$(call E, make: done cleaning llvm)
- 	touch $$@
+ 	touch -r $$@.start_time $$@ && rm $$@.start_time
  
 diff --git a/mk/rt.mk b/mk/rt.mk
 index 21280be..7f5af72 100644

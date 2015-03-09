@@ -1,4 +1,4 @@
-From 591aa737a5c5ab9b488b7a3379c30ee46b717f28 Mon Sep 17 00:00:00 2001
+From 120438ca81750d676159892a0cc140fd01bbe716 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:52:56 -0500
 Subject: [PATCH 06/12] mk: for stage0, use RUSTFLAGS to override target libs
@@ -13,7 +13,7 @@ stage0-rustc at the appropriate location.
  1 file changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/mk/main.mk b/mk/main.mk
-index 9752ee2..8f09d7c 100644
+index c00494b..984f9c0 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
 @@ -361,21 +361,22 @@ define SREQ
