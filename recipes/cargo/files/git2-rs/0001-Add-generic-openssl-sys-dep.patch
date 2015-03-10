@@ -1,4 +1,4 @@
-From 6a25e761cb76b303e2a5ddd1e91872b30b76f5ee Mon Sep 17 00:00:00 2001
+From 04f59e215eb3ebe0a3d5b0ebe99188b4dd4058b9 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 10 Nov 2014 15:06:29 -0500
 Subject: [PATCH] Add generic openssl-sys dep

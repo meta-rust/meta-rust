@@ -20,14 +20,14 @@ SRC_URI += " \
 	git://github.com/alexcrichton/libgit2.git;protocol=https;destsuffix=git2-rs/libgit2-sys/libgit2;name=libgit2;branch=libgit2-2014-12-19 \
 "
 
-# 0.2.1  / -sys 0.1.14
-SRCREV_curl-rust = "e05dcfa59813f2d8c443afa3e37e26482e41091b"
+# 0.2.2  / -sys 0.1.16
+SRCREV_curl-rust = "24b1508e8d0c8052f10b1c1ed6c88eb14cae0fda"
 
 # 0.1.11 / -sys 0.1.8
-SRCREV_ssh2-rs = "bb0c71792799d7261ae6356a26aabd39c9e78430"
+SRCREV_ssh2-rs = "80b4350918a236711ed193c06998ddc1af523e17"
 
 # 0.2.2 / -sys 0.2.1
-SRCREV_git2-rs = "8b52e3c86cec585038513116654d308f101e4582"
+SRCREV_git2-rs = "43d1b116360c013293936058c55556b090950e01"
 
 SRCREV_FORMAT .= "_curl-rust_curl_ssh2-rs_git2-rs"
 EXTRA_OECARGO_PATHS = "\

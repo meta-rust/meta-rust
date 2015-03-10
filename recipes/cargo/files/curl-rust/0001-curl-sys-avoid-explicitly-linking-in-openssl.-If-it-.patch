@@ -1,4 +1,4 @@
-From 47f506d98444c84f232aefb029c2ec48b7027b8c Mon Sep 17 00:00:00 2001
+From bdf481d61083100ecb297c77e812db704ad10a15 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 11:50:28 -0500
 Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
@@ -10,7 +10,7 @@ Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
  2 files changed, 18 deletions(-)
 
 diff --git a/curl-sys/Cargo.toml b/curl-sys/Cargo.toml
-index 5c380ca..cfea848 100644
+index ddc6ca0..36f93a0 100644
 --- a/curl-sys/Cargo.toml
 +++ b/curl-sys/Cargo.toml
 @@ -18,21 +18,4 @@ path = "lib.rs"

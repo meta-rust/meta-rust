@@ -1,7 +1,7 @@
 From c672135095f7335b98d46f2e378d4dc5b335bbf7 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 12:57:24 -0500
-Subject: [PATCH 10/11] configure & install: support disabling calling of
+Subject: [PATCH 10/14] configure & install: support disabling calling of
  ldconfig
 
 ---

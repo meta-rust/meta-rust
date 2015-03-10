@@ -1,4 +1,4 @@
-From 9abdf2a4f8acdc432e83f62d7ac7d0e2eb57bc2e Mon Sep 17 00:00:00 2001
+From c9a0ea1470ce440b877cd276fd591c2be4f5c753 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 1 Dec 2014 10:51:31 -0500
 Subject: [PATCH] Unconditionally depend on openssl-sys

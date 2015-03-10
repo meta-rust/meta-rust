@@ -1,7 +1,7 @@
 From 853675a3609aeb09e0fc6a00e84b8ab4c782a332 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 26 Nov 2014 10:00:32 -0500
-Subject: [PATCH 01/11] libstd/io/process/Command: fully quote and escape the
+Subject: [PATCH 01/14] libstd/io/process/Command: fully quote and escape the
  command and all args
 
 This makes the command (which may have trailing or leading white space

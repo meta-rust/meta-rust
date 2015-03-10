@@ -1,7 +1,7 @@
 From d3e5ed1cd54f4534f830011846fa7a08f5a8db3e Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
-Subject: [PATCH 08/11] Parallelize submake invocations
+Subject: [PATCH 08/14] Parallelize submake invocations
 
 ---
  mk/clean.mk   | 2 +-
