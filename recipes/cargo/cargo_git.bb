@@ -1,5 +1,5 @@
-# 2015-03-07
-SRCREV_cargo = "b27cd4706063510640410540c1e68da3a294ab24"
+# 2015-03-09
+SRCREV_cargo = "e4f0662b4ba7feacc10c19465182b8174aae4e9d"
 SRCREV_rust-installer = "60fd8abfcae50629a3fc664bd809238fed039617"
 
 require cargo.inc
