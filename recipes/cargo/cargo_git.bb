@@ -1,5 +1,5 @@
-# 2015-03-09
-SRCREV_cargo = "e4f0662b4ba7feacc10c19465182b8174aae4e9d"
+# 2015-03-23
+SRCREV_cargo = "8d4bf72bf6b1f997c2e91ec57b79c6bbd2ed65e4"
 SRCREV_rust-installer = "60fd8abfcae50629a3fc664bd809238fed039617"
 
 require cargo.inc
@@ -20,14 +20,14 @@ SRC_URI += " \
 	git://github.com/alexcrichton/libgit2.git;protocol=https;destsuffix=git2-rs/libgit2-sys/libgit2;name=libgit2;branch=libgit2-2014-12-19 \
 "
 
-# 0.2.2  / -sys 0.1.16
-SRCREV_curl-rust = "24b1508e8d0c8052f10b1c1ed6c88eb14cae0fda"
+# 0.2.3  / -sys 0.1.16
+SRCREV_curl-rust = "8db3885f0e39c748c37d6f5409a055aa8412b81f"
 
-# 0.1.11 / -sys 0.1.8
-SRCREV_ssh2-rs = "80b4350918a236711ed193c06998ddc1af523e17"
+# 0.2.3 / -sys 0.1.13
+SRCREV_ssh2-rs = "20051a11312ff1769bd21c461232c0cb8bc99815"
 
-# 0.2.2 / -sys 0.2.1
-SRCREV_git2-rs = "43d1b116360c013293936058c55556b090950e01"
+# 0.2.5 / -sys 0.2.6
+SRCREV_git2-rs = "7ba50b6e2170cc73ee55b8de738cf9efb68b6646"
 
 SRCREV_FORMAT .= "_curl-rust_curl_ssh2-rs_git2-rs"
 EXTRA_OECARGO_PATHS = "\

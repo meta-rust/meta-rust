@@ -1,5 +1,5 @@
-# 2015-03-09
-SRCREV = "91bdf23f504f79ed59617cde3dfebd3d5e39a476"
+# 2015-03-23
+SRCREV = "b0aad7dd4fad8d7e2e2f877a511a637258949597"
 require rust-git.inc
 
 SRC_URI_append = "\
@@ -15,8 +15,7 @@ SRC_URI_append = "\
 	file://0010-configure-install-support-disabling-calling-of-ldcon.patch \
 	file://0011-mk-install-use-disable-rewrite-paths.patch \
 	file://0012-filesearch-add-info-to-show-path-searching.patch \
-	file://0013-configure-enable-debug-now-also-sets-C-debug-asserti.patch \
-	file://0014-filesearch-fix-for-new-path.patch \
 \
 	file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "
+#file://0013-filesearch-fix-for-new-path.patch \

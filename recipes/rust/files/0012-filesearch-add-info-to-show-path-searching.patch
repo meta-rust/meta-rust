@@ -1,7 +1,7 @@
-From 7d59fe5bcbb3babc149d70e517506ba3e0b9de4e Mon Sep 17 00:00:00 2001
+From df8c5991b2417ab0458efc114f0fe458143a2c00 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 9 Mar 2015 16:33:27 -0400
-Subject: [PATCH 12/14] filesearch: add info! to show path searching
+Subject: [PATCH 12/13] filesearch: add info! to show path searching
 
 ---
  src/librustc/metadata/filesearch.rs | 3 +++
@@ -36,5 +36,5 @@ index ed21d50..d6dc516 100644
                         FileMatches => {
                             break;
 -- 
-2.3.1
+2.3.3
 

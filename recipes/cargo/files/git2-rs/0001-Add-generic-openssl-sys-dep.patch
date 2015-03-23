@@ -1,4 +1,4 @@
-From 04f59e215eb3ebe0a3d5b0ebe99188b4dd4058b9 Mon Sep 17 00:00:00 2001
+From ff3a41ab9e7da8aeb35f66c7f6496566f9305fa8 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 10 Nov 2014 15:06:29 -0500
 Subject: [PATCH] Add generic openssl-sys dep
@@ -8,7 +8,7 @@ Subject: [PATCH] Add generic openssl-sys dep
  1 file changed, 2 insertions(+), 25 deletions(-)
 
 diff --git a/libgit2-sys/Cargo.toml b/libgit2-sys/Cargo.toml
-index 41b6bcb..8018d8f 100644
+index efea9f3..27e3783 100644
 --- a/libgit2-sys/Cargo.toml
 +++ b/libgit2-sys/Cargo.toml
 @@ -16,31 +16,8 @@ description = "Native bindings to the libgit2 library"
@@ -46,5 +46,5 @@ index 41b6bcb..8018d8f 100644
 -openssl-sys = "0.5.0"
 -libz-sys = "0.1.0"
 -- 
-2.3.1
+2.3.3
 

@@ -1,7 +1,7 @@
-From fc801fb0ea65149fcea4ba015338f43d6fb74be2 Mon Sep 17 00:00:00 2001
+From 0c6d20636de66db860c441e097b21df04243c392 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 04/14] Target: add default target.json path:
+Subject: [PATCH 04/13] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH 04/14] Target: add default target.json path:
  3 files changed, 21 insertions(+), 9 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 1b09be0..055e733 100644
+index e368a66..4ea57b0 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
 @@ -38,7 +38,7 @@ use std::collections::HashMap;
@@ -110,5 +110,5 @@ index 4663901..f8e00c3 100644
              if p.is_file() {
                  return load_file(&p);
 -- 
-2.3.1
+2.3.3
 

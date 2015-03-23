@@ -1,7 +1,7 @@
-From 6aa48e1c7e299eda8cc40e95f9027d9c61eabd54 Mon Sep 17 00:00:00 2001
+From 4113b24b2f14225ada5e21fd409042e855de69dc Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 07/14] configure: support --bindir, and extend libdir to
+Subject: [PATCH 07/13] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -23,7 +23,7 @@ windows platforms
  7 files changed, 88 insertions(+), 69 deletions(-)
 
 diff --git a/configure b/configure
-index d56000b..9026ae1 100755
+index fdc28ee..d63956a 100755
 --- a/configure
 +++ b/configure
 @@ -309,6 +309,31 @@ envopt() {
@@ -58,7 +58,7 @@ index d56000b..9026ae1 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -563,6 +588,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
+@@ -566,6 +591,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
  CFG_HOST=$(to_llvm_triple $CFG_HOST)
  CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  
@@ -67,7 +67,7 @@ index d56000b..9026ae1 100755
  # On windows we just store the libraries in the bin directory because
  # there's no rpath. This is where the build system itself puts libraries;
  # --libdir is used to configure the installation directory.
-@@ -570,23 +597,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+@@ -573,23 +600,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
  then
      CFG_LIBDIR_RELATIVE=bin
@@ -96,7 +96,7 @@ index d56000b..9026ae1 100755
  fi
  
  if [ $HELP -eq 1 ]
-@@ -595,6 +614,11 @@ then
+@@ -598,6 +617,11 @@ then
      exit 0
  fi
  
@@ -108,7 +108,7 @@ index d56000b..9026ae1 100755
  # Validate Options
  step_msg "validating $CFG_SELF args"
  validate_opt
-@@ -1361,6 +1385,7 @@ putvar CFG_PREFIX
+@@ -1365,6 +1389,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -136,10 +136,10 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index 984f9c0..65d6f70 100644
+index f8c0488..db19ae4 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -330,7 +330,9 @@ export CFG_RELEASE_CHANNEL
+@@ -331,7 +331,9 @@ export CFG_RELEASE_CHANNEL
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -149,7 +149,7 @@ index 984f9c0..65d6f70 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  ifdef CFG_DISABLE_UNSTABLE_FEATURES
  CFG_INFO := $(info cfg: disabling unstable features (CFG_DISABLE_UNSTABLE_FEATURES))
-@@ -360,7 +362,16 @@ define SREQ
+@@ -361,7 +363,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -187,7 +187,7 @@ index 16cbaab..f8a354c 100644
  endif
  
 diff --git a/mk/prepare.mk b/mk/prepare.mk
-index f1c4aa6..37c0a1a 100644
+index 4ded8a7..84c7bf2 100644
 --- a/mk/prepare.mk
 +++ b/mk/prepare.mk
 @@ -168,10 +168,10 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
@@ -335,10 +335,10 @@ index 22a4a6f..ed21d50 100644
  
  // The name of rustc's own place to organize libraries.
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 3087a8e..891698a 100644
+index 34a23f3..5a81790 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -1020,11 +1020,10 @@ fn link_args(cmd: &mut Command,
+@@ -1015,11 +1015,10 @@ fn link_args(cmd: &mut Command,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {
@@ -352,5 +352,5 @@ index 3087a8e..891698a 100644
              path.push(&tlib);
  
 -- 
-2.3.1
+2.3.3
 

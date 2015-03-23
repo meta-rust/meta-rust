@@ -1,4 +1,4 @@
-From 66d0d329df945866abe602172980e62668e20f5b Mon Sep 17 00:00:00 2001
+From 910c8fe2c439ed79451e5bcfb01dedbd4c8225cb Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 12:26:48 -0500
 Subject: [PATCH 2/2] remove per-triple deps on openssl-sys
@@ -8,7 +8,7 @@ Subject: [PATCH 2/2] remove per-triple deps on openssl-sys
  1 file changed, 1 insertion(+), 18 deletions(-)
 
 diff --git a/Cargo.toml b/Cargo.toml
-index cd886be..3682f8a 100644
+index 1554aea..3a6efa3 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -10,6 +10,7 @@ description = "Rust bindings to libcurl for making HTTP requests"
@@ -42,5 +42,5 @@ index cd886be..3682f8a 100644
 -[target.x86_64-unknown-freebsd.dependencies]
 -openssl-sys = "0.5.1"
 -- 
-2.3.1
+2.3.3
 

@@ -1,4 +1,4 @@
-From bdf481d61083100ecb297c77e812db704ad10a15 Mon Sep 17 00:00:00 2001
+From 03c23cce2e617e4d0902e9adf0a9caa7e27b9699 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 11:50:28 -0500
 Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
@@ -48,5 +48,5 @@ index 0a224a4..1328834 100644
  use libc::{c_void, c_int, c_char, c_uint, c_long};
  
 -- 
-2.3.1
+2.3.3
 
