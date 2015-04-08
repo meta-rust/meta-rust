@@ -1,6 +1,7 @@
 inherit rust
 
 CARGO ?= "cargo"
+export CARGO_HOME = "${WORKDIR}/cargo_home"
 
 def cargo_base_dep(d):
     deps = ""
