@@ -1,7 +1,7 @@
-From 853675a3609aeb09e0fc6a00e84b8ab4c782a332 Mon Sep 17 00:00:00 2001
+From 3a67544562dbd818ee3af76cf065fa8899ca9590 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 26 Nov 2014 10:00:32 -0500
-Subject: [PATCH 01/14] libstd/io/process/Command: fully quote and escape the
+Subject: [PATCH 01/13] libstd/io/process/Command: fully quote and escape the
  command and all args
 
 This makes the command (which may have trailing or leading white space
@@ -15,27 +15,27 @@ shell.
  1 file changed, 28 insertions(+), 3 deletions(-)
 
 diff --git a/src/libstd/old_io/process.rs b/src/libstd/old_io/process.rs
-index e02e863..2381b6a 100644
+index ad2d5b4..f543e0c 100644
 --- a/src/libstd/old_io/process.rs
 +++ b/src/libstd/old_io/process.rs
-@@ -33,6 +33,7 @@ use sync::mpsc::{channel, Receiver};
+@@ -34,6 +34,7 @@ use sync::mpsc::{channel, Receiver};
  use sys::fs::FileDesc;
  use sys::process::Process as ProcessImp;
  use sys;
-+use string::CowString;
++use borrow::Cow;
  use thread;
  
  #[cfg(windows)] use hash;
-@@ -397,15 +398,39 @@ impl Command {
+@@ -404,15 +405,39 @@ impl Command {
      }
  }
  
 +struct SingleQuotedStr<'a> {
-+    s: CowString<'a>
++    s: Cow<'a, str>
 +}
 +
 +impl<'b> SingleQuotedStr<'b> {
-+    fn new<'a>(i: CowString<'a>) -> SingleQuotedStr<'a> {
++    fn new<'a>(i: Cow<'a, str>) -> SingleQuotedStr<'a> {
 +        SingleQuotedStr { s: i }
 +    }
 +}
@@ -70,5 +70,5 @@ index e02e863..2381b6a 100644
          Ok(())
      }
 -- 
-2.3.1
+1.9.1
 

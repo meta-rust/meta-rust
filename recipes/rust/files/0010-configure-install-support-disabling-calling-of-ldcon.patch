@@ -1,7 +1,7 @@
-From c672135095f7335b98d46f2e378d4dc5b335bbf7 Mon Sep 17 00:00:00 2001
+From 7df9999d136e8f6554cf127bdf23b700497bd46d Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 12:57:24 -0500
-Subject: [PATCH 10/14] configure & install: support disabling calling of
+Subject: [PATCH 10/13] configure & install: support disabling calling of
  ldconfig
 
 ---
@@ -10,10 +10,10 @@ Subject: [PATCH 10/14] configure & install: support disabling calling of
  2 files changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/configure b/configure
-index 9026ae1..92858c3 100755
+index 5c4c402..132f9c7 100755
 --- a/configure
 +++ b/configure
-@@ -554,6 +554,7 @@ opt llvm-static-stdcpp 0 "statically link to libstdc++ for LLVM"
+@@ -567,6 +567,7 @@ opt llvm-static-stdcpp 0 "statically link to libstdc++ for LLVM"
  opt rpath 0 "build rpaths into rustc itself"
  opt nightly 0 "build nightly packages"
  opt verify-install 1 "verify installed binaries work"
@@ -61,5 +61,5 @@ index 8878cf5..c8bed09 100644
  	$(Q)rm -R tmp/dist
  
 -- 
-2.3.1
+1.9.1
 

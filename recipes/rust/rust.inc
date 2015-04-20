@@ -309,7 +309,6 @@ do_configure () {
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
-		"--bindir=${bindir}"			\
 		${EXTRA_OECONF}
 }
 

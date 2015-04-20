@@ -1,14 +1,14 @@
-From f0e1084b376a00de29a881b3f3a27eefa7ea0a26 Mon Sep 17 00:00:00 2001
+From 8909ccdb717323af5b81b61e69b3187f887cad06 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Sat, 15 Nov 2014 20:12:48 -0500
-Subject: [PATCH 03/14] platform.mk: avoid choking on i586
+Subject: [PATCH 03/13] platform.mk: avoid choking on i586
 
 ---
  mk/platform.mk | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/mk/platform.mk b/mk/platform.mk
-index ed50585..14221d7 100644
+index cd86b27..d6c5e24 100644
 --- a/mk/platform.mk
 +++ b/mk/platform.mk
 @@ -14,7 +14,9 @@
@@ -23,5 +23,5 @@ index ed50585..14221d7 100644
  $(foreach t,$(CFG_TARGET),$(eval $(call DEF_HOST_VAR,$(t))))
  $(foreach t,$(CFG_TARGET),$(info cfg: host for $(t) is $(HOST_$(t))))
 -- 
-2.3.1
+1.9.1
 

@@ -1,7 +1,7 @@
-From d3e5ed1cd54f4534f830011846fa7a08f5a8db3e Mon Sep 17 00:00:00 2001
+From d8e68c4b585d1d5d9397a1a98f4db50b886daaae Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:54:42 -0500
-Subject: [PATCH 08/14] Parallelize submake invocations
+Subject: [PATCH 08/13] Parallelize submake invocations
 
 ---
  mk/clean.mk   | 2 +-
@@ -53,7 +53,7 @@ index 8850cd7..8878cf5 100644
  ifeq ($(CFG_DISABLE_DOCS),)
  	$(Q)cd tmp/empty_dir && sh ../../tmp/dist/$(DOC_PKG_NAME)-$(CFG_BUILD)/install.sh --uninstall --prefix="$(DESTDIR)$(CFG_PREFIX)" --libdir="$(DESTDIR)$(CFG_LIBDIR)" --mandir="$(DESTDIR)$(CFG_MANDIR)"
 diff --git a/mk/llvm.mk b/mk/llvm.mk
-index b07c2a1..683dc60 100644
+index 1861dd3..00c39f8 100644
 --- a/mk/llvm.mk
 +++ b/mk/llvm.mk
 @@ -28,7 +28,7 @@ LLVM_STAMP_$(1) = $$(CFG_LLVM_BUILD_DIR_$(1))/llvm-auto-clean-stamp
@@ -108,17 +108,16 @@ index 527485c..5d82a11 100644
  	$$(Q)cp $$(BACKTRACE_BUILD_DIR_$(1))/.libs/libbacktrace.a $$@
  
 diff --git a/mk/util.mk b/mk/util.mk
-index 3bbc8f4..4300b02 100644
+index b419c0b..0dd68dd 100644
 --- a/mk/util.mk
 +++ b/mk/util.mk
-@@ -16,5 +16,7 @@ else
+@@ -16,4 +16,6 @@ else
    E = echo $(1)
  endif
  
 +P = +
 +
  S := $(CFG_SRC_DIR)
- 
 -- 
-2.3.1
+1.9.1
 

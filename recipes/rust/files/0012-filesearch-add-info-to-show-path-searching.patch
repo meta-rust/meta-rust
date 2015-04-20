@@ -1,14 +1,14 @@
-From 7d59fe5bcbb3babc149d70e517506ba3e0b9de4e Mon Sep 17 00:00:00 2001
+From c43717223b5f1ddec0a35d32ff7065e1be2efe8f Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 9 Mar 2015 16:33:27 -0400
-Subject: [PATCH 12/14] filesearch: add info! to show path searching
+Subject: [PATCH 12/13] filesearch: add info! to show path searching
 
 ---
  src/librustc/metadata/filesearch.rs | 3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index ed21d50..d6dc516 100644
+index 2e1e89c..30800fe 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
 @@ -46,6 +46,7 @@ impl<'a> FileSearch<'a> {
@@ -36,5 +36,5 @@ index ed21d50..d6dc516 100644
                         FileMatches => {
                             break;
 -- 
-2.3.1
+1.9.1
 
