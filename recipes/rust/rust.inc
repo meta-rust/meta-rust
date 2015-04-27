@@ -336,9 +336,8 @@ rust_do_install () {
 
         # Rust's install.sh doesn't mark executables as executable because
         # we're using a custom bindir, do it ourselves.
-        chmod +x "${D}/${bindir}/rustc"
-        chmod +x "${D}/${bindir}/rustdoc"
-        chmod +x "${D}/${bindir}/rust-gdb"
+	mkdir -p ${D}/${bindir}/
+	find ${D}/${prefix}/bin -type f -exec mv \{} ${D}/${bindir} \;
 
         # Install our custom target.json files
 	local td="${D}${libdir}/rustlib/"
