@@ -27,7 +27,7 @@ export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 ## arm-unknown-linux-gnueabihf
 DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
-LLVM_TARGET[arm] = "arm-unknown-linux-gnueabihf"
+LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
@@ -381,6 +381,7 @@ USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0'
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
 DEPENDS_class-cross += "rust-native"
+DEPENDS_class-cross += "gcc-cross"
 PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
 PN_class-cross = "rust-cross-${TARGET_ARCH}"
 
