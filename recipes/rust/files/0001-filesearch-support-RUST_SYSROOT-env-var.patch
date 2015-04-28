@@ -1,0 +1,28 @@
+From d50ede97690f2814d2e56d3a644a490ef95cde4c Mon Sep 17 00:00:00 2001
+From: Steven Walter <swalter@lexmark.com>
+Date: Tue, 28 Apr 2015 11:24:29 -0400
+Subject: [PATCH] filesearch: support RUST_SYSROOT env var
+
+---
+ src/librustc/metadata/filesearch.rs | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
+index 81b2327..d43619e 100644
+--- a/src/librustc/metadata/filesearch.rs
++++ b/src/librustc/metadata/filesearch.rs
+@@ -201,6 +201,11 @@ pub fn get_or_default_sysroot() -> PathBuf {
+         })
+     }
+ 
++    match env::var("RUST_SYSROOT") {
++        Err(_) => (),
++        Ok(x) => return PathBuf::from(x)
++    };
++
+     match canonicalize(env::current_exe().ok()) {
+         Some(mut p) => { p.pop(); p.pop(); p }
+         None => panic!("can't determine value for sysroot")
+-- 
+1.9.1
+
