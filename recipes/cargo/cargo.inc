@@ -58,6 +58,7 @@ do_configure () {
 
 do_compile () {
 	oe_cargo_fix_env
+	export LD_LIBRARY_PATH="${STAGING_LIBDIR_NATIVE}"
 	oe_runmake ARGS="--verbose"
 }
 
