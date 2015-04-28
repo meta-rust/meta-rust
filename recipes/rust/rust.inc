@@ -15,6 +15,11 @@ LIC_FILES_CHKSUM ="\
 	file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3 \
 "
 
+RUST_SNAPSHOT = "rust-stage0-2015-03-27-5520801-linux-x86_64-ef2154372e97a3cb687897d027fd51c8f2c5f349.tar.bz2"
+SRC_URI += "\
+	https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0 \
+"
+
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
@@ -328,6 +333,8 @@ rust_runmake () {
 }
 
 do_compile () {
+	mkdir -p dl
+	cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
 	rust_runmake
 }
 
