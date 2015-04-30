@@ -15,12 +15,10 @@ LIC_FILES_CHKSUM ="\
 	file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3 \
 "
 
-# Controls whether we use the local rust.
-# For -native, we set this to "0" by default.
-# This avoids us downloading and using the snapshot for every rust build.
-## XXX: temporarily disabled while there are breaking changes conditional on
-## stage0 (format_args!() change)
-USE_LOCAL_RUST ??= "0"
+RUST_SNAPSHOT = "rust-stage0-2015-03-27-5520801-linux-x86_64-ef2154372e97a3cb687897d027fd51c8f2c5f349.tar.bz2"
+SRC_URI += "\
+	https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0 \
+"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
@@ -316,8 +314,6 @@ do_configure () {
 		"--infodir=${infodir}"			\
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
-		"--bindir=${bindir}"			\
-		${@base_conditional('USE_LOCAL_RUST', '1', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
 		${EXTRA_OECONF}
 }
 
@@ -337,6 +333,8 @@ rust_runmake () {
 }
 
 do_compile () {
+	mkdir -p dl
+	cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
 	rust_runmake
 }
 
@@ -345,9 +343,8 @@ rust_do_install () {
 
         # Rust's install.sh doesn't mark executables as executable because
         # we're using a custom bindir, do it ourselves.
-        chmod +x "${D}/${bindir}/rustc"
-        chmod +x "${D}/${bindir}/rustdoc"
-        chmod +x "${D}/${bindir}/rust-gdb"
+	mkdir -p ${D}/${bindir}/
+	find ${D}/${prefix}/bin -type f -exec mv \{} ${D}/${bindir} \;
 
         # Install our custom target.json files
 	local td="${D}${libdir}/rustlib/"
@@ -380,8 +377,7 @@ USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0'
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
-DEPENDS_class-cross += "rust-native"
-DEPENDS_class-cross += "gcc-cross"
+DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
 PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
 PN_class-cross = "rust-cross-${TARGET_ARCH}"
 

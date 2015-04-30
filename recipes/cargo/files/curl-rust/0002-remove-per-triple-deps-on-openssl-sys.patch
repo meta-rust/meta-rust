@@ -1,46 +1,46 @@
-From 66d0d329df945866abe602172980e62668e20f5b Mon Sep 17 00:00:00 2001
-From: Cody P Schafer <dev@codyps.com>
-Date: Tue, 25 Nov 2014 12:26:48 -0500
-Subject: [PATCH 2/2] remove per-triple deps on openssl-sys
+From 26ac55536e464edd9e9d18b6749e533d3efcf798 Mon Sep 17 00:00:00 2001
+From: Steven Walter <swalter@lexmark.com>
+Date: Mon, 27 Apr 2015 21:01:42 -0400
+Subject: [PATCH] remove per-triple deps on openssl-sys
 
 ---
  Cargo.toml | 19 +------------------
  1 file changed, 1 insertion(+), 18 deletions(-)
 
 diff --git a/Cargo.toml b/Cargo.toml
-index cd886be..3682f8a 100644
+index 6e7cee9..c659989 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -10,6 +10,7 @@ description = "Rust bindings to libcurl for making HTTP requests"
- [dependencies]
- url = "0.2.0"
+@@ -12,28 +12,11 @@ url = "0.2.0"
+ log = "0.3.0"
  libc = "0.1"
-+openssl-sys = "0.5.1"
- 
- [dependencies.curl-sys]
- path = "curl-sys"
-@@ -17,21 +18,3 @@ version = "0.1.0"
+ curl-sys = { path = "curl-sys", version = "0.1.0" }
++openssl-sys = "0.6.0"
  
  [dev-dependencies]
- log = "0.2"
--
+ env_logger = "0.3.0"
+ 
 -# Unix platforms use OpenSSL for now to provide SSL functionality
 -[target.i686-apple-darwin.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.x86_64-apple-darwin.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.i686-unknown-linux-gnu.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.x86_64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.arm-unknown-linux-gnueabihf.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.aarch64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.i686-unknown-freebsd.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
 -[target.x86_64-unknown-freebsd.dependencies]
--openssl-sys = "0.5.1"
+-openssl-sys = "0.6.0"
+-
+ [[test]]
+ 
+ name = "test"
 -- 
-2.3.1
+1.9.1
 

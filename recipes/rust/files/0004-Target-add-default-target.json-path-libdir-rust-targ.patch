@@ -1,7 +1,7 @@
-From fc801fb0ea65149fcea4ba015338f43d6fb74be2 Mon Sep 17 00:00:00 2001
+From 5bc80655c7588d11c36505013d935e802a75332c Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 04/14] Target: add default target.json path:
+Subject: [PATCH 04/13] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
@@ -11,11 +11,11 @@ Subject: [PATCH 04/14] Target: add default target.json path:
  3 files changed, 21 insertions(+), 9 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 1b09be0..055e733 100644
+index a7d608d..83b3cd2 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -38,7 +38,7 @@ use std::collections::HashMap;
- use std::collections::hash_map::Entry::{Occupied, Vacant};
+@@ -37,7 +37,7 @@ use getopts;
+ use std::collections::HashMap;
  use std::env;
  use std::fmt;
 -use std::path::PathBuf;
@@ -23,7 +23,7 @@ index 1b09be0..055e733 100644
  
  use llvm;
  
-@@ -661,12 +661,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+@@ -662,12 +662,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
@@ -40,7 +40,7 @@ index 1b09be0..055e733 100644
  
      let (int_type, uint_type) = match &target.target_pointer_width[..] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index 8bc8426..fff142e 100644
+index 3e3e5e1..3a1b31f 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
 @@ -346,14 +346,18 @@ pub fn build_session_(sopts: config::Options,
@@ -49,7 +49,7 @@ index 8bc8426..fff142e 100644
                        -> Session {
 -    let host = match Target::search(config::host_triple()) {
 +    let sysroot = match sopts.maybe_sysroot {
-+        Some(ref x) => PathBuf::new(x),
++        Some(ref x) => PathBuf::from(x),
 +        None => filesearch::get_or_default_sysroot()
 +    };
 +    let host = match Target::search(&sysroot, config::host_triple()) {
@@ -65,7 +65,7 @@ index 8bc8426..fff142e 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 4663901..f8e00c3 100644
+index 07528df..16f5d2c 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
 @@ -49,6 +49,8 @@ use serialize::json::Json;
@@ -94,7 +94,7 @@ index 4663901..f8e00c3 100644
              let mut f = try!(File::open(path).map_err(|e| e.to_string()));
 @@ -399,9 +402,14 @@ impl Target {
          let target_path = env::var_os("RUST_TARGET_PATH")
-                               .unwrap_or(OsString::from_str(""));
+                               .unwrap_or(OsString::new());
  
 -        // FIXME 16351: add a sane default search path?
 +        let mut default_path = sysroot.to_owned();
@@ -110,5 +110,5 @@ index 4663901..f8e00c3 100644
              if p.is_file() {
                  return load_file(&p);
 -- 
-2.3.1
+1.9.1
 

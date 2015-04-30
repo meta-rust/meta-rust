@@ -1,7 +1,6 @@
 RUSTC = "rustc"
 
-# FIXME: --sysroot might be needed
-RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath"
+RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} --sysroot=${STAGING_DIR_NATIVE}/${prefix_native} -C rpath"
 
 def rust_base_dep(d):
     # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to

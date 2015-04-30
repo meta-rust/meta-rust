@@ -89,6 +89,7 @@ oe_cargo_fix_env () {
 	export HOST_CC="${RUST_BUILD_CC}"
 	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
 	export HOST_AR="${BUILD_AR}"
+	export RUST_SYSROOT="${STAGING_DIR_NATIVE}/${prefix_native}"
 }
 
 cargo_do_compile () {

@@ -14,7 +14,11 @@ DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 SRC_URI = "\
 	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
 	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=git/src/rust-installer \
+	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/2015-04-02/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz \
 "
+
+SRC_URI[md5sum] = "3d62194d02a9088cd8aae379e9498134"
+SRC_URI[sha256sum] = "16b6338ba2942989693984ba4dbd057c2801e8805e6da8fa7b781b00e722d117"
 
 LIC_FILES_CHKSUM ="\
 	file://LICENSE-MIT;md5=362255802eb5aa87810d12ddf3cfedb4 \
@@ -58,6 +62,10 @@ do_configure () {
 
 do_compile () {
 	oe_cargo_fix_env
+	rm -rf target/snapshot
+	mkdir -p target
+	cp -R ${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu target/snapshot
+	export LD_LIBRARY_PATH="${STAGING_LIBDIR_NATIVE}"
 	oe_runmake ARGS="--verbose"
 }
 

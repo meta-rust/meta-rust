@@ -1,0 +1,35 @@
+From 1c1f4f2711abe1f48ccae0d16163d8a2581516a5 Mon Sep 17 00:00:00 2001
+From: Steven Walter <swalter@lexmark.com>
+Date: Mon, 27 Apr 2015 23:01:37 -0400
+Subject: [PATCH] i don't understand why this didn't build
+
+---
+ src/config.rs | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/config.rs b/src/config.rs
+index d02a305..29a05b1 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -204,12 +204,12 @@ impl Config {
+     ///
+     /// An error will be returned if the config value is not valid utf-8.
+     pub fn get_string(&self, name: &str) -> Result<String, Error> {
+-        let ret = Buf::new();
+-        let name = try!(CString::new(name));
+-        unsafe {
+-            try_call!(raw::git_config_get_string_buf(ret.raw(), self.raw, name));
+-        }
+-        str::from_utf8(&ret).map(|s| s.to_string()).map_err(|_| {
++        let bytes = match self.get_bytes(name) {
++            Err(x) => return Err(x),
++            Ok(x) => x,
++        };
++
++        str::from_utf8(bytes).map(|s| s.to_string()).map_err(|_| {
+             Error::from_str("configuration value is not valid utf8")
+         })
+     }
+-- 
+1.9.1
+
