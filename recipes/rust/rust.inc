@@ -380,7 +380,7 @@ USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0'
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
-DEPENDS_class-cross += "rust-native"
+DEPENDS_class-cross += "${@base_conditional('USE_LOCAL_RUST', '1', 'rust-native', '')}"
 DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
 PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
 PN_class-cross = "rust-cross-${TARGET_ARCH}"
