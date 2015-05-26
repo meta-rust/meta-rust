@@ -1,21 +1,21 @@
-From 0c6d20636de66db860c441e097b21df04243c392 Mon Sep 17 00:00:00 2001
+From a728ae609845a3ae7ee74f8de8c92bf086674237 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 04/13] Target: add default target.json path:
+Subject: [PATCH 2/9] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
- src/librustc/session/config.rs  |  8 ++++----
+ src/librustc/session/config.rs  |  6 +++---
  src/librustc/session/mod.rs     |  8 ++++++--
  src/librustc_back/target/mod.rs | 14 +++++++++++---
- 3 files changed, 21 insertions(+), 9 deletions(-)
+ 3 files changed, 20 insertions(+), 8 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index e368a66..4ea57b0 100644
+index 48fe574..78919ba 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -38,7 +38,7 @@ use std::collections::HashMap;
- use std::collections::hash_map::Entry::{Occupied, Vacant};
+@@ -37,7 +37,7 @@ use getopts;
+ use std::collections::HashMap;
  use std::env;
  use std::fmt;
 -use std::path::PathBuf;
@@ -23,7 +23,7 @@ index e368a66..4ea57b0 100644
  
  use llvm;
  
-@@ -661,12 +661,12 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+@@ -665,8 +665,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
@@ -34,22 +34,17 @@ index e368a66..4ea57b0 100644
          Ok(t) => t,
          Err(e) => {
              sp.handler().fatal(&format!("Error loading target specification: {}", e));
--    }
-+        }
-     };
- 
-     let (int_type, uint_type) = match &target.target_pointer_width[..] {
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index 8bc8426..fff142e 100644
+index 6b5f587..4432440 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
-@@ -346,14 +346,18 @@ pub fn build_session_(sopts: config::Options,
+@@ -381,14 +381,18 @@ pub fn build_session_(sopts: config::Options,
                        local_crate_source_file: Option<PathBuf>,
                        span_diagnostic: diagnostic::SpanHandler)
                        -> Session {
 -    let host = match Target::search(config::host_triple()) {
 +    let sysroot = match sopts.maybe_sysroot {
-+        Some(ref x) => PathBuf::new(x),
++        Some(ref x) => PathBuf::from(x),
 +        None => filesearch::get_or_default_sysroot()
 +    };
 +    let host = match Target::search(&sysroot, config::host_triple()) {
@@ -61,23 +56,23 @@ index 8bc8426..fff142e 100644
      };
 -    let target_cfg = config::build_target_config(&sopts, &span_diagnostic);
 +    let target_cfg = config::build_target_config(&sysroot, &sopts, &span_diagnostic);
-     let p_s = parse::new_parse_sess_special_handler(span_diagnostic);
+     let p_s = parse::ParseSess::with_span_handler(span_diagnostic);
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 4663901..f8e00c3 100644
+index 22d9660..ed98477 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
 @@ -49,6 +49,8 @@ use serialize::json::Json;
- use syntax::{diagnostic, abi};
  use std::default::Default;
  use std::io::prelude::*;
-+use std::path::Path;
+ use syntax::{diagnostic, abi};
 +use std::borrow::ToOwned;
++use std::path::Path;
  
- mod windows_base;
- mod linux_base;
-@@ -309,12 +311,13 @@ impl Target {
+ mod android_base;
+ mod apple_base;
+@@ -305,12 +307,13 @@ impl Target {
      ///
      /// The error string could come from any of the APIs called, including
      /// filesystem access and JSON decoding.
@@ -94,7 +89,7 @@ index 4663901..f8e00c3 100644
              let mut f = try!(File::open(path).map_err(|e| e.to_string()));
 @@ -399,9 +402,14 @@ impl Target {
          let target_path = env::var_os("RUST_TARGET_PATH")
-                               .unwrap_or(OsString::from_str(""));
+                               .unwrap_or(OsString::new());
  
 -        // FIXME 16351: add a sane default search path?
 +        let mut default_path = sysroot.to_owned();
@@ -110,5 +105,5 @@ index 4663901..f8e00c3 100644
              if p.is_file() {
                  return load_file(&p);
 -- 
-2.3.3
+2.4.1
 

@@ -1,7 +1,7 @@
-From 4113b24b2f14225ada5e21fd409042e855de69dc Mon Sep 17 00:00:00 2001
+From 66dbf7c11151c2c3419786161233576f07c850b0 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 07/13] configure: support --bindir, and extend libdir to
+Subject: [PATCH 5/9] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -13,20 +13,20 @@ relative to sysroot, and allows libdir to end in an arbitrary directory
 Note that this assumes absolute paths start with '/', which may break
 windows platforms
 ---
- configure                           | 51 +++++++++++++++++-------
+ configure                           | 49 ++++++++++++++++------
  mk/host.mk                          |  6 ++-
- mk/main.mk                          | 11 ++++++
+ mk/main.mk                          | 11 +++++
  mk/perf.mk                          |  4 +-
  mk/prepare.mk                       |  4 +-
- src/librustc/metadata/filesearch.rs | 78 ++++++++++++++-----------------------
+ src/librustc/metadata/filesearch.rs | 84 ++++++++++++++-----------------------
  src/librustc_trans/back/link.rs     |  3 +-
- 7 files changed, 88 insertions(+), 69 deletions(-)
+ 7 files changed, 90 insertions(+), 71 deletions(-)
 
 diff --git a/configure b/configure
-index fdc28ee..d63956a 100755
+index efa836c..368bc50 100755
 --- a/configure
 +++ b/configure
-@@ -309,6 +309,31 @@ envopt() {
+@@ -323,6 +323,31 @@ envopt() {
      fi
  }
  
@@ -58,7 +58,7 @@ index fdc28ee..d63956a 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -566,6 +591,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
+@@ -606,6 +631,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
  CFG_HOST=$(to_llvm_triple $CFG_HOST)
  CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  
@@ -67,8 +67,8 @@ index fdc28ee..d63956a 100755
  # On windows we just store the libraries in the bin directory because
  # there's no rpath. This is where the build system itself puts libraries;
  # --libdir is used to configure the installation directory.
-@@ -573,23 +600,15 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
- if [ "$CFG_OSTYPE" = "pc-windows-gnu" ]
+@@ -613,24 +640,21 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+ if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] || [ "$CFG_OSTYPE" = "pc-windows-msvc" ]
  then
      CFG_LIBDIR_RELATIVE=bin
 -else
@@ -88,27 +88,20 @@ index fdc28ee..d63956a 100755
 +valopt bindir "${CFG_PREFIX}/${CFG_BINDIR_RELATIVE}" "install binaries"
  
 -CFG_LIBDIR_RELATIVE=`echo ${CFG_LIBDIR} | cut -c$((${#CFG_PREFIX}+${CAT_INC}))-`
--
--if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
--    err "libdir on windows should be set to 'bin'"
-+if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] && [ "$CFG_LIBDIR_RELATIVE" != "$CFG_BINDIR_RELATIVE" ]; then
-+  err "Windows builds currently require that LIBDIR == BINDIR (we have libdir{$CFG_LIBDIR_RELATIVE} != bindir{$CFG_BINDIR_RELATIVE} )"
- fi
- 
- if [ $HELP -eq 1 ]
-@@ -598,6 +617,11 @@ then
-     exit 0
- fi
- 
 +# Determine libdir and bindir relative to prefix
 +step_msg "calculating relative paths to prefix = ${CFG_PREFIX}"
 +CFG_BINDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_BINDIR}")
 +CFG_LIBDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_LIBDIR}")
-+
- # Validate Options
- step_msg "validating $CFG_SELF args"
- validate_opt
-@@ -1365,6 +1389,7 @@ putvar CFG_PREFIX
+ 
+ if ( [ "$CFG_OSTYPE" = "pc-windows-gnu" ] || [ "$CFG_OSTYPE" = "pc-windows-msvc" ] ) \
+-	&& [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
+-    err "libdir on windows should be set to 'bin'"
++    && [ "$CFG_LIBDIR_RELATIVE" != "$CFG_BINDIR_RELATIVE" ]; then
++  err "Windows builds currently require that LIBDIR == BINDIR (we have libdir{$CFG_LIBDIR_RELATIVE} != bindir{$CFG_BINDIR_RELATIVE} )"
+ fi
+ 
+ if [ $HELP -eq 1 ]
+@@ -1567,6 +1591,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -136,10 +129,10 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index f8c0488..db19ae4 100644
+index 13bed1b..aa2d4ba 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -331,7 +331,9 @@ export CFG_RELEASE_CHANNEL
+@@ -344,7 +344,9 @@ export CFG_RELEASE_CHANNEL
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -149,7 +142,7 @@ index f8c0488..db19ae4 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  ifdef CFG_DISABLE_UNSTABLE_FEATURES
  CFG_INFO := $(info cfg: disabling unstable features (CFG_DISABLE_UNSTABLE_FEATURES))
-@@ -361,7 +363,16 @@ define SREQ
+@@ -374,7 +376,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -187,10 +180,10 @@ index 16cbaab..f8a354c 100644
  endif
  
 diff --git a/mk/prepare.mk b/mk/prepare.mk
-index 4ded8a7..84c7bf2 100644
+index 573b7ac..c8085bd 100644
 --- a/mk/prepare.mk
 +++ b/mk/prepare.mk
-@@ -168,10 +168,10 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
+@@ -177,10 +177,10 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
  define DEF_PREPARE
  
  prepare-base-$(1): PREPARE_SOURCE_DIR=$$(PREPARE_HOST)/stage$$(PREPARE_STAGE)
@@ -204,7 +197,7 @@ index 4ded8a7..84c7bf2 100644
  prepare-base-$(1): PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  prepare-base-$(1): prepare-everything-$(1)
 diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index 22a4a6f..ed21d50 100644
+index 311ab1c..1b03b1a 100644
 --- a/src/librustc/metadata/filesearch.rs
 +++ b/src/librustc/metadata/filesearch.rs
 @@ -68,8 +68,7 @@ impl<'a> FileSearch<'a> {
@@ -217,10 +210,19 @@ index 22a4a6f..ed21d50 100644
                  debug!("is {} in visited_dirs? {}", tlib_path.display(),
                          visited_dirs.contains(&tlib_path));
  
+@@ -96,7 +95,7 @@ impl<'a> FileSearch<'a> {
+         where F: FnMut(&Path, PathKind) -> FileMatch
+     {
+         self.for_each_lib_search_path(|lib_search_path, kind| {
+-            debug!("searching {}", lib_search_path.display());
++            info!("searching {}", lib_search_path.display());
+             match fs::read_dir(lib_search_path) {
+                 Ok(files) => {
+                     let files = files.filter_map(|p| p.ok().map(|s| s.path()))
 @@ -157,7 +156,7 @@ impl<'a> FileSearch<'a> {
      // Returns a list of directories where target-specific tool binaries are located.
      pub fn get_tools_search_paths(&self) -> Vec<PathBuf> {
-         let mut p = PathBuf::new(self.sysroot);
+         let mut p = PathBuf::from(self.sysroot);
 -        p.push(&find_libdir(self.sysroot));
 +        p.push(libdir_str());
          p.push(&rustlibdir());
@@ -231,13 +233,13 @@ index 22a4a6f..ed21d50 100644
  }
  
 -pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf {
--    let mut p = PathBuf::new(&find_libdir(sysroot));
+-    let mut p = PathBuf::from(&find_libdir(sysroot));
 +pub fn relative_target_lib_path(target_triple: &str) -> PathBuf {
-+    let mut p = PathBuf::new(&libdir_str());
++    let mut p = PathBuf::from(&libdir_str());
      assert!(p.is_relative());
      p.push(&rustlibdir());
      p.push(target_triple);
-@@ -176,17 +175,24 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
+@@ -176,17 +175,28 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
  
  fn make_target_lib_path(sysroot: &Path,
                          target_triple: &str) -> PathBuf {
@@ -260,13 +262,17 @@ index 22a4a6f..ed21d50 100644
 +}
 +
 +pub fn bindir_relative_path() -> PathBuf {
-+    PathBuf::new(bindir_relative_str())
++    PathBuf::from(bindir_relative_str())
++}
++
++pub fn libdir_str() -> &'static str {
++    env!("CFG_LIBDIR_RELATIVE")
 +}
 +
  pub fn get_or_default_sysroot() -> PathBuf {
      // Follow symlinks.  If the resolved path is relative, make it absolute.
      fn canonicalize(path: Option<PathBuf>) -> Option<PathBuf> {
-@@ -199,7 +205,17 @@ pub fn get_or_default_sysroot() -> PathBuf {
+@@ -202,7 +212,18 @@ pub fn get_or_default_sysroot() -> PathBuf {
      }
  
      match canonicalize(env::current_exe().ok()) {
@@ -275,6 +281,7 @@ index 22a4a6f..ed21d50 100644
 +            // Remove the exe name
 +            p.pop();
 +            let mut rel = bindir_relative_path();
++
 +            // Remove a number of elements equal to the number of elements in the bindir relative
 +            // path
 +            while rel.pop() {
@@ -285,7 +292,7 @@ index 22a4a6f..ed21d50 100644
          None => panic!("can't determine value for sysroot")
      }
  }
-@@ -254,45 +270,9 @@ pub fn rust_path() -> Vec<PathBuf> {
+@@ -257,47 +278,6 @@ pub fn rust_path() -> Vec<PathBuf> {
      env_rust_path
  }
  
@@ -328,17 +335,16 @@ index 22a4a6f..ed21d50 100644
 -#[cfg(windows)]
 -fn find_libdir(_sysroot: &Path) -> String {
 -    "bin".to_string()
-+// The name of the directory rustc expects libraries to be located, relative to the sysroot
-+fn libdir_str() -> &'static str {
-+    env!("CFG_LIBDIR_RELATIVE")
- }
- 
+-}
+-
  // The name of rustc's own place to organize libraries.
+ // Used to be "rustc", now the default is "rustlib"
+ pub fn rustlibdir() -> String {
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 34a23f3..5a81790 100644
+index 844a0a6..9f5b12c 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -1015,11 +1015,10 @@ fn link_args(cmd: &mut Command,
+@@ -984,11 +984,10 @@ fn link_args(cmd: &mut Linker,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {
@@ -348,9 +354,9 @@ index 34a23f3..5a81790 100644
              let install_prefix = option_env!("CFG_PREFIX").expect("CFG_PREFIX");
 -            let tlib = filesearch::relative_target_lib_path(sysroot, target_triple);
 +            let tlib = filesearch::relative_target_lib_path(target_triple);
-             let mut path = PathBuf::new(install_prefix);
+             let mut path = PathBuf::from(install_prefix);
              path.push(&tlib);
  
 -- 
-2.3.3
+2.4.1
 
