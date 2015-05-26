@@ -1,0 +1,26 @@
+From bbc72d2eb464b1296433b2c6ade7bc8e303912f7 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Tue, 26 May 2015 22:10:18 -0400
+Subject: [PATCH 2/3] libgit2-sys: avoid the build script, it is a disaster
+
+---
+ libgit2-sys/build.rs | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/libgit2-sys/build.rs b/libgit2-sys/build.rs
+index dacd187..471ca69 100644
+--- a/libgit2-sys/build.rs
++++ b/libgit2-sys/build.rs
+@@ -15,6 +15,9 @@ macro_rules! t {
+ }
+ 
+ fn main() {
++    pkg_config::find_library("libgit2").unwrap();
++    return;
++
+     register_dep("SSH2");
+     register_dep("OPENSSL");
+ 
+-- 
+2.4.1
+

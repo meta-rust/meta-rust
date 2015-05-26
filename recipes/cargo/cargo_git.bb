@@ -1,6 +1,6 @@
-# 2015-03-23
-SRCREV_cargo = "8d4bf72bf6b1f997c2e91ec57b79c6bbd2ed65e4"
-SRCREV_rust-installer = "60fd8abfcae50629a3fc664bd809238fed039617"
+# 2015-05-21
+SRCREV_cargo = "3090cc3151389283ce5f733c66464c65f02aa659"
+SRCREV_rust-installer = "e54d4823d26cdb3f98e5a1b17e1c257cd329aa61"
 
 require cargo.inc
 
@@ -14,20 +14,21 @@ SRC_URI += " \
 \
 	git://github.com/alexcrichton/git2-rs.git;protocol=https;name=git2-rs;destsuffix=git2-rs \
 	file://git2-rs/0001-Add-generic-openssl-sys-dep.patch;patchdir=../git2-rs \
+	file://git2-rs/0002-libgit2-sys-avoid-the-build-script-it-is-a-disaster.patch;patchdir=../git2-rs \
 \
 \
 	git://github.com/alexcrichton/curl.git;protocol=https;destsuffix=curl-rust/curl-sys/curl;name=curl;branch=configure \
-	git://github.com/alexcrichton/libgit2.git;protocol=https;destsuffix=git2-rs/libgit2-sys/libgit2;name=libgit2;branch=libgit2-2014-12-19 \
+	git://github.com/libgit2/libgit2.git;protocol=https;destsuffix=git2-rs/libgit2-sys/libgit2;name=libgit2 \
 "
 
-# 0.2.3  / -sys 0.1.16
-SRCREV_curl-rust = "8db3885f0e39c748c37d6f5409a055aa8412b81f"
+# 0.2.10  / -sys 0.1.22
+SRCREV_curl-rust = "00060b1be10cee2ef4ad4b6aa1f0bc34e85a3209"
 
-# 0.2.3 / -sys 0.1.13
-SRCREV_ssh2-rs = "20051a11312ff1769bd21c461232c0cb8bc99815"
+# 0.2.7 / -sys 0.1.23
+SRCREV_ssh2-rs = "340827c475174007f0d122795456f82ebd3431fb"
 
-# 0.2.5 / -sys 0.2.6
-SRCREV_git2-rs = "7ba50b6e2170cc73ee55b8de738cf9efb68b6646"
+# 0.2.11 / -sys 0.2.14
+SRCREV_git2-rs = "d8f056e802cebbffabe032c7f96e52e76262a11b"
 
 SRCREV_FORMAT .= "_curl-rust_curl_ssh2-rs_git2-rs"
 EXTRA_OECARGO_PATHS = "\

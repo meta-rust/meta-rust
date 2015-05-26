@@ -1,52 +1,54 @@
-From 03c23cce2e617e4d0902e9adf0a9caa7e27b9699 Mon Sep 17 00:00:00 2001
+From ed86311a8a67028bd8e529cfc2a5dd65d79e8f1d Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 11:50:28 -0500
 Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
  needed, pkgconfig will pull it in
 
 ---
- curl-sys/Cargo.toml | 17 -----------------
+ curl-sys/Cargo.toml | 19 -------------------
  curl-sys/lib.rs     |  1 -
- 2 files changed, 18 deletions(-)
+ 2 files changed, 20 deletions(-)
 
 diff --git a/curl-sys/Cargo.toml b/curl-sys/Cargo.toml
-index ddc6ca0..36f93a0 100644
+index 6631ae2..f384669 100644
 --- a/curl-sys/Cargo.toml
 +++ b/curl-sys/Cargo.toml
-@@ -18,21 +18,4 @@ path = "lib.rs"
+@@ -18,23 +18,4 @@ path = "lib.rs"
  [dependencies]
  libz-sys = "0.1.0"
  libc = "0.1"
 -
 -# Unix platforms use OpenSSL for now to provide SSL functionality
 -[target.i686-apple-darwin.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.x86_64-apple-darwin.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.i686-unknown-linux-gnu.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.x86_64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.arm-unknown-linux-gnueabihf.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.aarch64-unknown-linux-gnu.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.i686-unknown-freebsd.dependencies]
--openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
 -[target.x86_64-unknown-freebsd.dependencies]
- openssl-sys = "0.5.0"
+-openssl-sys = "0.6.0"
+-[target.x86_64-unknown-bitrig.dependencies]
+ openssl-sys = "0.6.0"
 diff --git a/curl-sys/lib.rs b/curl-sys/lib.rs
-index 0a224a4..1328834 100644
+index f3767ba..879c9a1 100644
 --- a/curl-sys/lib.rs
 +++ b/curl-sys/lib.rs
 @@ -2,7 +2,6 @@
  
  extern crate libc;
- extern crate "libz-sys" as libz;
--#[cfg(unix)] extern crate "openssl-sys" as openssl;
+ extern crate libz_sys;
+-#[cfg(unix)] extern crate openssl_sys;
  
  use libc::{c_void, c_int, c_char, c_uint, c_long};
  
 -- 
-2.3.3
+2.4.1
 
