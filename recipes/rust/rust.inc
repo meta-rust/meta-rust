@@ -249,6 +249,10 @@ def rust_gen_mk_cfg(d, thing):
         '-e', 's/^CPP_{}.*$/CPP_{} := gcc -E/'.format(sys, sys),
         '-e', 's/^AR_{}.*$/AR_{} := ar/'.format(sys, sys),
 
+        # Some targets don't have LINK even though it is required to build.
+        '-e', 's/^LINK_{}.*$//'.format(sys),
+        '-e', '2 a LINK_{} := gcc'.format(sys),
+
         # Append our flags to the existing ones
         '-e', '/^CFG_JEMALLOC_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
