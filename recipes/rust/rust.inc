@@ -22,6 +22,8 @@ LIC_FILES_CHKSUM ="\
 ## stage0 (format_args!() change)
 USE_LOCAL_RUST ??= "0"
 
+SRC_URI += "${@base_conditional('USE_LOCAL_RUST', '1', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0', '', d)}"
+
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
@@ -337,6 +339,10 @@ rust_runmake () {
 }
 
 do_compile () {
+	if [ ${USE_LOCAL_RUST} -ne 1 ]; then
+		mkdir -p dl
+		cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
+	fi
 	rust_runmake
 }
 
@@ -380,7 +386,7 @@ USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0'
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
-DEPENDS_class-cross += "${@base_conditional('USE_LOCAL_RUST', '1', 'rust-native', '')}"
+DEPENDS_class-cross += "${@base_conditional('USE_LOCAL_RUST', '1', 'rust-native', '', d)}"
 DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
 PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
 PN_class-cross = "rust-cross-${TARGET_ARCH}"
