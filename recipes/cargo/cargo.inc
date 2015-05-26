@@ -14,6 +14,7 @@ DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 SRC_URI = "\
 	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
 	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=git/src/rust-installer \
+	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
 "
 
 LIC_FILES_CHKSUM ="\
@@ -58,6 +59,11 @@ do_configure () {
 
 do_compile () {
 	oe_cargo_fix_env
+
+	rm -rf target/snapshot
+	mkdir -p target
+	cp -R ${WORKDIR}/$(basename ${CARGO_SNAPSHOT} .tar.gz) target/snapshot
+
 	oe_runmake ARGS="--verbose"
 }
 

@@ -41,3 +41,7 @@ EXTRA_OECARGO_PATHS = "\
 ## Failed to resolve path '/home/cody/obj/y/tmp/work/x86_64-linux/cargo-native/git+gitAUTOINC+0b84923203_9181ea8f4e_8baa8ccb39-r0/curl-rust/curl-sys/curl/.git': No such file or directory
 SRCREV_curl = "ac30e9a7746c8641f4871e59b831ec28530c5c73"
 SRCREV_libgit2 = "3b48f7f30c271ec9569f722215ee55cc5e922242"
+
+CARGO_SNAPSHOT = "2015-04-02/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz"
+SRC_URI[md5sum] = "3d62194d02a9088cd8aae379e9498134"
+SRC_URI[sha256sum] = "16b6338ba2942989693984ba4dbd057c2801e8805e6da8fa7b781b00e722d117"
