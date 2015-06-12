@@ -3,12 +3,10 @@ HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
 
-inherit rust
+inherit rust-bin
 
 DEPENDS += "virtual/${TARGET_PREFIX}rust"
 RUSTLIB_DEP = ""
-
-rustlib="${libdir}/${TUNE_PKGARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
 
 do_install () {
 	mkdir -p ${D}/${rustlib}
