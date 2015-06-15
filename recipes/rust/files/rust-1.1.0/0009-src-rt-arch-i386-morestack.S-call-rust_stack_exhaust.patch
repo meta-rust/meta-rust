@@ -1,0 +1,47 @@
+From 02936deefb786a244c98ec2293e6b85ecfc85cdb Mon Sep 17 00:00:00 2001
+From: Steven Walter <swalter@lexmark.com>
+Date: Mon, 15 Jun 2015 11:35:47 -0400
+Subject: [PATCH] src/rt/arch/i386/morestack.S: call rust_stack_exhausted via
+ plt
+
+This prevents a relocation in the text section.  Text relocations are
+incompatible with hardened kernels.
+
+https://github.com/rust-lang/rust/issues/5714
+---
+ src/rt/arch/i386/morestack.S | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/src/rt/arch/i386/morestack.S b/src/rt/arch/i386/morestack.S
+index 2f03251..98fdfdf 100644
+--- a/src/rt/arch/i386/morestack.S
++++ b/src/rt/arch/i386/morestack.S
+@@ -75,7 +75,7 @@
+ #else
+ #if defined(__linux__) || defined(__FreeBSD__)
+ #define MORESTACK               __morestack
+-#define EXHAUSTED               rust_stack_exhausted
++#define EXHAUSTED               rust_stack_exhausted@plt
+ #else
+ #define MORESTACK               ___morestack
+ #define EXHAUSTED               _rust_stack_exhausted
+@@ -83,7 +83,6 @@
+ #endif
+ 
+ .globl MORESTACK
+-.globl EXHAUSTED
+ 
+ // FIXME: What about __WIN32__?
+ #if defined(__linux__) || defined(__FreeBSD__)
+@@ -138,7 +137,7 @@ MORESTACK:
+ 
+         // re-align the stack
+         subl $12,%esp
+-        calll EXHAUSTED
++        call EXHAUSTED
+         // the exhaustion function guarantees that it can't return
+ 
+ 	.cfi_endproc
+-- 
+1.9.1
+
