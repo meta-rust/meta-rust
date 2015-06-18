@@ -28,6 +28,7 @@ SRC_URI_append = "\
 	file://${PP}/0007-mk-install-use-disable-rewrite-paths.patch \
 	file://${PP}/0008-install-disable-ldconfig.patch \
 	file://${PP}/0009-src-rt-arch-i386-morestack.S-call-rust_stack_exhaust.patch \
+	file://${PP}/0010-disable-symbol-version-hashing.patch \
 \
 	file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "

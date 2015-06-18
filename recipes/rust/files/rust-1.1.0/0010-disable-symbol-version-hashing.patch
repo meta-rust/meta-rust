@@ -1,0 +1,26 @@
+From 9db9d253355cc0e9e885bb1e63b054e318f9395a Mon Sep 17 00:00:00 2001
+From: Steven Walter <swalter@lexmark.com>
+Date: Tue, 7 Jul 2015 14:57:42 -0400
+Subject: [PATCH] Remove crate metadata from symbol hashing
+
+---
+ src/librustc_trans/back/link.rs | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
+index 2f2ba16..ea3e897 100644
+--- a/src/librustc_trans/back/link.rs
++++ b/src/librustc_trans/back/link.rs
+@@ -205,9 +205,4 @@ fn symbol_hash<'tcx>(tcx: &ty::ctxt<'tcx>,
+     symbol_hasher.input_str(&link_meta.crate_name);
+-    symbol_hasher.input_str("-");
+-    symbol_hasher.input_str(link_meta.crate_hash.as_str());
+-    for meta in &*tcx.sess.crate_metadata.borrow() {
+-        symbol_hasher.input_str(&meta[..]);
+-    }
+     symbol_hasher.input_str("-");
+     symbol_hasher.input_str(&encoder::encoded_ty(tcx, t));
+     // Prefix with 'h' so that it never blends into adjacent digits
+-- 
+1.9.1
+
