@@ -8,6 +8,9 @@ LICENSE = "MIT | Apache-2.0"
 
 B = "${WORKDIR}/build"
 
+DEPENDS += "rust-llvm-native"
+DEPENDS_class-cross += "rust-llvm-native"
+
 # Avoid having the default bitbake.conf disable sub-make parallelization
 EXTRA_OEMAKE = ""
 
@@ -272,6 +275,8 @@ python do_rust_arch_fixup () {
 addtask rust_arch_fixup before do_configure after do_patch
 do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
 
+llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
+
 do_configure () {
 	# FIXME: target_prefix vs prefix, see cross.bbclass
 
@@ -309,7 +314,7 @@ do_configure () {
 		"--enable-debuginfo"			\
 		"--enable-optimize"			\
 		"--enable-optimize-cxx"			\
-		"--enable-optimize-llvm"		\
+		"--llvm-root=${llvmdir}"		\
 		"--enable-optimize-tests"		\
 		"--prefix=${prefix}"			\
 		"--target=${TARGET_SYS}"		\
