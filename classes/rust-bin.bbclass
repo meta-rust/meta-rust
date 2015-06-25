@@ -12,6 +12,10 @@ FILES_${PN}-dbg += "${rustlibdir}/.debug"
 RUSTC_ARCHFLAGS += "-C opt-level=3 -L ${STAGING_DIR_HOST}/${rustlibdir}"
 EXTRA_OEMAKE += 'RUSTC_ARCHFLAGS="${RUSTC_ARCHFLAGS}"'
 
+# Prevents multiple static copies of standard library modules
+# See https://github.com/rust-lang/rust/issues/19680
+RUSTC_FLAGS += "-C prefer-dynamic"
+
 rustlib="${libdir}/${TUNE_PKGARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
 
 do_rust_bin_fixups() {
