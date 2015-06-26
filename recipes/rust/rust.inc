@@ -22,7 +22,7 @@ LIC_FILES_CHKSUM ="\
 ## stage0 (format_args!() change)
 USE_LOCAL_RUST ??= "0"
 
-SRC_URI += "${@base_conditional('USE_LOCAL_RUST', '1', '', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0', d)}"
+SRC_URI += "${@base_conditional('USE_LOCAL_RUST', '1', '', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0;name=rust-snapshot', d)}"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"

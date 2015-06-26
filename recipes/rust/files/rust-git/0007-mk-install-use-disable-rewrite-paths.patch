@@ -1,7 +1,7 @@
-From a4fd94b8986d8a05e76f86f3fd661dc1f9259b28 Mon Sep 17 00:00:00 2001
+From de01acf6395a4c7f7d5c9d7ba251d9f2af570127 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 13:34:59 -0500
-Subject: [PATCH 7/9] mk/install: use disable-rewrite-paths
+Subject: [PATCH 7/8] mk/install: use disable-rewrite-paths
 
 This stops the install scripts from doing work we've already handled.
 
@@ -39,5 +39,5 @@ index cabc97a..273bb0e 100644
  	$(Q)rm -R tmp/dist
  
 -- 
-2.4.1
+2.4.3
 

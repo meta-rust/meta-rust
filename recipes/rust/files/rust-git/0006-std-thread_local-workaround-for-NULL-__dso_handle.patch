@@ -1,17 +1,17 @@
-From 739f9cd792311c4a6c1bf5ad2b99a29e44d3aebf Mon Sep 17 00:00:00 2001
+From fb56f1fa6d0bdc62f7fd0c480446255698dc1635 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Wed, 3 Dec 2014 19:15:19 -0500
-Subject: [PATCH 6/9] std/thread_local: workaround for NULL __dso_handle
+Subject: [PATCH 6/8] std/thread_local: workaround for NULL __dso_handle
 
 ---
  src/libstd/thread/local.rs | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/libstd/thread/local.rs b/src/libstd/thread/local.rs
-index 2e043c5..add3e51 100644
+index 6056334..e79bd8b 100644
 --- a/src/libstd/thread/local.rs
 +++ b/src/libstd/thread/local.rs
-@@ -363,7 +363,7 @@ mod imp {
+@@ -337,7 +337,7 @@ mod imp {
              #[linkage = "extern_weak"]
              static __cxa_thread_atexit_impl: *const ();
          }
@@ -21,5 +21,5 @@ index 2e043c5..add3e51 100644
                                        arg: *mut u8,
                                        dso_handle: *mut u8) -> libc::c_int;
 -- 
-2.4.1
+2.4.3
 

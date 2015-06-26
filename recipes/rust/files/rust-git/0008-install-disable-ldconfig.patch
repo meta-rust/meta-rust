@@ -1,7 +1,7 @@
-From 5bf79280fddac29f5ebd3055a3bfedc094448004 Mon Sep 17 00:00:00 2001
+From 8b87c3e5a7181f828dee1c8c0598b1bafa9dd4cc Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 26 May 2015 12:09:36 -0400
-Subject: [PATCH 8/9] install: disable ldconfig
+Subject: [PATCH 8/8] install: disable ldconfig
 
 ---
  mk/install.mk | 8 ++++----
@@ -36,5 +36,5 @@ index 273bb0e..58cfc99 100644
  	$(Q)rm -R tmp/dist
  
 -- 
-2.4.1
+2.4.3
 

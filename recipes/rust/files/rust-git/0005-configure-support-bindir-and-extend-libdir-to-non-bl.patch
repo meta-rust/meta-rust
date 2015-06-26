@@ -1,7 +1,7 @@
-From 66dbf7c11151c2c3419786161233576f07c850b0 Mon Sep 17 00:00:00 2001
+From 64dcf50a8a0f3aaf37ec6e4fe6143d0832592c05 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 5/9] configure: support --bindir, and extend libdir to
+Subject: [PATCH 5/8] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -23,7 +23,7 @@ windows platforms
  7 files changed, 90 insertions(+), 71 deletions(-)
 
 diff --git a/configure b/configure
-index efa836c..368bc50 100755
+index 891f524..441793c 100755
 --- a/configure
 +++ b/configure
 @@ -323,6 +323,31 @@ envopt() {
@@ -58,7 +58,7 @@ index efa836c..368bc50 100755
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -606,6 +631,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
+@@ -609,6 +634,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
  CFG_HOST=$(to_llvm_triple $CFG_HOST)
  CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  
@@ -67,7 +67,7 @@ index efa836c..368bc50 100755
  # On windows we just store the libraries in the bin directory because
  # there's no rpath. This is where the build system itself puts libraries;
  # --libdir is used to configure the installation directory.
-@@ -613,24 +640,21 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+@@ -616,24 +643,21 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] || [ "$CFG_OSTYPE" = "pc-windows-msvc" ]
  then
      CFG_LIBDIR_RELATIVE=bin
@@ -101,7 +101,7 @@ index efa836c..368bc50 100755
  fi
  
  if [ $HELP -eq 1 ]
-@@ -1567,6 +1591,7 @@ putvar CFG_PREFIX
+@@ -1588,6 +1612,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -129,10 +129,10 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index 13bed1b..aa2d4ba 100644
+index 165afc3..33f9545 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -344,7 +344,9 @@ export CFG_RELEASE_CHANNEL
+@@ -339,7 +339,9 @@ export CFG_RELEASE_CHANNEL
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -142,7 +142,7 @@ index 13bed1b..aa2d4ba 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  ifdef CFG_DISABLE_UNSTABLE_FEATURES
  CFG_INFO := $(info cfg: disabling unstable features (CFG_DISABLE_UNSTABLE_FEATURES))
-@@ -374,7 +376,16 @@ define SREQ
+@@ -369,7 +371,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -180,10 +180,10 @@ index 16cbaab..f8a354c 100644
  endif
  
 diff --git a/mk/prepare.mk b/mk/prepare.mk
-index 573b7ac..c8085bd 100644
+index fe619cc..b8aa0cb 100644
 --- a/mk/prepare.mk
 +++ b/mk/prepare.mk
-@@ -177,10 +177,10 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
+@@ -186,10 +186,10 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
  define DEF_PREPARE
  
  prepare-base-$(1): PREPARE_SOURCE_DIR=$$(PREPARE_HOST)/stage$$(PREPARE_STAGE)
@@ -341,10 +341,10 @@ index 311ab1c..1b03b1a 100644
  // Used to be "rustc", now the default is "rustlib"
  pub fn rustlibdir() -> String {
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 844a0a6..9f5b12c 100644
+index 6b8b59d..6e03f3c 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -984,11 +984,10 @@ fn link_args(cmd: &mut Linker,
+@@ -997,11 +997,10 @@ fn link_args(cmd: &mut Linker,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {
@@ -358,5 +358,5 @@ index 844a0a6..9f5b12c 100644
              path.push(&tlib);
  
 -- 
-2.4.1
+2.4.3
 

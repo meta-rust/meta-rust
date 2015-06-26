@@ -1,7 +1,7 @@
-From a728ae609845a3ae7ee74f8de8c92bf086674237 Mon Sep 17 00:00:00 2001
+From 221ff5acf7b3b176882908d2f7010784614005e8 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 2/9] Target: add default target.json path:
+Subject: [PATCH 2/8] Target: add default target.json path:
  $libdir/rust/targets
 
 ---
@@ -11,10 +11,10 @@ Subject: [PATCH 2/9] Target: add default target.json path:
  3 files changed, 20 insertions(+), 8 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 48fe574..78919ba 100644
+index c6ce3a2..51152c7 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -37,7 +37,7 @@ use getopts;
+@@ -38,7 +38,7 @@ use getopts;
  use std::collections::HashMap;
  use std::env;
  use std::fmt;
@@ -23,7 +23,7 @@ index 48fe574..78919ba 100644
  
  use llvm;
  
-@@ -665,8 +665,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
+@@ -651,8 +651,8 @@ pub fn build_configuration(sess: &Session) -> ast::CrateConfig {
      v
  }
  
@@ -60,7 +60,7 @@ index 6b5f587..4432440 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 22d9660..ed98477 100644
+index 402fbcd..a211b84 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
 @@ -49,6 +49,8 @@ use serialize::json::Json;
@@ -72,7 +72,7 @@ index 22d9660..ed98477 100644
  
  mod android_base;
  mod apple_base;
-@@ -305,12 +307,13 @@ impl Target {
+@@ -306,12 +308,13 @@ impl Target {
      ///
      /// The error string could come from any of the APIs called, including
      /// filesystem access and JSON decoding.
@@ -87,7 +87,7 @@ index 22d9660..ed98477 100644
  
          fn load_file(path: &Path) -> Result<Target, String> {
              let mut f = try!(File::open(path).map_err(|e| e.to_string()));
-@@ -399,9 +402,14 @@ impl Target {
+@@ -400,9 +403,14 @@ impl Target {
          let target_path = env::var_os("RUST_TARGET_PATH")
                                .unwrap_or(OsString::new());
  
@@ -105,5 +105,5 @@ index 22d9660..ed98477 100644
              if p.is_file() {
                  return load_file(&p);
 -- 
-2.4.1
+2.4.3
 
