@@ -152,6 +152,7 @@ def rust_gen_target(d, thing, wd):
     prefix = d.getVar('{}_PREFIX'.format(thing), True)
     ccache = d.getVar('CCACHE', True)
     linker = "{}{}gcc".format(ccache, prefix)
+    objcopy = "{}objcopy".format(prefix)
     features = d.getVarFlag('FEATURES', arch, True) or ""
 
     pre_link_args = pre_link_args_for(d, thing, arch)
@@ -166,6 +167,7 @@ def rust_gen_target(d, thing, wd):
          "arch": "{}",
          "os": "linux",
          "linker": "{}",
+         "objcopy": "{}",
          "features": "{}",
          "dynamic-linking": true,
          "executables": true,
@@ -183,6 +185,7 @@ def rust_gen_target(d, thing, wd):
         target_pointer_width,
         arch_to_rust_target_arch(arch),
         linker,
+        objcopy,
         features,
         as_json(pre_link_args),
         as_json(post_link_args),
@@ -258,6 +261,9 @@ def rust_gen_mk_cfg(d, thing):
         ], stdout=o, stdin=i)
     if r:
         raise Exception
+    o.write("OBJCOPY_{} := {}objcopy\n".format(sys, prefix))
+    o.close()
+    i.close()
 
 python do_rust_arch_fixup () {
     for thing in ['BUILD', 'HOST', 'TARGET']:
