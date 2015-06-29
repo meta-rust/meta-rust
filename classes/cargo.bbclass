@@ -72,7 +72,7 @@ export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
-export CARGO_TARGET_DIR="${HOST_SYS}/release"
+export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
 	which cargo
 	which rustc
@@ -102,7 +102,7 @@ cargo_do_compile () {
 cargo_do_install () {
 	local have_installed=false
 	install -d "${D}${bindir}"
-	for tgt in "${B}/target/${CARGO_TARGET_DIR}/"*; do
+	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
 		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
 			install -m755 "$tgt" "${D}${bindir}"
 			have_installed=true
