@@ -1,4 +1,4 @@
-From cfbd8d0b553e180d49e340eb63480292af2b0b9b Mon Sep 17 00:00:00 2001
+From 625b2491eca17e78fdec374f8e83ec00fcca5fc8 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 12:26:48 -0500
 Subject: [PATCH 2/2] remove per-triple deps on openssl-sys
@@ -44,5 +44,5 @@ index 16b72c3..68235ae 100644
  
  name = "test"
 -- 
-2.4.1
+2.4.3
 

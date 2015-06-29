@@ -1,4 +1,4 @@
-From ed86311a8a67028bd8e529cfc2a5dd65d79e8f1d Mon Sep 17 00:00:00 2001
+From 797df37f3a9b377db475f3d2eae09fcbb90d2e4f Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 25 Nov 2014 11:50:28 -0500
 Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
@@ -6,11 +6,11 @@ Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl. If it is
 
 ---
  curl-sys/Cargo.toml | 19 -------------------
- curl-sys/lib.rs     |  1 -
- 2 files changed, 20 deletions(-)
+ curl-sys/lib.rs     |  2 --
+ 2 files changed, 21 deletions(-)
 
 diff --git a/curl-sys/Cargo.toml b/curl-sys/Cargo.toml
-index 6631ae2..f384669 100644
+index 6e99e16..50d1101 100644
 --- a/curl-sys/Cargo.toml
 +++ b/curl-sys/Cargo.toml
 @@ -18,23 +18,4 @@ path = "lib.rs"
@@ -38,17 +38,18 @@ index 6631ae2..f384669 100644
 -[target.x86_64-unknown-bitrig.dependencies]
  openssl-sys = "0.6.0"
 diff --git a/curl-sys/lib.rs b/curl-sys/lib.rs
-index f3767ba..879c9a1 100644
+index 7cae355..a2d58ea 100644
 --- a/curl-sys/lib.rs
 +++ b/curl-sys/lib.rs
-@@ -2,7 +2,6 @@
+@@ -1,8 +1,6 @@
+ #![allow(non_camel_case_types, raw_pointer_derive)]
  
  extern crate libc;
- extern crate libz_sys;
+-#[cfg(not(target_env = "msvc"))] extern crate libz_sys;
 -#[cfg(unix)] extern crate openssl_sys;
  
  use libc::{c_void, c_int, c_char, c_uint, c_long};
  
 -- 
-2.4.1
+2.4.3
 
