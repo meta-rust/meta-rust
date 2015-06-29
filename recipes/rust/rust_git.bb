@@ -8,11 +8,11 @@ RS_SRCHASH = "ba0e1cd"
 RS_HASH = "5fd8698fdfe953e6c4d86cf4fa1d5f3a0053248c"
 RUST_SNAPSHOT = "rust-stage0-${RS_DATE}-${RS_SRCHASH}-linux-x86_64-${RS_HASH}.tar.bz2"
 
-SRC_URI[md5sum] += "e0d49475a787aaa9481ec0b1a28d1f7a"
-SRC_URI[sha256sum] += "e7858a90c2c6c35299ebe2cb6425f3f84d0ba171dcbce20ff68295a1ff75c7e5"
+SRC_URI[rust-snapshot.md5sum] = "e0d49475a787aaa9481ec0b1a28d1f7a"
+SRC_URI[rust-snapshot.sha256sum] = "e7858a90c2c6c35299ebe2cb6425f3f84d0ba171dcbce20ff68295a1ff75c7e5"
 
 # "patch-prefix"
-PP = "${BPN}-git"
+PP = "rust-git"
 SRC_URI_append = "\
 	file://${PP}/0001-platform.mk-avoid-choking-on-i586.patch \
 	file://${PP}/0002-Target-add-default-target.json-path-libdir-rust-targ.patch \
