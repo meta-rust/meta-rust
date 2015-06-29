@@ -59,7 +59,16 @@ get_overlap_externs () {
 
 oe_compile_rust_lib () {
     rm -rf ${LIBNAME}.{rlib,so}
-    oe_runrustc $(get_overlap_externs) ${LIB_SRC} --crate-name=${CRATE_NAME} --crate-type=${CRATE_TYPE} "$@"
+    local -a link_args
+    if [ "${CRATE_TYPE}" == "dylib" ]; then
+        link_args[0]="-C"
+        link_args[1]="link-args=-Wl,-soname -Wl,${LIBNAME}.so"
+    fi
+    oe_runrustc $(get_overlap_externs) \
+        "${link_args[@]}" \
+        ${LIB_SRC} \
+        --crate-name=${CRATE_NAME} --crate-type=${CRATE_TYPE} \
+        "$@"
 }
 oe_compile_rust_lib[vardeps] += "get_overlap_externs"
 
