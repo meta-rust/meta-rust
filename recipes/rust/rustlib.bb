@@ -9,8 +9,10 @@ DEPENDS += "virtual/${TARGET_PREFIX}rust"
 RUSTLIB_DEP = ""
 
 do_install () {
-	mkdir -p ${D}/${rustlib}
-	cp ${STAGING_DIR_NATIVE}/${rustlib}/*.so ${D}/${rustlib}
+	for f in ${STAGING_DIR_NATIVE}/${rustlib}/*.so; do
+		echo Installing $f
+		install -D -m 755 $f ${D}/${rustlib}/$(basename $f)
+	done
 }
 
 # This has no license file

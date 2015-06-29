@@ -81,13 +81,13 @@ oe_compile_rust_bin[vardeps] += "get_overlap_externs"
 oe_install_rust_lib () {
     for lib in $(ls ${LIBNAME}.{so,rlib} 2>/dev/null); do
         echo Installing $lib
-        install -D -m 644 $lib ${D}/${rustlibdir}/$lib
+        install -D -m 755 $lib ${D}/${rustlibdir}/$lib
     done
 }
 
 oe_install_rust_bin () {
     echo Installing ${BINNAME}
-    install -D -m 644 ${BINNAME} ${D}/${bindir}/${BINNAME}
+    install -D -m 755 ${BINNAME} ${D}/${bindir}/${BINNAME}
 }
 
 do_rust_bin_fixups() {
