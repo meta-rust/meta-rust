@@ -3,5 +3,4 @@ SRC_URI = "\
 "
 
 S = "${WORKDIR}/rustc-${PV}"
-require rust.inc
 
