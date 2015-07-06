@@ -35,32 +35,14 @@ ecosystem get their act together, you'll need to supply patches to the
 misbehaving packages. See `recipies/cargo/cargo_*.bb` for an example of how to
 do this.
 
-## Cargo
-
-Cargo may not work with the latest rust.
-You can try either:
-
-  - use the system cargo:
-
-    CARGO_PROVIDED = "cargo-native"
-    ASSUME_PROVIDED += "${CARGO_PROVIDED}"
-
-  - or have cargo use a rust snapshot
-
-    PACKAGECONFIG_append_pn-cargo-native = " rust-snapshot"
-
-Note that using the rust-snapshot currently has issues with the targets
-provided by bitbake, for it to work we need to generate the same target.json
-that we do for the main compiler.
-
 ## TODO
 
- - Include downloaded stage0 snapshot in `SRC_URI`
  - -crosssdk and -buildsdk packages
  - -runtime? (install target libraries on target)
- - Add SRC_URI components so that cargo doesn't use the network
- - Convince cargo (via env vars or patching) not to use '$HOME/.cargo' for storing downloaded source code
  - Upstream local rustc patches for libdir and bindir support
+ - add bitbake fetch support for crates.io
+ - add required cargo package registry clones in SRC_URI to prevent the need
+   for network when building.
 
 ## Pitfalls
 
