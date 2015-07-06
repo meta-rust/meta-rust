@@ -11,7 +11,6 @@ SRC_URI[rust.sha256sum] = "cb09f443b37ec1b81fe73c04eb413f9f656859cf7d00bc5088008
 S = "${WORKDIR}/rustc-${PV}/src/llvm"
 
 inherit autotools
-inherit native
 
 EXTRA_OECONF += "--enable-targets=x86,x86_64,arm,aarch64,mips,powerpc"
 EXTRA_OECONF += "--enable-optimized"
@@ -26,3 +25,6 @@ do_install_append () {
 		ln -s $i llvm-$link
 	done
 }
+
+BBCLASSEXTEND = "native"
+
