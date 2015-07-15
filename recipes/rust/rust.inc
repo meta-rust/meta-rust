@@ -8,7 +8,8 @@ LICENSE = "MIT | Apache-2.0"
 
 B = "${WORKDIR}/build"
 
-DEPENDS += "rust-llvm"
+DEPENDS += " rust-llvm"
+DEPENDS_append_class-cross = " rust-llvm-native"
 
 # Avoid having the default bitbake.conf disable sub-make parallelization
 EXTRA_OEMAKE = ""
