@@ -19,6 +19,7 @@ OVERLAP_LIBS = "\
     libc \
     log \
     getopts \
+    rand \
 "
 def get_overlap_deps(d):
     deps = d.getVar("DEPENDS").split()
