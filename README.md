@@ -38,7 +38,6 @@ do this.
 ## TODO
 
  - -crosssdk and -buildsdk packages
- - -runtime? (install target libraries on target)
  - Upstream local rustc patches for libdir and bindir support
  - add bitbake fetch support for crates.io
  - add required cargo package registry clones in SRC_URI to prevent the need
