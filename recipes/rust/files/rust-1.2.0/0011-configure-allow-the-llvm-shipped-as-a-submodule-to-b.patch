@@ -1,0 +1,28 @@
+From dc0e31730dbd22f457c65cac083c233d6fd9cd88 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Fri, 7 Aug 2015 15:50:44 -0400
+Subject: [PATCH 11/11] configure: allow the llvm shipped as a submodule to be
+ used
+
+---
+ configure | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure b/configure
+index c07a517..4299e40 100755
+--- a/configure
++++ b/configure
+@@ -943,8 +943,8 @@ then
+     LLVM_CONFIG="$CFG_LLVM_ROOT/bin/llvm-config"
+     LLVM_VERSION=$($LLVM_CONFIG --version)
+ 
+-    case $LLVM_VERSION in
+-        (3.[5-6]*)
++    case ${LLVM_VERSION%svn} in
++        (3.[567]*)
+             msg "found ok version of LLVM: $LLVM_VERSION"
+             ;;
+         (*)
+-- 
+2.5.0
+

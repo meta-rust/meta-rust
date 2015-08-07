@@ -8,15 +8,12 @@ LICENSE = "MIT | Apache-2.0"
 
 B = "${WORKDIR}/build"
 
-DEPENDS += " rust-llvm"
-DEPENDS_append_class-cross = " rust-llvm-native"
+DEPENDS += "rust-llvm"
 
 # Avoid having the default bitbake.conf disable sub-make parallelization
 EXTRA_OEMAKE = ""
 
-LIC_FILES_CHKSUM ="\
-	file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3 \
-"
+LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3"
 
 # Controls whether we use the local rust.
 # For -native, we set this to "0" by default.
@@ -394,8 +391,15 @@ USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0'
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
+
+# Unlike native (which nicely maps it's DEPENDS) cross wipes them out completely.
+# Generally, we (and cross in general) need the same things that native needs,
+# so it might make sense to take it's mapping. For now, though, we just mention
+# the bits we need explicitly.
 DEPENDS_class-cross += "${@base_conditional('USE_LOCAL_RUST', '1', 'rust-native', '', d)}"
+DEPENDS_class-cross += "rust-llvm-native"
 DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
+
 PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
 PN_class-cross = "rust-cross-${TARGET_ARCH}"
 
