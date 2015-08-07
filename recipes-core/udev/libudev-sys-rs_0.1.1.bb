@@ -12,7 +12,6 @@ SRCREV = "14c24afc61e3315dffddab2c7f36999a16a002d8"
 S = "${WORKDIR}/git"
 
 RUSTC_FLAGS += "-ludev"
-CRATE_TYPE = "rlib"
 
 do_compile () {
 	oe_compile_rust_lib
