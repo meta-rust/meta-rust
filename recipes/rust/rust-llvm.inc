@@ -8,7 +8,9 @@ inherit autotools
 
 EXTRA_OECONF += "--enable-targets=x86,x86_64,arm,aarch64,mips,powerpc"
 EXTRA_OECONF += "--enable-optimized"
-EXTRA_OECONF += "--disable-bindings"
+EXTRA_OECONF += "--disable-assertions"
+EXTRA_OECONF += "--disable-docs"
+EXTRA_OECONF += "--enable-bindings=none"
 EXTRA_OECONF += "--enable-keep-symbols"
 
 do_install_append () {
