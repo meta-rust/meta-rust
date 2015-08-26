@@ -57,20 +57,8 @@ TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
 PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
-# XXX: BITBAKE-BUG: *_PRE_LINK_ARGS used to be set via function invocation, but
-# that caused bitbake to error on users of these variables without any
-# backtrace or error message other than "failed" (of some form or another).
-# Probably an issue with bitbake attempting to track variable users and us
-# having too many dynamic variable names.
-#
 # enable-new-dtags causes rpaths to be inserted as DT_RUNPATH (as well as
 # DT_RPATH), which lets LD_LIBRARY_PATH override them
-#
-# rust appears to use absolute rpath's instead of relative ones, pass in some
-# relative ones so things work a bit better
-#
-# XXX: may need to restrict the -rpath flags to only BUILD & HOST
-RELATIVE_LIB_FROM_BIN = "${@os.path.relpath('${libdir}', '${bindir}')}"
 RPATH_LDFLAGS = "-Wl,--enable-new-dtags"
 TARGET_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 BUILD_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
