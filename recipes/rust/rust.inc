@@ -311,6 +311,7 @@ do_configure () {
 		"--enable-debuginfo"			\
 		"--enable-optimize"			\
 		"--enable-optimize-cxx"			\
+		"--disable-llvm-version-check"          \
 		"--llvm-root=${llvmdir}"		\
 		"--enable-optimize-tests"		\
 		"--prefix=${prefix}"			\
