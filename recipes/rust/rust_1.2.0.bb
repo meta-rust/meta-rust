@@ -14,7 +14,7 @@ SRC_URI_append = "\
         file://${PP}/0007-mk-install-use-disable-rewrite-paths.patch \
         file://${PP}/0008-install-disable-ldconfig.patch \
         file://${PP}/0009-Remove-crate-metadata-from-symbol-hashing.patch \
-        file://${PP}/0010-configure-allow-the-llvm-shipped-as-a-submodule-to-b.patch \
+        file://${PP}/0010-mk-tell-rustc-that-we-re-only-looking-for-native-lib.patch \
 \
 	file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "
