@@ -15,14 +15,15 @@ EXTRA_OEMAKE = ""
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3"
 
-# Controls whether we use the local rust.
-# For -native, we set this to "0" by default.
-# This avoids us downloading and using the snapshot for every rust build.
-## XXX: temporarily disabled while there are breaking changes conditional on
-## stage0 (format_args!() change)
-USE_LOCAL_RUST ??= "0"
+PACKAGECONFIG ??= ""
 
-SRC_URI += "${@base_conditional('USE_LOCAL_RUST', '1', '', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0;name=rust-snapshot', d)}"
+# Controls whether we use the local rust to build.
+# By default, we use the rust-snapshot. In some cases (non-supported host
+# systems) this may not be possible.  In other cases, it might be desirable
+# to have rust-cross built using rust-native.
+PACKAGECONFIG[local-rust] = ""
+
+SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0;name=rust-snapshot', d)}"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
@@ -325,7 +326,7 @@ do_configure () {
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
-		${@base_conditional('USE_LOCAL_RUST', '1', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
+		${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
 		${EXTRA_OECONF}
 }
 
@@ -345,7 +346,7 @@ rust_runmake () {
 }
 
 do_compile () {
-	if [ ${USE_LOCAL_RUST} -ne 1 ]; then
+	if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'true', 'false', d)}; then
 		mkdir -p dl
 		cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
 	fi
@@ -383,8 +384,6 @@ do_install () {
 INHIBIT_DEFAULT_RUST_DEPS_class-native = "1"
 # We don't need to depend on gcc-native because yocto assumes it exists
 PROVIDES_class-native = "virtual/${TARGET_PREFIX}rust"
-USE_LOCAL_NATIVE_RUST_class-native ??= "0"
-USE_LOCAL_RUST_class-native ?= "${@base_conditional('USE_LOCAL_NATIVE_RUST', '0', '0', '1', d)}"
 
 ## }}}
 
@@ -397,7 +396,7 @@ INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
 # Generally, we (and cross in general) need the same things that native needs,
 # so it might make sense to take it's mapping. For now, though, we just mention
 # the bits we need explicitly.
-DEPENDS_class-cross += "${@base_conditional('USE_LOCAL_RUST', '1', 'rust-native', '', d)}"
+DEPENDS_class-cross += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'rust-native', '', d)}"
 DEPENDS_class-cross += "rust-llvm-native"
 DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
 
