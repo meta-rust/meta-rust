@@ -405,21 +405,3 @@ do_install_class-cross () {
 ## }}}
 
 BBCLASSEXTEND = "cross native"
-
-# FIXME: use FILES to create a -runtime (not -native) package
-# $PREFIX/lib/rustlib/`rust_triple`/lib/* contains the runtime libraries (and rlibs)
-# Need to copy the *.so files to the appropriate target path
-# cp $prefix/lib/rustlib/`rust_triple "${TARGET_ARCH}" "${TARGET_VENDOR}" "${TARGET_OS}"`/lib/*.so ${target_libdir}/
-
-## This is a hack to have -cross provide -native, which doesn't quite work
-#python cross_virtclass_provides_native_handler () {
-#	classextend = e.data.getVar('BBCLASSEXTEND', True) or ""
-#	if "cross" not in classextend:
-#		return
-#	pn = e.data.getVar("PN", True)
-#	if not pn.endswith("-cross"):
-#		return
-#	e.data.prependVar("PROVIDES", "rust-native ")
-#}
-#addhandler cross_virtclass_provides_native_handler
-#cross_virtclass_provides_native_handler[eventmask] = "bb.event.RecipePreFinalise"
