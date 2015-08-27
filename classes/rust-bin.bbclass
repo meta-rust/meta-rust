@@ -2,6 +2,7 @@ inherit rust
 
 RUSTLIB_DEP ?= " rustlib"
 DEPENDS .= "${RUSTLIB_DEP}"
+RDEPENDS_${PN} .= "${RUSTLIB_DEP}"
 DEPENDS += "patchelf-native"
 
 export rustlibdir = "${libdir}/rust"
@@ -101,7 +102,7 @@ do_rust_bin_fixups() {
 
     for f in `find ${PKGD}`; do
         file "$f" | grep -q ELF || continue
-        readelf -d "$f" | grep RPATH | grep -q rustlib || continue
+        readelf -d "$f" | grep RUNPATH | grep -q rustlib || continue
         echo "Set rpath:" "$f"
         patchelf --set-rpath '$ORIGIN:'${rustlibdir}:${rustlib} "$f"
     done
