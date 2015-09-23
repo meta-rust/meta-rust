@@ -37,7 +37,7 @@ SRC_URI[md5sum] = "3d62194d02a9088cd8aae379e9498134"
 SRC_URI[sha256sum] = "16b6338ba2942989693984ba4dbd057c2801e8805e6da8fa7b781b00e722d117"
 
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
-export LIBSSH2_SYS_USE_PKG_CONFIG = "1"
+export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 
 # FIXME: we don't actually use these, and shouldn't need to fetch it, but not having it results in:
 ## target/snapshot/bin/cargo build --target x86_64-linux  --verbose 
