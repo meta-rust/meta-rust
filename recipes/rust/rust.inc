@@ -334,7 +334,7 @@ rust_runmake () {
 }
 
 do_compile () {
-	if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'true', 'false', d)}; then
+	if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
 		mkdir -p dl
 		cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
 	fi
