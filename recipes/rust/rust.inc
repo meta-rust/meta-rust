@@ -120,7 +120,6 @@ def post_link_args_for(d, thing, arch):
     post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
     return post_link_args
 
-
 def pre_link_args_for(d, thing, arch):
     ldflags = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
     ldflags.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
@@ -391,8 +390,19 @@ DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}comp
 PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
 PN_class-cross = "rust-cross-${TARGET_ARCH}"
 
-HOST_PRE_LINK_ARGS_append_class-cross = " -Wl,-rpath=${libdir}"
-BUILD_PRE_LINK_ARGS_append_class-cross = " -Wl,-rpath=${libdir}"
+# In the cross compilation case, rustc doesn't seem to get the rpath quite
+# right. It manages to include '../../lib/${TARGET_PREFIX}', but doesn't
+# include the '../../lib' (ie: relative path from cross_bindir to normal
+# libdir. As a result, we end up not being able to properly reference files in normal ${libdir}.
+# Most of the time this happens to work fine as the systems libraries are
+# subsituted, but sometimes a host system will lack a library, or the right
+# version of a library (libtinfo was how I noticed this).
+#
+# FIXME: this should really be fixed in rust itself.
+# FIXME: using hard-coded relative paths is wrong, we should ask bitbake for
+#        the relative path between 2 of it's vars.
+HOST_POST_LINK_ARGS_append_class-cross = " -Wl,-rpath=../../lib"
+BUILD_POST_LINK_ARGS_append_class-cross = " -Wl,-rpath=../../lib"
 
 # We need the same thing for the calls to the compiler when building the runtime crap
 TARGET_CC_ARCH_append_class-cross = " --sysroot=${STAGING_DIR_TARGET}"
