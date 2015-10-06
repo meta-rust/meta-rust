@@ -232,7 +232,7 @@ def rust_gen_mk_cfg(d, thing):
         '-e', 's/^CROSS_PREFIX_{}.*$//'.format(sys),
         '-e', '2 a CROSS_PREFIX_{} := {}'.format(sys, prefix),
         '-e', 's/^CFG_LLVM_TARGET_.*$//',
-        '-e'  '2 a CFG_LLVM_TARGET_{} := {}'.format(sys, llvm_target),
+        '-e', '2 a CFG_LLVM_TARGET_{} := {}'.format(sys, llvm_target),
         '-e', 's/^CC_{}=.*$/CC_{} := gcc/'.format(sys, sys),
         '-e', 's/^CXX_{}.*$/CXX_{} := g++/'.format(sys, sys),
         '-e', 's/^CPP_{}.*$/CPP_{} := gcc -E/'.format(sys, sys),
