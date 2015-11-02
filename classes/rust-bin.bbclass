@@ -59,6 +59,9 @@ get_overlap_externs () {
     echo "$externs"
 }
 
+do_configure () {
+}
+
 oe_compile_rust_lib () {
     [ "${CRATE_TYPE}" == "dylib" ] && suffix=so || suffix=rlib
     rm -rf ${LIBNAME}.{rlib,so}
