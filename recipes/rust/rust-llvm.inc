@@ -11,6 +11,10 @@ EXTRA_OECONF += "--enable-optimized"
 EXTRA_OECONF += "--disable-assertions"
 EXTRA_OECONF += "--disable-docs"
 EXTRA_OECONF += "--enable-bindings=none"
+EXTRA_OECONF += "--disable-terminfo"
+EXTRA_OECONF += "--disable-zlib"
+EXTRA_OECONF += "--disable-libffi"
+
 EXTRA_OECONF += "--enable-keep-symbols"
 
 do_install_append () {
