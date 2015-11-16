@@ -3,6 +3,10 @@ HOMEPAGE = "http://crates.io"
 SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
 
+PR = "r2"
+
+DEPENDS += "rust-native"
+
 LIC_FILES_CHKSUM ="\
     file://LICENSE-MIT;md5=362255802eb5aa87810d12ddf3cfedb4 \
     file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
@@ -18,8 +22,15 @@ SRC_URI[sha256sum] = "16b6338ba2942989693984ba4dbd057c2801e8805e6da8fa7b781b00e7
 
 S = "${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/"
 
-inherit native 
+inherit native
 
 do_install() {
-    sh ${S}/install.sh --destdir=${STAGING_DIR_NATIVE} --prefix= 
+    install -d ${D}
+    sh ${S}/install.sh --destdir=${D}${STAGING_DIR_NATIVE} --prefix= 
+
+    # Remove files provided by rust 
+    rm -f ${D}${STAGING_DIR_NATIVE}/lib/rustlib/uninstall.sh
+    rm -f ${D}${STAGING_DIR_NATIVE}/lib/rustlib/install.log
+    rm -f ${D}${STAGING_DIR_NATIVE}/lib/rustlib/components
+    rm -f ${D}${STAGING_DIR_NATIVE}/lib/rustlib/rust-installer-version
 }
