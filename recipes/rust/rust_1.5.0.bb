@@ -15,6 +15,8 @@ SRC_URI_append = "\
         file://${PP}/0008-install-disable-ldconfig.patch \
         file://${PP}/0009-Remove-crate-metadata-from-symbol-hashing.patch \
         file://${PP}/0010-rustc_trans-make-.note.rustc-look-more-like-debug-in.patch \
+        file://${PP}/0011-Allow-overriding-crate_hash-with-C-crate_hash.patch \
+        file://${PP}/0012-mk-platform.mk-pass-C-crate_hash-to-builds.patch \
 \
 	file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "

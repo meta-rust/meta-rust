@@ -1,0 +1,78 @@
+From 128a81ede6b188637743a37a582b2267a49d0a32 Mon Sep 17 00:00:00 2001
+From: Steven Walter <swalter@lexmark.com>
+Date: Wed, 18 Nov 2015 08:33:26 -0500
+Subject: [PATCH 11/12] Allow overriding crate_hash with -C crate_hash
+
+The current crate hash is not stable from run-to-run.  This causes
+problems with bitbake; it needs a guarantee that every build with the
+same input will generate compatible output, otherwise sstate won't work.
+Using -C crate_hash, we can do that by using the bitbake input hash to
+determine the crate hash; the bitbake input hash will be stable, but
+still different for different rust recipes.
+---
+ src/librustc/session/config.rs  |  2 ++
+ src/librustc_trans/back/link.rs | 26 ++++++++++++++++++++++++--
+ 2 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
+index b74b3c4..a11cb90 100644
+--- a/src/librustc/session/config.rs
++++ b/src/librustc/session/config.rs
+@@ -500,6 +500,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
+          "choose the code model to use (llc -code-model for details)"),
+     metadata: Vec<String> = (Vec::new(), parse_list,
+          "metadata to mangle symbol names with"),
++    crate_hash: String = ("".to_string(), parse_string,
++         "override crate hash with given value"),
+     extra_filename: String = ("".to_string(), parse_string,
+          "extra data to put in each output filename"),
+     codegen_units: usize = (1, parse_uint,
+diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
+index 53fa913..83619ae 100644
+--- a/src/librustc_trans/back/link.rs
++++ b/src/librustc_trans/back/link.rs
+@@ -46,7 +46,7 @@ use std::str;
+ use flate;
+ use serialize::hex::ToHex;
+ use syntax::ast;
+-use syntax::codemap::Span;
++use syntax::codemap::{Span,BytePos,NO_EXPANSION};
+ use syntax::parse::token::{self, InternedString};
+ use syntax::attr::AttrMetaMethods;
+ 
+@@ -185,9 +185,31 @@ pub fn find_crate_name(sess: Option<&Session>,
+ 
+ pub fn build_link_meta(sess: &Session, krate: &hir::Crate,
+                        name: &str) -> LinkMeta {
++    let crate_hash = if sess.opts.cg.crate_hash != "" {
++        let dummy_span = Span {
++            lo: BytePos(0),
++            hi: BytePos(0),
++            expn_id: NO_EXPANSION
++        };
++        let dummy_module = hir::Mod {
++            inner: dummy_span,
++            items: vec!()
++        };
++        let dummy_krate = hir::Crate {
++            module: dummy_module,
++            attrs: vec!(),
++            config: vec!(),
++            span: dummy_span,
++            exported_macros: vec!()
++        };
++
++        Svh::calculate(&vec!(sess.opts.cg.crate_hash.clone()), &dummy_krate)
++    } else {
++        Svh::calculate(&sess.opts.cg.metadata, krate)
++    };
+     let r = LinkMeta {
+         crate_name: name.to_owned(),
+-        crate_hash: Svh::calculate(&sess.opts.cg.metadata, krate),
++        crate_hash: crate_hash,
+     };
+     info!("{:?}", r);
+     return r;
+-- 
+1.9.1
+
