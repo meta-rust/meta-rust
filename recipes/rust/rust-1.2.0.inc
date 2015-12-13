@@ -13,3 +13,5 @@ RUST_SNAPSHOT = "rust-stage0-${RS_DATE}-${RS_SRCHASH}-${RS_ARCH}-${RS_HASH}.tar.
 
 SRC_URI[rust-snapshot.md5sum] = "04deb393c39d43a2abc68ebac6a0bad2"
 SRC_URI[rust-snapshot.sha256sum] = "11f7f56320bd0dff5b47bae3f80377d9514a3ad4bc983d674eb33074c95d66a0"
+
+LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3"
