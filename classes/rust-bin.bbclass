@@ -34,7 +34,11 @@ OVERLAP_DEPS = "${@get_overlap_deps(d)}"
 # See https://github.com/rust-lang/rust/issues/19680
 RUSTC_FLAGS += "-C prefer-dynamic"
 
-rustlib="${libdir}/${TUNE_PKGARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
+rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
+# Native sysroot standard library path
+rustlib_src="${prefix}/lib/${rustlib_suffix}"
+# Host sysroot standard library path
+rustlib="${libdir}/${rustlib_suffix}"
 CRATE_NAME ?= "${@d.getVar('BPN', True).replace('-rs', '').replace('-', '_')}"
 BINNAME ?= "${BPN}"
 LIBNAME ?= "lib${CRATE_NAME}"
