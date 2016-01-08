@@ -33,6 +33,8 @@ def rust_base_triple(d, thing):
     if arch.startswith("arm"):
         if os.endswith("gnueabi"):
             os += bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
+    elif arch.startswith("aarch64"):
+        os = "linux-gnu"
     elif arch.startswith("x86_64"):
         os = "linux-gnu"
     elif arch.startswith("i586"):
