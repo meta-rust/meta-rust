@@ -1,6 +1,5 @@
 inherit cargo
 inherit patch
-inherit rust-installer
 
 SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
 HOMEPAGE = "http://crates.io"
