@@ -12,6 +12,9 @@ EXTRA_OECONF += "--disable-assertions"
 EXTRA_OECONF += "--disable-docs"
 EXTRA_OECONF += "--enable-bindings=none"
 EXTRA_OECONF += "--enable-keep-symbols"
+EXTRA_OECONF += "--disable-terminfo"
+EXTRA_OECONF += "--disable-zlib"
+EXTRA_OECONF += "--disable-libffi"
 
 do_install_append () {
 	cd ${D}${bindir}
