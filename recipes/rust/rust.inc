@@ -8,6 +8,7 @@ LICENSE = "MIT | Apache-2.0"
 
 B = "${WORKDIR}/build"
 
+DEPENDS += "file-native"
 DEPENDS += "rust-llvm"
 
 # Avoid having the default bitbake.conf disable sub-make parallelization
