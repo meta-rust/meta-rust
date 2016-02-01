@@ -7,7 +7,7 @@ DEPENDS = "libc-rs udev"
 inherit rust-bin
 
 SRC_URI = "git://github.com/dcuddeback/libudev-sys.git;protocol=https"
-SRCREV = "14c24afc61e3315dffddab2c7f36999a16a002d8"
+SRCREV = "c49163f87d4d109ec21bcf8f8c51db560ed31b22"
 
 S = "${WORKDIR}/git"
 
