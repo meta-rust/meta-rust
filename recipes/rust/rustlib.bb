@@ -9,7 +9,7 @@ DEPENDS += "virtual/${TARGET_PREFIX}rust"
 RUSTLIB_DEP = ""
 
 do_install () {
-	for f in ${STAGING_DIR_NATIVE}/${rustlib}/*.so; do
+	for f in ${STAGING_DIR_NATIVE}/${rustlib_src}/*.so; do
 		echo Installing $f
 		install -D -m 755 $f ${D}/${rustlib}/$(basename $f)
 	done
