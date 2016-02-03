@@ -14,6 +14,7 @@ SRC_URI_append = "\
         file://${PP}/0007-mk-install-use-disable-rewrite-paths.patch \
         file://${PP}/0008-install-disable-ldconfig.patch \
         file://${PP}/0009-Remove-crate-metadata-from-symbol-hashing.patch \
+        file://${PP}/0010-rustc_trans-make-.note.rustc-look-more-like-debug-in.patch \
 \
 	file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "
