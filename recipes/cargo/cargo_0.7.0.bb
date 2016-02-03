@@ -1,8 +1,9 @@
-require cargo-snapshot-2015-04-02.inc
+require cargo-snapshot.inc
 require cargo.inc
 
 SRC_URI += " \
 	https://github.com/rust-lang/cargo/archive/${PV}.tar.gz;name=cargo \
+	file://0001-disable-cargo-snapshot-fetch.patch \
 	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=${BP}/src/rust-installer \
 "
 SRC_URI[cargo.md5sum] = "2089790a4a48de7f8f3cb1afcfa9ec74"

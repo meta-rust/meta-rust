@@ -54,7 +54,7 @@ do_compile () {
 
 	rm -rf target/snapshot
 	mkdir -p target
-	cp -R ${WORKDIR}/$(basename ${CARGO_SNAPSHOT} .tar.gz) target/snapshot
+	cp -R ${WORKDIR}/$(basename ${CARGO_SNAPSHOT} .tar.gz)/cargo target/snapshot
 
 	oe_runmake ARGS="--verbose"
 }
