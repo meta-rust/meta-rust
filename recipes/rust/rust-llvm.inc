@@ -1,8 +1,9 @@
+require rust-shared-source.inc
 
 SUMMARY = "LLVM compiler framework (packaged with rust)"
 LICENSE = "NCSA"
 
-S = "${WORKDIR}/rustc-${PV}/src/llvm"
+S .= "/src/llvm"
 
 inherit autotools
 
