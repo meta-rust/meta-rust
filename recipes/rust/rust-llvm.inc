@@ -5,6 +5,8 @@ LICENSE = "NCSA"
 
 S .= "/src/llvm"
 
+SRC_URI_append = "file://rust-llvm/0000-rust-llvm-remove-extra-slash.patch"
+
 inherit autotools
 
 EXTRA_OECONF += "--enable-targets=x86,x86_64,arm,aarch64,mips,powerpc"
@@ -18,12 +20,21 @@ EXTRA_OECONF += "--disable-libffi"
 
 EXTRA_OECONF += "--enable-keep-symbols"
 
+PACKAGES += "${PN}-data"
+
+# Add the extra locations to avoid the complaints about unpackaged files
+FILES_${PN}-data = "${datadir}"
+FILES_${PN}-dev += "${libdir}"
+
 do_install_append () {
+	# Remove the debug info (>2 GB) as part of normal operation
+	rm -rf ${D}${bindir}/.debug
+
 	cd ${D}${bindir}
 	ln -s *-llc llc
 	for i in *-llvm-*; do
 		link=$(echo $i | sed -e 's/.*-llvm-\(.*\)/\1/')
-		ln -s $i llvm-$link
+		ln -sf $i llvm-$link
 	done
 }
 
