@@ -31,6 +31,65 @@ export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 export FORCE_CRATE_HASH="${BB_TASKHASH}"
 
+# Right now this is focused on arm-specific tune features.
+# We get away with this for now as one can only use x86-64 as the build host
+# (not arm).
+# Note that TUNE_FEATURES is _always_ refering to the target, so we really
+# don't want to use this for the host/build.
+def llvm_features_from_tune(d):
+    f = []
+    feat = d.getVar('TUNE_FEATURES', True)
+    if not feat:
+        return ""
+    feat = frozenset(feat.split())
+
+    if 'vfpv4' in feat:
+        f += "+vfp4"
+    if 'vfpv3' in feat:
+        f += "+vfp3"
+    if 'vfpv3d16' in feat:
+        f += "+d16"
+    if 'vfpv2' in feat:
+        f += "+vfp2"
+
+    if 'neon' in feat:
+        f += "+neon"
+
+    if 'aarch64' in feat:
+        f += "+v8"
+
+    v7=frozenset(['armv7a', 'armv7r', 'armv7m', 'armv7ve'])
+    if not feat.isdisjoint(v7):
+        f += "+v7"
+    if 'armv6' in feat:
+        f += "+v6"
+
+    if 'dsp' in feat:
+        f += "+dsp"
+
+    if d.getVar('ARM_THUMB_OPT', True) is "thumb":
+        if not feat.isdisjoint(v7):
+            f += "+thumb2"
+        f += "thumb-mode"
+
+    if 'cortexa5' in feat:
+        f += "+a5"
+    if 'cortexa7' in feat:
+        f += "+a7"
+    if 'cortexa9' in feat:
+        f += "+a9"
+    if 'cortexa15' in feat:
+        f += "+a15"
+    if 'cortexa17' in feat:
+        f += "+a17"
+
+    # Seems like it could be infered by the lack of vfp options, but we'll
+    # include it anyhow
+    if 'soft' in feat:
+        f += "+soft-float"
+
+    return ','.join(f)
+
 ## arm-unknown-linux-gnueabihf
 DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
@@ -139,6 +198,13 @@ def ldflags_for(d, thing, arch):
     a.extend(post_link_args_for(d, thing, arch))
     return a
 
+TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)}"
+TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)}"
+
+# class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
+# (original) target.
+TARGET_LLVM_FEATURES_class-native = ""
+
 def rust_gen_target(d, thing, wd):
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
@@ -155,7 +221,11 @@ def rust_gen_target(d, thing, wd):
     ccache = d.getVar('CCACHE', True)
     linker = "{}{}gcc".format(ccache, prefix)
     objcopy = "{}objcopy".format(prefix)
-    features = d.getVarFlag('FEATURES', arch, True) or ""
+
+    features = ""
+    if thing is "TARGET":
+        features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
+    features = features or d.getVarFlag('FEATURES', arch, True) or ""
 
     pre_link_args = pre_link_args_for(d, thing, arch)
     post_link_args = post_link_args_for(d, thing, arch)
@@ -196,16 +266,15 @@ def rust_gen_target(d, thing, wd):
 
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR', True) + '/targets/'
-    try:
-        os.makedirs(wd)
-    except OSError as e:
-        if e.errno != 17:
-            raise e
+    # It is important 'TARGET' is last here so that it overrides our less
+    # informed choices for BUILD & HOST if TARGET happens to be the same as
+    # either of them.
     for thing in ['BUILD', 'HOST', 'TARGET']:
         bb.debug(1, "rust_gen_target for " + thing)
         rust_gen_target(d, thing, wd)
 }
 addtask rust_gen_targets after do_patch before do_compile
+do_rust_gen_targets[dirs] += "${WORKDIR}/targets"
 
 def rust_gen_mk_cfg(d, thing):
     ''''
@@ -219,20 +288,7 @@ def rust_gen_mk_cfg(d, thing):
     Note that the configure process also depends on the existence of #1, so we
     have to run this before do_configure
     '''
-
-    import shutil, subprocess
-
-    import errno
-    import os
-
-    def mkdir_p(path):
-        try:
-            os.makedirs(path)
-        except OSError as exc:  # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
+    import subprocess
 
     rust_base_sys = rust_base_triple(d, thing)
     arch = arch_for(d, thing)
@@ -241,8 +297,7 @@ def rust_gen_mk_cfg(d, thing):
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     ldflags = ' '.join(ldflags_for(d, thing, arch))
 
-    b = d.getVar('B', True) + '/mk-cfg/'
-    mkdir_p(b)
+    b = d.getVar('WORKDIR', True) + '/mk-cfg/'
     o = open(b + sys_for(d, thing) + '.mk', 'w')
     i = open(d.getVar('S', True) + '/mk/cfg/' + rust_base_sys + '.mk', 'r')
 
@@ -286,11 +341,19 @@ python do_rust_arch_fixup () {
         rust_gen_mk_cfg(d, thing)
 }
 addtask rust_arch_fixup before do_configure after do_patch
-do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
+do_rust_arch_fixup[dirs] += "${WORKDIR}/mk-cfg"
 
 llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
 
 do_configure () {
+    # Note: when we adjust the generated targets, rust doesn't rebuild (even
+    # when it should), so for now we need to remove the build dir to keep
+    # things in sync.
+    cd "${WORKDIR}"
+    rm -rf "${B}/"
+    mkdir -p "${B}/"
+    cd "${B}"
+
 	# FIXME: target_prefix vs prefix, see cross.bbclass
 
 	# CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
@@ -341,7 +404,7 @@ do_configure () {
 		"--mandir=${mandir}"			\
 		"--libdir=${libdir}"			\
 		"--bindir=${bindir}"			\
-		"--platform-cfg=${B}/mk-cfg/"		\
+		"--platform-cfg=${WORKDIR}/mk-cfg/"		\
 		${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
 		${EXTRA_OECONF}
 }
