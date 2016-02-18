@@ -1,3 +1,4 @@
+# ex: sts=4 et sw=4 ts=8
 inherit rust
 inherit rust-installer
 require rust-shared-source.inc
@@ -354,106 +355,106 @@ do_configure () {
     mkdir -p "${B}/"
     cd "${B}"
 
-	# FIXME: target_prefix vs prefix, see cross.bbclass
+    # FIXME: target_prefix vs prefix, see cross.bbclass
 
-	# CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-	# wide range of targets (not just HOST). Yocto's settings for them will
-	# be inappropriate, avoid using.
-	unset CFLAGS
-	unset LDFLAGS
-	unset CXXFLAGS
-	unset CPPFLAGS
+    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+    # wide range of targets (not just HOST). Yocto's settings for them will
+    # be inappropriate, avoid using.
+    unset CFLAGS
+    unset LDFLAGS
+    unset CXXFLAGS
+    unset CPPFLAGS
 
-	# FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
-	# where we're reinstalling the compiler. May want to try for a real
-	# path based on bitbake vars
-        # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-        local_maybe_enable=disable
-        local_rust_root=/not/set/do/not/use
-        if which rustc >/dev/null 2>&1; then
-            local_rustc=$(which rustc)
-            if [ -n "$local_rustc" ]; then
-                local_rust_root=$(dirname $(dirname $local_rustc))
-                if [ -e "$local_rust_root/bin/rustc" ]; then
-                    local_maybe_enable=enable
-                fi
+    # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
+    # where we're reinstalling the compiler. May want to try for a real
+    # path based on bitbake vars
+    # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
+    local_maybe_enable=disable
+    local_rust_root=/not/set/do/not/use
+    if which rustc >/dev/null 2>&1; then
+        local_rustc=$(which rustc)
+        if [ -n "$local_rustc" ]; then
+            local_rust_root=$(dirname $(dirname $local_rustc))
+            if [ -e "$local_rust_root/bin/rustc" ]; then
+                local_maybe_enable=enable
             fi
         fi
+    fi
 
-	# - rpath is required otherwise rustc fails to resolve symbols
-        # - submodule management is done by bitbake's fetching
-	${S}/configure					\
-		"--enable-rpath"			\
-		"--disable-docs"			\
-		"--disable-manage-submodules"           \
-		"--disable-debug"			\
-		"--enable-debuginfo"			\
-		"--enable-optimize"			\
-		"--enable-optimize-cxx"			\
-		"--disable-llvm-version-check"          \
-		"--llvm-root=${llvmdir}"		\
-		"--enable-optimize-tests"		\
-		"--prefix=${prefix}"			\
-		"--target=${TARGET_SYS}"		\
-		"--host=${HOST_SYS}"			\
-		"--build=${BUILD_SYS}"			\
-		"--localstatedir=${localstatedir}"	\
-		"--sysconfdir=${sysconfdir}"		\
-		"--datadir=${datadir}"			\
-		"--infodir=${infodir}"			\
-		"--mandir=${mandir}"			\
-		"--libdir=${libdir}"			\
-		"--bindir=${bindir}"			\
-		"--platform-cfg=${WORKDIR}/mk-cfg/"		\
-		${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
-		${EXTRA_OECONF}
+    # - rpath is required otherwise rustc fails to resolve symbols
+    # - submodule management is done by bitbake's fetching
+    ${S}/configure                          \
+        "--enable-rpath"                    \
+        "--disable-docs"                    \
+        "--disable-manage-submodules"       \
+        "--disable-debug"                   \
+        "--enable-debuginfo"                \
+        "--enable-optimize"                 \
+        "--enable-optimize-cxx"             \
+        "--disable-llvm-version-check"      \
+        "--llvm-root=${llvmdir}"            \
+        "--enable-optimize-tests"           \
+        "--prefix=${prefix}"                \
+        "--target=${TARGET_SYS}"            \
+        "--host=${HOST_SYS}"                \
+        "--build=${BUILD_SYS}"              \
+        "--localstatedir=${localstatedir}"  \
+        "--sysconfdir=${sysconfdir}"        \
+        "--datadir=${datadir}"              \
+        "--infodir=${infodir}"              \
+        "--mandir=${mandir}"                \
+        "--libdir=${libdir}"                \
+        "--bindir=${bindir}"                \
+        "--platform-cfg=${WORKDIR}/mk-cfg/" \
+        ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
+        ${EXTRA_OECONF}
 }
 
 rust_runmake () {
-	echo "COMPILE ${PN}" "$@"
-	env
+    echo "COMPILE ${PN}" "$@"
+    env
 
-	# CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-	# wide range of targets (not just TARGET). Yocto's settings for them will
-	# be inappropriate, avoid using.
-	unset CFLAGS
-	unset LDFLAGS
-	unset CXXFLAGS
-	unset CPPFLAGS
+    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+    # wide range of targets (not just TARGET). Yocto's settings for them will
+    # be inappropriate, avoid using.
+    unset CFLAGS
+    unset LDFLAGS
+    unset CXXFLAGS
+    unset CPPFLAGS
 
-	oe_runmake "VERBOSE=1" "$@"
+    oe_runmake "VERBOSE=1" "$@"
 }
 
 do_compile () {
-	if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
-		mkdir -p dl
-		cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
-	fi
-	rust_runmake
+    if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
+        mkdir -p dl
+        cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
+    fi
+    rust_runmake
 }
 
 rust_do_install () {
-	rust_runmake DESTDIR="${D}" install
+    rust_runmake DESTDIR="${D}" install
 
-        # Rust's install.sh doesn't mark executables as executable because
-        # we're using a custom bindir, do it ourselves.
-        chmod +x "${D}/${bindir}/rustc"
-        chmod +x "${D}/${bindir}/rustdoc"
-        chmod +x "${D}/${bindir}/rust-gdb"
+    # Rust's install.sh doesn't mark executables as executable because
+    # we're using a custom bindir, do it ourselves.
+    chmod +x "${D}/${bindir}/rustc"
+    chmod +x "${D}/${bindir}/rustdoc"
+    chmod +x "${D}/${bindir}/rust-gdb"
 
-        # Install our custom target.json files
-	local td="${D}${libdir}/rustlib/"
-	install -d "$td"
-	for tgt in "${WORKDIR}/targets/"* ; do
-	    install -m 0644 "$tgt" "$td"
-	done
+    # Install our custom target.json files
+    local td="${D}${libdir}/rustlib/"
+    install -d "$td"
+    for tgt in "${WORKDIR}/targets/"* ; do
+        install -m 0644 "$tgt" "$td"
+    done
 
-        ## rust will complain about multiple providers of the runtime libs
-        ## (libstd, libsync, etc.) without this.
-        (cd "${D}${libdir}" && ln -sf "rustlib/${HOST_SYS}/lib/lib"*.so .)
+    ## rust will complain about multiple providers of the runtime libs
+    ## (libstd, libsync, etc.) without this.
+    (cd "${D}${libdir}" && ln -sf "rustlib/${HOST_SYS}/lib/lib"*.so .)
 }
 
 do_install () {
-	rust_do_install
+    rust_do_install
 }
 
