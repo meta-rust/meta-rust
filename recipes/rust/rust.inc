@@ -72,7 +72,7 @@ def llvm_features_from_tune(d):
     if d.getVar('ARM_THUMB_OPT', True) is "thumb":
         if not feat.isdisjoint(v7):
             f.append("+thumb2")
-        f.append("thumb-mode")
+        f.append("+thumb-mode")
 
     if 'cortexa5' in feat:
         f.append("+a5")
