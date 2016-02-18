@@ -5,7 +5,7 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 
 def cargo_base_dep(d):
     deps = ""
-    if not d.getVar('INHIBIT_DEFAULT_DEPS') and not d.getVar('INHIBIT_CARGO_DEP'):
+    if not d.getVar('INHIBIT_DEFAULT_DEPS', True) and not d.getVar('INHIBIT_CARGO_DEP', True):
         deps += " cargo-native"
     return deps
 
