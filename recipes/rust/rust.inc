@@ -45,49 +45,49 @@ def llvm_features_from_tune(d):
     feat = frozenset(feat.split())
 
     if 'vfpv4' in feat:
-        f += "+vfp4"
+        f.append("+vfp4")
     if 'vfpv3' in feat:
-        f += "+vfp3"
+        f.append("+vfp3")
     if 'vfpv3d16' in feat:
-        f += "+d16"
+        f.append("+d16")
     if 'vfpv2' in feat:
-        f += "+vfp2"
+        f.append("+vfp2")
 
     if 'neon' in feat:
-        f += "+neon"
+        f.append("+neon")
 
     if 'aarch64' in feat:
-        f += "+v8"
+        f.append("+v8")
 
     v7=frozenset(['armv7a', 'armv7r', 'armv7m', 'armv7ve'])
     if not feat.isdisjoint(v7):
-        f += "+v7"
+        f.append("+v7")
     if 'armv6' in feat:
-        f += "+v6"
+        f.append("+v6")
 
     if 'dsp' in feat:
-        f += "+dsp"
+        f.append("+dsp")
 
     if d.getVar('ARM_THUMB_OPT', True) is "thumb":
         if not feat.isdisjoint(v7):
-            f += "+thumb2"
-        f += "thumb-mode"
+            f.append("+thumb2")
+        f.append("thumb-mode")
 
     if 'cortexa5' in feat:
-        f += "+a5"
+        f.append("+a5")
     if 'cortexa7' in feat:
-        f += "+a7"
+        f.append("+a7")
     if 'cortexa9' in feat:
-        f += "+a9"
+        f.append("+a9")
     if 'cortexa15' in feat:
-        f += "+a15"
+        f.append("+a15")
     if 'cortexa17' in feat:
-        f += "+a17"
+        f.append("+a17")
 
     # Seems like it could be infered by the lack of vfp options, but we'll
     # include it anyhow
     if 'soft' in feat:
-        f += "+soft-float"
+        f.append("+soft-float")
 
     return ','.join(f)
 
