@@ -50,7 +50,8 @@ def llvm_features_from_tune(d):
         f.append("+vfp3")
     if 'vfpv3d16' in feat:
         f.append("+d16")
-    if 'vfpv2' in feat:
+
+    if 'vfpv2' in feat or 'vfp' in feat:
         f.append("+vfp2")
 
     if 'neon' in feat:
