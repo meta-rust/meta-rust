@@ -23,7 +23,7 @@ OVERLAP_LIBS = "\
     rand \
 "
 def get_overlap_deps(d):
-    deps = d.getVar("DEPENDS").split()
+    deps = d.getVar("DEPENDS", True).split()
     overlap_deps = []
     for o in d.getVar("OVERLAP_LIBS", True).split():
         l = len([o for dep in deps if (o + '-rs' in dep)])
