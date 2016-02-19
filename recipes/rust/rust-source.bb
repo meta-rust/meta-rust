@@ -26,6 +26,6 @@ SRC_URI_append = "\
         file://rust/0011-Allow-overriding-crate_hash-with-C-crate_hash.patch \
         file://rust/0012-mk-platform.mk-pass-C-crate_hash-to-builds.patch \
         file://rust/0013-mk-allow-changing-the-platform-configuration-source-.patch \
-\
-	file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
+        file://rust-llvm/0000-rust-llvm-remove-extra-slash.patch \
+        file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "

@@ -5,8 +5,6 @@ LICENSE = "NCSA"
 
 S .= "/src/llvm"
 
-SRC_URI_append = "file://rust-llvm/0000-rust-llvm-remove-extra-slash.patch"
-
 inherit autotools
 
 EXTRA_OECONF += "--enable-targets=x86,x86_64,arm,aarch64,mips,powerpc"
