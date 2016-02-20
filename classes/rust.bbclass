@@ -82,3 +82,5 @@ HOST_LDFLAGS  ?= "${LDFLAGS}"
 HOST_CFLAGS   ?= "${CFLAGS}"
 HOST_CXXFLAGS ?= "${CXXFLAGS}"
 HOST_CPPFLAGS ?= "${CPPFLAGS}"
+
+EXTRA_OECONF_remove = "--disable-static"
