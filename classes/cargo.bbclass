@@ -5,7 +5,7 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 
 def cargo_base_dep(d):
     deps = ""
-    if not d.getVar('INHIBIT_DEFAULT_DEPS') and not d.getVar('INHIBIT_CARGO_DEP'):
+    if not d.getVar('INHIBIT_DEFAULT_DEPS', True) and not d.getVar('INHIBIT_CARGO_DEP', True):
         deps += " cargo-native"
     return deps
 
@@ -31,19 +31,19 @@ export PKG_CONFIG_ALLOW_CROSS = "1"
 EXTRA_OECARGO_PATHS ??= ""
 
 cargo_do_configure () {
-	mkdir -p .cargo
-	# FIXME: we currently blow away the entire config because duplicate
-	# sections are treated as a parse error by cargo (causing the entire
-	# config to be silently ignored.
+	# FIXME: we currently make a mess in the directory above us
+	# (${WORKDIR}), which may not be ideal. Look into whether this is
+	# allowed
+	mkdir -p ../.cargo
 	# NOTE: we cannot pass more flags via this interface, the 'linker' is
 	# assumed to be a path to a binary. If flags are needed, a wrapper must
 	# be used.
-	echo "paths = [" >.cargo/config
+	echo "paths = [" >../.cargo/config
 
 	for p in ${EXTRA_OECARGO_PATHS}; do
 		printf "\"%s\"\n" "$p"
-	done | sed -e 's/$/,/' >>.cargo/config
-	echo "]" >>.cargo/config
+	done | sed -e 's/$/,/' >>../.cargo/config
+	echo "]" >>../.cargo/config
 }
 
 rust_cargo_patch () {

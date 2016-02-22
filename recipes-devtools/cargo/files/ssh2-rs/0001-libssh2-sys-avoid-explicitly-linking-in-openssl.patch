@@ -1,0 +1,62 @@
+From be07c11b438550829d82dc844e38806570232cd7 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Sat, 12 Dec 2015 22:44:14 -0500
+Subject: [PATCH] libssh2-sys: avoid explicitly linking in openssl
+
+---
+ libssh2-sys/Cargo.toml | 25 -------------------------
+ libssh2-sys/lib.rs     |  2 --
+ 2 files changed, 27 deletions(-)
+
+diff --git a/libssh2-sys/Cargo.toml b/libssh2-sys/Cargo.toml
+index b9ecec2..78f92ac 100644
+--- a/libssh2-sys/Cargo.toml
++++ b/libssh2-sys/Cargo.toml
+@@ -18,31 +18,6 @@ libc = "0.2"
+ ws2_32-sys = ">= 0"
+ winapi = "0.2"
+ 
+-[target.i686-apple-darwin.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-apple-darwin.dependencies]
+-openssl-sys = ">= 0"
+-[target.i686-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.aarch64-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-unknown-linux-musl.dependencies]
+-openssl-sys = ">= 0"
+-[target.arm-unknown-linux-gnueabihf.dependencies]
+-openssl-sys = ">= 0"
+-[target.i686-unknown-freebsd.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-unknown-freebsd.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-unknown-dragonfly.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-unknown-bitrig.dependencies]
+-openssl-sys = ">= 0"
+-[target.x86_64-unknown-openbsd.dependencies]
+-openssl-sys = ">= 0"
+-
+ [build-dependencies]
+ pkg-config = "0.3"
+ cmake = "0.1.2"
+diff --git a/libssh2-sys/lib.rs b/libssh2-sys/lib.rs
+index bb6c46f..40af82f 100644
+--- a/libssh2-sys/lib.rs
++++ b/libssh2-sys/lib.rs
+@@ -6,8 +6,6 @@ extern crate ws2_32;
+ extern crate winapi;
+ 
+ extern crate libz_sys;
+-#[cfg(unix)]
+-extern crate openssl_sys;
+ 
+ use libc::{c_int, size_t, c_void, c_char, c_long, c_uchar, c_uint, c_ulong};
+ use libc::ssize_t;
+-- 
+2.4.10
+

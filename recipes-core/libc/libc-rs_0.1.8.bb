@@ -15,10 +15,12 @@ SRCREV = "8b7c17db2235a2a3f2c71242b11fc429a8d05a90"
 
 S = "${WORKDIR}/git"
 
+LIB_SRC = "${S}/src/liblibc/lib.rs"
+
 do_compile () {
-	oe_runrustc ${S}/src/liblibc/lib.rs --cfg feature='"cargo-build"'
+	oe_compile_rust_lib --cfg feature='"cargo-build"'
 }
 
 do_install () {
-	install -D -m 644 liblibc.rlib ${D}/${rustlibdir}/liblibc.rlib
+	oe_install_rust_lib
 }

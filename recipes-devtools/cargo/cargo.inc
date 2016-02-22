@@ -12,20 +12,9 @@ LICENSE = "MIT | Apache-2.0"
 DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
 SRC_URI = "\
-	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
-	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=git/src/rust-installer \
 	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
 "
 
-LIC_FILES_CHKSUM ="\
-	file://LICENSE-MIT;md5=362255802eb5aa87810d12ddf3cfedb4 \
-	file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
-	file://LICENSE-THIRD-PARTY;md5=afbb7ae0aa70c8e437a007314eae5f3b \
-"
-SRCREV_FORMAT = "cargo_rust-installer"
-PV .= "+git${SRCPV}"
-
-S = "${WORKDIR}/git"
 B = "${S}"
 
 PACKAGECONFIG ??= ""
@@ -33,6 +22,9 @@ PACKAGECONFIG ??= ""
 # Note: this does not appear to work very well due to our use of bitbake triples
 # & rust's use of cooked triples
 PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
+
+# Used in libgit2-sys's build.rs, needed for pkg-config to be used
+export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 
 do_configure () {
 	${@bb.utils.contains('PACKAGECONFIG', 'rust-snapshot', '${S}/.travis.install.deps.sh', ':', d)}
@@ -62,7 +54,7 @@ do_compile () {
 
 	rm -rf target/snapshot
 	mkdir -p target
-	cp -R ${WORKDIR}/$(basename ${CARGO_SNAPSHOT} .tar.gz) target/snapshot
+	cp -R ${WORKDIR}/$(basename ${CARGO_SNAPSHOT} .tar.gz)/cargo target/snapshot
 
 	oe_runmake ARGS="--verbose"
 }
@@ -70,3 +62,5 @@ do_compile () {
 do_install () {
 	oe_runmake DESTDIR="${D}" install
 }
+
+BBCLASSEXTEND = "native"
