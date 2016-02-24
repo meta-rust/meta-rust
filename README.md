@@ -57,9 +57,14 @@ On the target:
 
 ## Maintainer(s) & Patch policy
 
-Open a Pull Request
+Open a Pull Request.
+
+Generally, I try to support the latest master of poky. I'm happy to support
+older versions too by applying backwards compat patches as long as I don't need
+to maintain a seperate branch. Of course, others are welcome to create forks to
+support their individual needs.
 
 ## Copyright
 
-MIT/Apache-2.0 - Same as rust
+MIT OR Apache-2.0 - Same as rust
 

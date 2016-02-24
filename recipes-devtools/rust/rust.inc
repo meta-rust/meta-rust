@@ -1,19 +1,21 @@
+# ex: sts=4 et sw=4 ts=8
 inherit rust
 inherit rust-installer
+require rust-shared-source.inc
+require rust-snapshot-2015-08-11.inc
+
+LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=eb87dba71cb424233bcce88db3ae2f1a"
 
 SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
-LICENSE = "MIT | Apache-2.0"
 
 B = "${WORKDIR}/build"
 
-DEPENDS += "rust-llvm"
+DEPENDS += "file-native"
 
 # Avoid having the default bitbake.conf disable sub-make parallelization
 EXTRA_OEMAKE = ""
-
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=b1ab5514343f97198b323e33779470a3"
 
 PACKAGECONFIG ??= ""
 
@@ -27,6 +29,68 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', 'https://sta
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
+
+export FORCE_CRATE_HASH="${BB_TASKHASH}"
+
+# Right now this is focused on arm-specific tune features.
+# We get away with this for now as one can only use x86-64 as the build host
+# (not arm).
+# Note that TUNE_FEATURES is _always_ refering to the target, so we really
+# don't want to use this for the host/build.
+def llvm_features_from_tune(d):
+    f = []
+    feat = d.getVar('TUNE_FEATURES', True)
+    if not feat:
+        return ""
+    feat = frozenset(feat.split())
+
+    if 'vfpv4' in feat:
+        f.append("+vfp4")
+    if 'vfpv3' in feat:
+        f.append("+vfp3")
+    if 'vfpv3d16' in feat:
+        f.append("+d16")
+
+    if 'vfpv2' in feat or 'vfp' in feat:
+        f.append("+vfp2")
+
+    if 'neon' in feat:
+        f.append("+neon")
+
+    if 'aarch64' in feat:
+        f.append("+v8")
+
+    v7=frozenset(['armv7a', 'armv7r', 'armv7m', 'armv7ve'])
+    if not feat.isdisjoint(v7):
+        f.append("+v7")
+    if 'armv6' in feat:
+        f.append("+v6")
+
+    if 'dsp' in feat:
+        f.append("+dsp")
+
+    if d.getVar('ARM_THUMB_OPT', True) is "thumb":
+        if not feat.isdisjoint(v7):
+            f.append("+thumb2")
+        f.append("+thumb-mode")
+
+    if 'cortexa5' in feat:
+        f.append("+a5")
+    if 'cortexa7' in feat:
+        f.append("+a7")
+    if 'cortexa9' in feat:
+        f.append("+a9")
+    if 'cortexa15' in feat:
+        f.append("+a15")
+    if 'cortexa17' in feat:
+        f.append("+a17")
+
+    # Seems like it could be infered by the lack of vfp options, but we'll
+    # include it anyhow
+    if 'soft' in feat:
+        f.append("+soft-float")
+
+    return ','.join(f)
 
 ## arm-unknown-linux-gnueabihf
 DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
@@ -136,6 +200,13 @@ def ldflags_for(d, thing, arch):
     a.extend(post_link_args_for(d, thing, arch))
     return a
 
+TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)}"
+TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)}"
+
+# class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
+# (original) target.
+TARGET_LLVM_FEATURES_class-native = ""
+
 def rust_gen_target(d, thing, wd):
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
@@ -151,7 +222,12 @@ def rust_gen_target(d, thing, wd):
     prefix = d.getVar('{}_PREFIX'.format(thing), True)
     ccache = d.getVar('CCACHE', True)
     linker = "{}{}gcc".format(ccache, prefix)
-    features = d.getVarFlag('FEATURES', arch, True) or ""
+    objcopy = "{}objcopy".format(prefix)
+
+    features = ""
+    if thing is "TARGET":
+        features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
+    features = features or d.getVarFlag('FEATURES', arch, True) or ""
 
     pre_link_args = pre_link_args_for(d, thing, arch)
     post_link_args = post_link_args_for(d, thing, arch)
@@ -165,6 +241,7 @@ def rust_gen_target(d, thing, wd):
          "arch": "{}",
          "os": "linux",
          "linker": "{}",
+         "objcopy": "{}",
          "features": "{}",
          "dynamic-linking": true,
          "executables": true,
@@ -182,6 +259,7 @@ def rust_gen_target(d, thing, wd):
         target_pointer_width,
         arch_to_rust_target_arch(arch),
         linker,
+        objcopy,
         features,
         as_json(pre_link_args),
         as_json(post_link_args),
@@ -190,16 +268,15 @@ def rust_gen_target(d, thing, wd):
 
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR', True) + '/targets/'
-    try:
-        os.makedirs(wd)
-    except OSError as e:
-        if e.errno != 17:
-            raise e
+    # It is important 'TARGET' is last here so that it overrides our less
+    # informed choices for BUILD & HOST if TARGET happens to be the same as
+    # either of them.
     for thing in ['BUILD', 'HOST', 'TARGET']:
         bb.debug(1, "rust_gen_target for " + thing)
         rust_gen_target(d, thing, wd)
 }
 addtask rust_gen_targets after do_patch before do_compile
+do_rust_gen_targets[dirs] += "${WORKDIR}/targets"
 
 def rust_gen_mk_cfg(d, thing):
     ''''
@@ -213,8 +290,8 @@ def rust_gen_mk_cfg(d, thing):
     Note that the configure process also depends on the existence of #1, so we
     have to run this before do_configure
     '''
+    import subprocess
 
-    import shutil, subprocess
     rust_base_sys = rust_base_triple(d, thing)
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
@@ -222,10 +299,9 @@ def rust_gen_mk_cfg(d, thing):
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     ldflags = ' '.join(ldflags_for(d, thing, arch))
 
-    p = d.getVar('S', True) + '/mk/cfg/'
-
-    o = open(p + sys_for(d, thing) + '.mk', 'w')
-    i = open(p + rust_base_sys + '.mk', 'r')
+    b = d.getVar('WORKDIR', True) + '/mk-cfg/'
+    o = open(b + sys_for(d, thing) + '.mk', 'w')
+    i = open(d.getVar('S', True) + '/mk/cfg/' + rust_base_sys + '.mk', 'r')
 
     r = subprocess.call(['sed',
         # update all triplets to the new one
@@ -257,6 +333,9 @@ def rust_gen_mk_cfg(d, thing):
         ], stdout=o, stdin=i)
     if r:
         raise Exception
+    o.write("OBJCOPY_{} := {}objcopy\n".format(sys, prefix))
+    o.close()
+    i.close()
 
 python do_rust_arch_fixup () {
     for thing in ['BUILD', 'HOST', 'TARGET']:
@@ -264,167 +343,119 @@ python do_rust_arch_fixup () {
         rust_gen_mk_cfg(d, thing)
 }
 addtask rust_arch_fixup before do_configure after do_patch
-do_rust_arch_fixup[dirs] = "${S}/mk/cfg"
+do_rust_arch_fixup[dirs] += "${WORKDIR}/mk-cfg"
 
 llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
 
 do_configure () {
-	# FIXME: target_prefix vs prefix, see cross.bbclass
+    # Note: when we adjust the generated targets, rust doesn't rebuild (even
+    # when it should), so for now we need to remove the build dir to keep
+    # things in sync.
+    cd "${WORKDIR}"
+    rm -rf "${B}/"
+    mkdir -p "${B}/"
+    cd "${B}"
 
-	# CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-	# wide range of targets (not just HOST). Yocto's settings for them will
-	# be inappropriate, avoid using.
-	unset CFLAGS
-	unset LDFLAGS
-	unset CXXFLAGS
-	unset CPPFLAGS
+    # FIXME: target_prefix vs prefix, see cross.bbclass
 
-	# FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
-	# where we're reinstalling the compiler. May want to try for a real
-	# path based on bitbake vars
-        # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-        local_maybe_enable=disable
-        local_rust_root=/not/set/do/not/use
-        if which rustc >/dev/null 2>&1; then
-            local_rustc=$(which rustc)
-            if [ -n "$local_rustc" ]; then
-                local_rust_root=$(dirname $(dirname $local_rustc))
-                if [ -e "$local_rust_root/bin/rustc" ]; then
-                    local_maybe_enable=enable
-                fi
+    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+    # wide range of targets (not just HOST). Yocto's settings for them will
+    # be inappropriate, avoid using.
+    unset CFLAGS
+    unset LDFLAGS
+    unset CXXFLAGS
+    unset CPPFLAGS
+
+    # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
+    # where we're reinstalling the compiler. May want to try for a real
+    # path based on bitbake vars
+    # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
+    local_maybe_enable=disable
+    local_rust_root=/not/set/do/not/use
+    if which rustc >/dev/null 2>&1; then
+        local_rustc=$(which rustc)
+        if [ -n "$local_rustc" ]; then
+            local_rust_root=$(dirname $(dirname $local_rustc))
+            if [ -e "$local_rust_root/bin/rustc" ]; then
+                local_maybe_enable=enable
             fi
         fi
+    fi
 
-	# - rpath is required otherwise rustc fails to resolve symbols
-        # - submodule management is done by bitbake's fetching
-	${S}/configure					\
-		"--enable-rpath"			\
-		"--disable-docs"			\
-		"--disable-manage-submodules"           \
-		"--disable-debug"			\
-		"--enable-debuginfo"			\
-		"--enable-optimize"			\
-		"--enable-optimize-cxx"			\
-		"--disable-llvm-version-check"          \
-		"--llvm-root=${llvmdir}"		\
-		"--enable-optimize-tests"		\
-		"--prefix=${prefix}"			\
-		"--target=${TARGET_SYS}"		\
-		"--host=${HOST_SYS}"			\
-		"--build=${BUILD_SYS}"			\
-		"--localstatedir=${localstatedir}"	\
-		"--sysconfdir=${sysconfdir}"		\
-		"--datadir=${datadir}"			\
-		"--infodir=${infodir}"			\
-		"--mandir=${mandir}"			\
-		"--libdir=${libdir}"			\
-		"--bindir=${bindir}"			\
-		${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
-		${EXTRA_OECONF}
+    # - rpath is required otherwise rustc fails to resolve symbols
+    # - submodule management is done by bitbake's fetching
+    ${S}/configure                          \
+        "--enable-rpath"                    \
+        "--disable-docs"                    \
+        "--disable-manage-submodules"       \
+        "--disable-debug"                   \
+        "--enable-debuginfo"                \
+        "--enable-optimize"                 \
+        "--enable-optimize-cxx"             \
+        "--disable-llvm-version-check"      \
+        "--llvm-root=${llvmdir}"            \
+        "--enable-optimize-tests"           \
+        "--prefix=${prefix}"                \
+        "--target=${TARGET_SYS}"            \
+        "--host=${HOST_SYS}"                \
+        "--build=${BUILD_SYS}"              \
+        "--localstatedir=${localstatedir}"  \
+        "--sysconfdir=${sysconfdir}"        \
+        "--datadir=${datadir}"              \
+        "--infodir=${infodir}"              \
+        "--mandir=${mandir}"                \
+        "--libdir=${libdir}"                \
+        "--bindir=${bindir}"                \
+        "--platform-cfg=${WORKDIR}/mk-cfg/" \
+        ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
+        ${EXTRA_OECONF}
 }
 
 rust_runmake () {
-	echo "COMPILE ${PN}" "$@"
-	env
+    echo "COMPILE ${PN}" "$@"
+    env
 
-	# CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-	# wide range of targets (not just TARGET). Yocto's settings for them will
-	# be inappropriate, avoid using.
-	unset CFLAGS
-	unset LDFLAGS
-	unset CXXFLAGS
-	unset CPPFLAGS
+    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+    # wide range of targets (not just TARGET). Yocto's settings for them will
+    # be inappropriate, avoid using.
+    unset CFLAGS
+    unset LDFLAGS
+    unset CXXFLAGS
+    unset CPPFLAGS
 
-	oe_runmake "VERBOSE=1" "$@"
+    oe_runmake "VERBOSE=1" "$@"
 }
 
 do_compile () {
-	if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
-		mkdir -p dl
-		cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
-	fi
-	rust_runmake
+    if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
+        mkdir -p dl
+        cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
+    fi
+    rust_runmake
 }
 
 rust_do_install () {
-	rust_runmake DESTDIR="${D}" install
+    rust_runmake DESTDIR="${D}" install
 
-        # Rust's install.sh doesn't mark executables as executable because
-        # we're using a custom bindir, do it ourselves.
-        chmod +x "${D}/${bindir}/rustc"
-        chmod +x "${D}/${bindir}/rustdoc"
-        chmod +x "${D}/${bindir}/rust-gdb"
+    # Rust's install.sh doesn't mark executables as executable because
+    # we're using a custom bindir, do it ourselves.
+    chmod +x "${D}/${bindir}/rustc"
+    chmod +x "${D}/${bindir}/rustdoc"
+    chmod +x "${D}/${bindir}/rust-gdb"
 
-        # Install our custom target.json files
-	local td="${D}${libdir}/rustlib/"
-	install -d "$td"
-	for tgt in "${WORKDIR}/targets/"* ; do
-	    install -m 0644 "$tgt" "$td"
-	done
+    # Install our custom target.json files
+    local td="${D}${libdir}/rustlib/"
+    install -d "$td"
+    for tgt in "${WORKDIR}/targets/"* ; do
+        install -m 0644 "$tgt" "$td"
+    done
 
-        ## rust will complain about multiple providers of the runtime libs
-        ## (libstd, libsync, etc.) without this.
-        (cd "${D}${libdir}" && ln -sf "rustlib/${HOST_SYS}/lib/lib"*.so .)
+    ## rust will complain about multiple providers of the runtime libs
+    ## (libstd, libsync, etc.) without this.
+    (cd "${D}${libdir}" && ln -sf "rustlib/${HOST_SYS}/lib/lib"*.so .)
 }
 
 do_install () {
-	rust_do_install
+    rust_do_install
 }
 
-## {{{ native bits
-
-# Otherwise we'll depend on what we provide
-INHIBIT_DEFAULT_RUST_DEPS_class-native = "1"
-# We don't need to depend on gcc-native because yocto assumes it exists
-PROVIDES_class-native = "virtual/${TARGET_PREFIX}rust"
-
-## }}}
-
-## {{{ cross bits
-
-# Otherwise we'll depend on what we provide
-INHIBIT_DEFAULT_RUST_DEPS_class-cross = "1"
-
-# Unlike native (which nicely maps it's DEPENDS) cross wipes them out completely.
-# Generally, we (and cross in general) need the same things that native needs,
-# so it might make sense to take it's mapping. For now, though, we just mention
-# the bits we need explicitly.
-DEPENDS_class-cross += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'rust-native', '', d)}"
-DEPENDS_class-cross += "rust-llvm-native"
-DEPENDS_class-cross += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
-
-PROVIDES_class-cross = "virtual/${TARGET_PREFIX}rust"
-PN_class-cross = "rust-cross-${TARGET_ARCH}"
-
-# In the cross compilation case, rustc doesn't seem to get the rpath quite
-# right. It manages to include '../../lib/${TARGET_PREFIX}', but doesn't
-# include the '../../lib' (ie: relative path from cross_bindir to normal
-# libdir. As a result, we end up not being able to properly reference files in normal ${libdir}.
-# Most of the time this happens to work fine as the systems libraries are
-# subsituted, but sometimes a host system will lack a library, or the right
-# version of a library (libtinfo was how I noticed this).
-#
-# FIXME: this should really be fixed in rust itself.
-# FIXME: using hard-coded relative paths is wrong, we should ask bitbake for
-#        the relative path between 2 of it's vars.
-HOST_POST_LINK_ARGS_append_class-cross = " -Wl,-rpath=../../lib"
-BUILD_POST_LINK_ARGS_append_class-cross = " -Wl,-rpath=../../lib"
-
-# We need the same thing for the calls to the compiler when building the runtime crap
-TARGET_CC_ARCH_append_class-cross = " --sysroot=${STAGING_DIR_TARGET}"
-
-# cross.bbclass is "helpful" and overrides our do_install. Tell it not to.
-do_install_class-cross () {
-	rust_do_install
-}
-
-# using host-strip on target .so files generated by this recipie causes build errors.
-# for now, disable stripping.
-# A better (but more complex) approach would be to mimic gcc-runtime and build
-# the target.so files in a seperate .bb file.
-INHIBIT_PACKAGE_STRIP_class-cross = "1"
-INHIBIT_SYSROOT_STRIP_class-cross = "1"
-
-## }}}
-
-BBCLASSEXTEND = "cross native"

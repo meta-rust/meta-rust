@@ -1,0 +1,28 @@
+From d7aa5e6824e8658c01f702259eebac02553fb7b8 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Tue, 26 May 2015 12:09:36 -0400
+Subject: [PATCH 8/9] install: disable ldconfig
+
+---
+ mk/install.mk | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/mk/install.mk b/mk/install.mk
+index 4fed072..92e66cd 100644
+--- a/mk/install.mk
++++ b/mk/install.mk
+@@ -13,8 +13,9 @@ RUN_INSALLER = cd tmp/empty_dir && \
+ 		--prefix="$(DESTDIR)$(CFG_PREFIX)" \
+ 		--libdir="$(DESTDIR)$(CFG_LIBDIR)" \
+ 		--mandir="$(DESTDIR)$(CFG_MANDIR)" \
+-		"$(MAYBE_DISABLE_VERIFY)"
+-		--disable-rewrite-paths
++		"$(MAYBE_DISABLE_VERIFY)" \
++		--disable-rewrite-paths \
++		--disable-ldconfig
+ 
+ install:
+ ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
+-- 
+2.4.10
+

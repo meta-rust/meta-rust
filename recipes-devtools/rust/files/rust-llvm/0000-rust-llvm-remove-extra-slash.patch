@@ -1,0 +1,11 @@
++++ llvm/src/llvm/include/llvm/CodeGen/CommandFlags.h.orig	2016-01-18 19:18:03.847470845 +0000
++++ llvm/src/llvm/include/llvm/CodeGen/CommandFlags.h	2016-01-18 19:18:11.211408270 +0000
+@@ -21,7 +21,7 @@
+ #include "llvm/IR/Intrinsics.h"
+ #include "llvm/IR/Module.h"
+ #include "llvm/MC/MCTargetOptionsCommandFlags.h"
+-#include "llvm//MC/SubtargetFeature.h"
++#include "llvm/MC/SubtargetFeature.h"
+ #include "llvm/Support/CodeGen.h"
+ #include "llvm/Support/CommandLine.h"
+ #include "llvm/Support/Host.h"

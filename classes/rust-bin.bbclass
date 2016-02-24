@@ -2,6 +2,7 @@ inherit rust
 
 RUSTLIB_DEP ?= " rustlib"
 DEPENDS .= "${RUSTLIB_DEP}"
+RDEPENDS_${PN} .= "${RUSTLIB_DEP}"
 DEPENDS += "patchelf-native"
 
 export rustlibdir = "${libdir}/rust"
@@ -19,9 +20,10 @@ OVERLAP_LIBS = "\
     libc \
     log \
     getopts \
+    rand \
 "
 def get_overlap_deps(d):
-    deps = d.getVar("DEPENDS").split()
+    deps = d.getVar("DEPENDS", True).split()
     overlap_deps = []
     for o in d.getVar("OVERLAP_LIBS", True).split():
         l = len([o for dep in deps if (o + '-rs' in dep)])
@@ -41,7 +43,7 @@ rustlib_src="${prefix}/lib/${rustlib_suffix}"
 rustlib="${libdir}/${rustlib_suffix}"
 CRATE_NAME ?= "${@d.getVar('BPN', True).replace('-rs', '').replace('-', '_')}"
 BINNAME ?= "${BPN}"
-LIBNAME ?= "lib${CRATE_NAME}"
+LIBNAME ?= "lib${CRATE_NAME}-rs"
 CRATE_TYPE ?= "dylib"
 BIN_SRC ?= "${S}/src/main.rs"
 LIB_SRC ?= "${S}/src/lib.rs"
@@ -49,7 +51,7 @@ LIB_SRC ?= "${S}/src/lib.rs"
 get_overlap_externs () {
     externs=
     for dep in ${OVERLAP_DEPS}; do
-        extern=$(ls ${STAGING_DIR_HOST}/${rustlibdir}/lib$dep.{so,rlib} 2>/dev/null \
+        extern=$(ls ${STAGING_DIR_HOST}/${rustlibdir}/lib$dep-rs.{so,rlib} 2>/dev/null \
                     | awk '{print $1}');
         if [ -n "$extern" ]; then
             externs="$externs --extern $dep=$extern"
@@ -61,16 +63,21 @@ get_overlap_externs () {
     echo "$externs"
 }
 
+do_configure () {
+}
+
 oe_compile_rust_lib () {
+    [ "${CRATE_TYPE}" == "dylib" ] && suffix=so || suffix=rlib
     rm -rf ${LIBNAME}.{rlib,so}
     local -a link_args
     if [ "${CRATE_TYPE}" == "dylib" ]; then
         link_args[0]="-C"
-        link_args[1]="link-args=-Wl,-soname -Wl,${LIBNAME}.so"
+        link_args[1]="link-args=-Wl,-soname -Wl,${LIBNAME}.$suffix"
     fi
     oe_runrustc $(get_overlap_externs) \
         "${link_args[@]}" \
         ${LIB_SRC} \
+        -o ${LIBNAME}.$suffix \
         --crate-name=${CRATE_NAME} --crate-type=${CRATE_TYPE} \
         "$@"
 }
@@ -102,7 +109,7 @@ do_rust_bin_fixups() {
 
     for f in `find ${PKGD}`; do
         file "$f" | grep -q ELF || continue
-        readelf -d "$f" | grep RPATH | grep -q rustlib || continue
+        readelf -d "$f" | grep RUNPATH | grep -q rustlib || continue
         echo "Set rpath:" "$f"
         patchelf --set-rpath '$ORIGIN:'${rustlibdir}:${rustlib} "$f"
     done

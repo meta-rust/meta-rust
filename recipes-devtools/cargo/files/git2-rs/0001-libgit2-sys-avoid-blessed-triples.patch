@@ -1,0 +1,50 @@
+From 95709b3f5b1495a57043975d7100461feed46b2f Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Sat, 12 Dec 2015 22:53:37 -0500
+Subject: [PATCH] libgit2-sys: avoid blessed triples
+
+---
+ libgit2-sys/Cargo.toml | 22 +---------------------
+ 1 file changed, 1 insertion(+), 21 deletions(-)
+
+diff --git a/libgit2-sys/Cargo.toml b/libgit2-sys/Cargo.toml
+index 15b28d8..3590878 100644
+--- a/libgit2-sys/Cargo.toml
++++ b/libgit2-sys/Cargo.toml
+@@ -17,32 +17,12 @@ path = "lib.rs"
+ libssh2-sys = { version = ">= 0", optional = true }
+ libc = "0.2"
+ libz-sys = ">= 0"
++openssl-sys = "0.7.0"
+ 
+ [build-dependencies]
+ pkg-config = "0.3"
+ cmake = "0.1.2"
+ 
+-[target.i686-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.7.0"
+-[target.x86_64-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.7.0"
+-[target.x86_64-unknown-linux-musl.dependencies]
+-openssl-sys = "0.7.0"
+-[target.aarch64-unknown-linux-gnu.dependencies]
+-openssl-sys = "0.7.0"
+-[target.arm-unknown-linux-gnueabihf.dependencies]
+-openssl-sys = "0.7.0"
+-[target.i686-unknown-freebsd.dependencies]
+-openssl-sys = "0.7.0"
+-[target.x86_64-unknown-freebsd.dependencies]
+-openssl-sys = "0.7.0"
+-[target.x86_64-unknown-bitrig.dependencies]
+-openssl-sys = "0.7.0"
+-[target.x86_64-unknown-openbsd.dependencies]
+-openssl-sys = "0.7.0"
+-[target.x86_64-unknown-dragonfly.dependencies]
+-openssl-sys = "0.7.0"
+-
+ [features]
+ ssh = ["libssh2-sys"]
+ https = []
+-- 
+2.4.10
+
