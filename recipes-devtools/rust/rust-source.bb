@@ -13,7 +13,6 @@ SRC_URI[rust.sha256sum] = "641037af7b7b6cad0b231cc20671f8a314fbf2f40fc0901d0b877
 LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=eb87dba71cb424233bcce88db3ae2f1a"
 
 SRC_URI_append = "\
-        file://rust/0001-platform.mk-avoid-choking-on-i586.patch \
         file://rust/0002-Target-add-default-target.json-path-libdir-rust-targ.patch \
         file://rust/0003-mk-for-stage0-use-RUSTFLAGS-to-override-target-libs-.patch \
         file://rust/0004-mk-add-missing-CFG_LIBDIR_RELATIVE.patch \
