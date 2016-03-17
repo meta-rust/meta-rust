@@ -1,4 +1,4 @@
-From e6888f9b888911bdbd52e2ee7c37914ee4cee0e2 Mon Sep 17 00:00:00 2001
+From 8e359ae2b44fe2edd863e460346554c73f460ba7 Mon Sep 17 00:00:00 2001
 From: Steven Walter <swalter@lexmark.com>
 Date: Tue, 7 Jul 2015 14:57:42 -0400
 Subject: [PATCH 9/9] Remove crate metadata from symbol hashing
@@ -8,10 +8,10 @@ Subject: [PATCH 9/9] Remove crate metadata from symbol hashing
  1 file changed, 5 deletions(-)
 
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 32f41ff..2a87cd7 100644
+index 670d637..4e7150e 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -212,11 +212,6 @@ fn symbol_hash<'tcx>(tcx: &ty::ctxt<'tcx>,
+@@ -213,11 +213,6 @@ fn symbol_hash<'tcx>(tcx: &ty::ctxt<'tcx>,
      symbol_hasher.reset();
      symbol_hasher.input_str(&link_meta.crate_name);
      symbol_hasher.input_str("-");
@@ -20,7 +20,7 @@ index 32f41ff..2a87cd7 100644
 -        symbol_hasher.input_str(&meta[..]);
 -    }
 -    symbol_hasher.input_str("-");
-     symbol_hasher.input(&encoder::encoded_ty(tcx, t));
+     symbol_hasher.input(&tcx.sess.cstore.encode_type(tcx, t));
      // Prefix with 'h' so that it never blends into adjacent digits
      let mut hash = String::from("h");
 -- 
