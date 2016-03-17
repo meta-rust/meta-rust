@@ -4,7 +4,7 @@ inherit rust-installer
 require rust-shared-source.inc
 require rust-snapshot-2015-08-11.inc
 
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=eb87dba71cb424233bcce88db3ae2f1a"
+LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=9c5a05eab0ffc3590e50db38c51d1425"
 
 SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
