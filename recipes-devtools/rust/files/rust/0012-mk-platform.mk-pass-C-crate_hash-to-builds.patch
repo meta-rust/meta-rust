@@ -1,4 +1,4 @@
-From d0fa41075317425b01262dd539c01e87e2eaf5f4 Mon Sep 17 00:00:00 2001
+From 7abedc46cad6b52d44badaf88350d41ef907cd4c Mon Sep 17 00:00:00 2001
 From: Steven Walter <swalter@lexmark.com>
 Date: Wed, 18 Nov 2015 08:41:17 -0500
 Subject: [PATCH 12/12] mk/platform.mk: pass -C crate_hash to builds
@@ -9,10 +9,10 @@ bitbake recipe will export FORCE_CRATE_HASH
  1 file changed, 1 insertion(+)
 
 diff --git a/mk/platform.mk b/mk/platform.mk
-index 4681783..59aa560 100644
+index eb693b8..e6317b5 100644
 --- a/mk/platform.mk
 +++ b/mk/platform.mk
-@@ -182,6 +182,7 @@ define CFG_MAKE_TOOLCHAIN
+@@ -187,6 +187,7 @@ define CFG_MAKE_TOOLCHAIN
         LINK_$(1)=$(CROSS_PREFIX_$(1))$(LINK_$(1))
         RUSTC_CROSS_FLAGS_$(1)=-C linker=$$(call FIND_COMPILER,$$(LINK_$(1))) \
             -C objcopy=$$(call FIND_COMPILER,$$(OBJCOPY_$(1))) \

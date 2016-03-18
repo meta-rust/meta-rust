@@ -4,7 +4,7 @@ inherit rust-installer
 require rust-shared-source.inc
 require rust-snapshot-2015-08-11.inc
 
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=eb87dba71cb424233bcce88db3ae2f1a"
+LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=9c5a05eab0ffc3590e50db38c51d1425"
 
 SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
@@ -99,6 +99,7 @@ TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
 PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
+POST_LINK_ARGS[arm] = "-lssp"
 
 DATA_LAYOUT[aarch64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"

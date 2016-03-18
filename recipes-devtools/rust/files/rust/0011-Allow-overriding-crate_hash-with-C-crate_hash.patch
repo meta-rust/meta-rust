@@ -1,4 +1,4 @@
-From 128a81ede6b188637743a37a582b2267a49d0a32 Mon Sep 17 00:00:00 2001
+From b6805ab1099ca824bb516da4f1825a7e4ce30153 Mon Sep 17 00:00:00 2001
 From: Steven Walter <swalter@lexmark.com>
 Date: Wed, 18 Nov 2015 08:33:26 -0500
 Subject: [PATCH 11/12] Allow overriding crate_hash with -C crate_hash
@@ -11,14 +11,14 @@ determine the crate hash; the bitbake input hash will be stable, but
 still different for different rust recipes.
 ---
  src/librustc/session/config.rs  |  2 ++
- src/librustc_trans/back/link.rs | 26 ++++++++++++++++++++++++--
- 2 files changed, 26 insertions(+), 2 deletions(-)
+ src/librustc_trans/back/link.rs | 28 ++++++++++++++++++++++++++--
+ 2 files changed, 28 insertions(+), 2 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index b74b3c4..a11cb90 100644
+index 600cb4b..3570e78 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -500,6 +500,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
+@@ -537,6 +537,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
           "choose the code model to use (llc -code-model for details)"),
      metadata: Vec<String> = (Vec::new(), parse_list,
           "metadata to mangle symbol names with"),
@@ -28,10 +28,10 @@ index b74b3c4..a11cb90 100644
           "extra data to put in each output filename"),
      codegen_units: usize = (1, parse_uint,
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 53fa913..83619ae 100644
+index 0d8a125..9917a1e 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -46,7 +46,7 @@ use std::str;
+@@ -45,7 +45,7 @@ use std::str;
  use flate;
  use serialize::hex::ToHex;
  use syntax::ast;
@@ -40,10 +40,11 @@ index 53fa913..83619ae 100644
  use syntax::parse::token::{self, InternedString};
  use syntax::attr::AttrMetaMethods;
  
-@@ -185,9 +185,31 @@ pub fn find_crate_name(sess: Option<&Session>,
- 
- pub fn build_link_meta(sess: &Session, krate: &hir::Crate,
-                        name: &str) -> LinkMeta {
+@@ -186,9 +186,33 @@ pub fn build_link_meta(sess: &Session,
+                        krate: &hir::Crate,
+                        name: &str)
+                        -> LinkMeta {
++    use std::collections::BTreeMap;
 +    let crate_hash = if sess.opts.cg.crate_hash != "" {
 +        let dummy_span = Span {
 +            lo: BytePos(0),
@@ -52,14 +53,15 @@ index 53fa913..83619ae 100644
 +        };
 +        let dummy_module = hir::Mod {
 +            inner: dummy_span,
-+            items: vec!()
++            item_ids: hir::HirVec::new()
 +        };
 +        let dummy_krate = hir::Crate {
 +            module: dummy_module,
-+            attrs: vec!(),
-+            config: vec!(),
++            attrs: hir::HirVec::new(),
++            config: hir::CrateConfig::new(),
 +            span: dummy_span,
-+            exported_macros: vec!()
++            exported_macros: hir::HirVec::new(),
++            items: BTreeMap::new()
 +        };
 +
 +        Svh::calculate(&vec!(sess.opts.cg.crate_hash.clone()), &dummy_krate)
