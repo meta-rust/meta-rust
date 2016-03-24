@@ -1,4 +1,4 @@
-From 1197d6ec82df147e8bbe0d42017fe1ee75804369 Mon Sep 17 00:00:00 2001
+From 93ef6b8b93c7695280aba7f3541bf8f1ae18c722 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
 Subject: [PATCH 5/9] configure: support --bindir, and extend libdir to
@@ -13,20 +13,20 @@ relative to sysroot, and allows libdir to end in an arbitrary directory
 Note that this assumes absolute paths start with '/', which may break
 windows platforms
 ---
- configure                           | 49 ++++++++++++++++------
- mk/host.mk                          |  6 ++-
- mk/main.mk                          | 11 +++++
- mk/perf.mk                          |  4 +-
- mk/prepare.mk                       |  4 +-
- src/librustc/metadata/filesearch.rs | 84 ++++++++++++++-----------------------
- src/librustc_trans/back/link.rs     |  3 +-
- 7 files changed, 90 insertions(+), 71 deletions(-)
+ configure                          | 44 ++++++++++++++++++++-----
+ mk/host.mk                         |  6 +++-
+ mk/main.mk                         | 11 +++++++
+ mk/perf.mk                         |  4 +--
+ mk/prepare.mk                      | 27 +++++++---------
+ src/librustc/session/filesearch.rs | 66 ++++++++++++++++----------------------
+ src/librustc_trans/back/link.rs    |  3 +-
+ 7 files changed, 94 insertions(+), 67 deletions(-)
 
 diff --git a/configure b/configure
-index 60d3661..01c447b 100755
+index 287b7b3..7d53a66 100755
 --- a/configure
 +++ b/configure
-@@ -334,6 +334,31 @@ enable_if_not_disabled() {
+@@ -334,6 +334,32 @@ enable_if_not_disabled() {
      fi
  }
  
@@ -55,27 +55,19 @@ index 60d3661..01c447b 100755
 +	echo "$result"
 +}
 +
++
  to_llvm_triple() {
      case $1 in
          i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -632,6 +657,8 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
+@@ -652,18 +678,19 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
  CFG_HOST=$(to_llvm_triple $CFG_HOST)
  CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
  
 +CFG_LIBDIR_RELATIVE=lib
 +
- # On windows we just store the libraries in the bin directory because
- # there's no rpath. This is where the build system itself puts libraries;
- # --libdir is used to configure the installation directory.
-@@ -639,24 +666,21 @@ CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
- if [ "$CFG_OSTYPE" = "pc-windows-gnu" ] || [ "$CFG_OSTYPE" = "pc-windows-msvc" ]
- then
-     CFG_LIBDIR_RELATIVE=bin
--else
--    CFG_LIBDIR_RELATIVE=lib
- fi
- 
--valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries (do not set it on windows platform)"
+ # On Windows this determines root of the subtree for target libraries.
+ # Host runtime libs always go to 'bin'.
+-valopt libdir "${CFG_PREFIX}/lib" "install libraries"
 +valopt libdir "${CFG_PREFIX}/${CFG_LIBDIR_RELATIVE}" "install libraries"
  
 -case "$CFG_LIBDIR" in
@@ -93,15 +85,9 @@ index 60d3661..01c447b 100755
 +CFG_BINDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_BINDIR}")
 +CFG_LIBDIR_RELATIVE=$(relpath "${CFG_PREFIX}" "${CFG_LIBDIR}")
  
- if ( [ "$CFG_OSTYPE" = "pc-windows-gnu" ] || [ "$CFG_OSTYPE" = "pc-windows-msvc" ] ) \
--	&& [ "$CFG_LIBDIR_RELATIVE" != "bin" ]; then
--    err "libdir on windows should be set to 'bin'"
-+    && [ "$CFG_LIBDIR_RELATIVE" != "$CFG_BINDIR_RELATIVE" ]; then
-+  err "Windows builds currently require that LIBDIR == BINDIR (we have libdir{$CFG_LIBDIR_RELATIVE} != bindir{$CFG_BINDIR_RELATIVE} )"
- fi
- 
  if [ $HELP -eq 1 ]
-@@ -1733,6 +1757,7 @@ putvar CFG_PREFIX
+ then
+@@ -1760,6 +1787,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -129,10 +115,10 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index 896c1df..ab12166 100644
+index 04b3e25..ba11e5e 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -345,7 +345,9 @@ export CFG_RELEASE_CHANNEL
+@@ -351,7 +351,9 @@ export CFG_RELEASE_CHANNEL
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -142,7 +128,7 @@ index 896c1df..ab12166 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  ifdef CFG_DISABLE_UNSTABLE_FEATURES
  CFG_INFO := $(info cfg: disabling unstable features (CFG_DISABLE_UNSTABLE_FEATURES))
-@@ -375,7 +377,16 @@ define SREQ
+@@ -381,7 +383,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -156,9 +142,9 @@ index 896c1df..ab12166 100644
 +HBIN$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_BINDIR_RELATIVE)
 +endif
 +
- HLIB$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/$$(CFG_LIBDIR_RELATIVE)
  
- # Destinations of artifacts for target architectures
+ HLIB_RELATIVE$(1)_H_$(3) = $$(CFG_LIBDIR_RELATIVE)
+ 
 diff --git a/mk/perf.mk b/mk/perf.mk
 index 16cbaab..f8a354c 100644
 --- a/mk/perf.mk
@@ -180,46 +166,70 @@ index 16cbaab..f8a354c 100644
  endif
  
 diff --git a/mk/prepare.mk b/mk/prepare.mk
-index e263a6d..45590ab 100644
+index 87a4450..c358bbc 100644
 --- a/mk/prepare.mk
 +++ b/mk/prepare.mk
-@@ -186,10 +186,10 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
+@@ -90,8 +90,6 @@ PREPARE_TOOLS = $(filter-out compiletest rustbook error-index-generator, $(TOOLS
+ # $(3) is host
+ # $(4) tag
+ define DEF_PREPARE_HOST_TOOL
+-prepare-host-tool-$(1)-$(2)-$(3)-$(4): \
+-	PREPARE_SOURCE_BIN_DIR=$$(HBIN$(2)_H_$(3))
+ prepare-host-tool-$(1)-$(2)-$(3)-$(4): prepare-maybe-clean-$(4) \
+                                   $$(foreach dep,$$(TOOL_DEPS_$(1)),prepare-host-lib-$$(dep)-$(2)-$(3)-$(4)) \
+                                   $$(HBIN$(2)_H_$(3))/$(1)$$(X_$(3)) \
+@@ -117,10 +115,8 @@ PREPARE_TAR_LIB_DIR = $(patsubst $(CFG_LIBDIR_RELATIVE)%,lib%,$(1))
+ # $(3) is host
+ # $(4) tag
+ define DEF_PREPARE_HOST_LIB
+-prepare-host-lib-$(1)-$(2)-$(3)-$(4): \
+-	PREPARE_WORKING_SOURCE_LIB_DIR=$$(HLIB$(2)_H_$(3))
+-prepare-host-lib-$(1)-$(2)-$(3)-$(4): \
+-	PREPARE_WORKING_DEST_LIB_DIR=$$(PREPARE_DEST_DIR)/$$(call PREPARE_TAR_LIB_DIR,$$(HLIB_RELATIVE$(2)_H_$(3)))
++prepare-host-lib-$(1)-$(2)-$(3)-$(4): PREPARE_WORKING_SOURCE_LIB_DIR=$$(PREPARE_SOURCE_LIB_DIR)
++prepare-host-lib-$(1)-$(2)-$(3)-$(4): PREPARE_WORKING_DEST_LIB_DIR=$$(PREPARE_DEST_LIB_DIR)
+ prepare-host-lib-$(1)-$(2)-$(3)-$(4): prepare-maybe-clean-$(4) \
+                                  $$(foreach dep,$$(RUST_DEPS_$(1)),prepare-host-lib-$$(dep)-$(2)-$(3)-$(4)) \
+                                  $$(HLIB$(2)_H_$(3))/stamp.$(1) \
+@@ -138,14 +134,10 @@ endef
+ # $(4) tag
+ define DEF_PREPARE_TARGET_N
+ # Rebind PREPARE_*_LIB_DIR to point to rustlib, then install the libs for the targets
+-prepare-target-$(2)-host-$(3)-$(1)-$(4): \
+-	PREPARE_WORKING_SOURCE_LIB_DIR=$$(TLIB$(1)_T_$(2)_H_$(3))
+-prepare-target-$(2)-host-$(3)-$(1)-$(4): \
+-	PREPARE_WORKING_DEST_LIB_DIR=$$(PREPARE_DEST_LIB_DIR)/rustlib/$(2)/lib
+-prepare-target-$(2)-host-$(3)-$(1)-$(4): \
+-	PREPARE_SOURCE_BIN_DIR=$$(TBIN$(1)_T_$(2)_H_$(3))
+-prepare-target-$(2)-host-$(3)-$(1)-$(4): \
+-	PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_LIB_DIR)/rustlib/$(3)/bin
++prepare-target-$(2)-host-$(3)-$(1)-$(4): PREPARE_WORKING_SOURCE_LIB_DIR=$$(PREPARE_SOURCE_LIB_DIR)/rustlib/$(2)/lib
++prepare-target-$(2)-host-$(3)-$(1)-$(4): PREPARE_WORKING_DEST_LIB_DIR=$$(PREPARE_DEST_LIB_DIR)/rustlib/$(2)/lib
++prepare-target-$(2)-host-$(3)-$(1)-$(4): PREPARE_SOURCE_BIN_DIR=$$(PREPARE_SOURCE_LIB_DIR)/rustlib/$(3)/bin
++prepare-target-$(2)-host-$(3)-$(1)-$(4): PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_LIB_DIR)/rustlib/$(3)/bin
+ prepare-target-$(2)-host-$(3)-$(1)-$(4): prepare-maybe-clean-$(4) \
+         $$(foreach crate,$$(TARGET_CRATES), \
+           $$(TLIB$(1)_T_$(2)_H_$(3))/stamp.$$(crate)) \
+@@ -198,9 +190,12 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
+ 
  define DEF_PREPARE
  
- prepare-base-$(1)-%: PREPARE_SOURCE_DIR=$$(PREPARE_HOST)/stage$$(PREPARE_STAGE)
--prepare-base-$(1)-%: PREPARE_SOURCE_BIN_DIR=$$(PREPARE_SOURCE_DIR)/bin
++prepare-base-$(1)-%: PREPARE_SOURCE_DIR=$$(PREPARE_HOST)/stage$$(PREPARE_STAGE)
 +prepare-base-$(1)-%: PREPARE_SOURCE_BIN_DIR=$$(PREPARE_SOURCE_DIR)/$$(CFG_BINDIR_RELATIVE)
- prepare-base-$(1)-%: PREPARE_SOURCE_LIB_DIR=$$(PREPARE_SOURCE_DIR)/$$(CFG_LIBDIR_RELATIVE)
++prepare-base-$(1)-%: PREPARE_SOURCE_LIB_DIR=$$(PREPARE_SOURCE_DIR)/$$(CFG_LIBDIR_RELATIVE)
  prepare-base-$(1)-%: PREPARE_SOURCE_MAN_DIR=$$(S)/man
 -prepare-base-$(1)-%: PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_DIR)/bin
+-prepare-base-$(1)-%: PREPARE_DEST_LIB_DIR=$$(PREPARE_DEST_DIR)/$$(call PREPARE_TAR_LIB_DIR,$$(CFG_LIBDIR_RELATIVE))
 +prepare-base-$(1)-%: PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_DIR)/$$(CFG_BINDIR_RELATIVE)
- prepare-base-$(1)-%: PREPARE_DEST_LIB_DIR=$$(PREPARE_DEST_DIR)/$$(CFG_LIBDIR_RELATIVE)
++prepare-base-$(1)-%: PREPARE_DEST_LIB_DIR=$$(PREPARE_DEST_DIR)/$$(CFG_LIBDIR_RELATIVE)
  prepare-base-$(1)-%: PREPARE_DEST_MAN_DIR=$$(PREPARE_DEST_DIR)/share/man/man1
  
-diff --git a/src/librustc/metadata/filesearch.rs b/src/librustc/metadata/filesearch.rs
-index 311ab1c..1b03b1a 100644
---- a/src/librustc/metadata/filesearch.rs
-+++ b/src/librustc/metadata/filesearch.rs
-@@ -68,8 +68,7 @@ impl<'a> FileSearch<'a> {
-         if !found {
-             let rustpath = rust_path();
-             for path in &rustpath {
--                let tlib_path = make_rustpkg_lib_path(
--                    self.sysroot, path, self.triple);
-+                let tlib_path = make_rustpkg_lib_path(path, self.triple);
-                 debug!("is {} in visited_dirs? {}", tlib_path.display(),
-                         visited_dirs.contains(&tlib_path));
- 
-@@ -96,7 +95,7 @@ impl<'a> FileSearch<'a> {
-         where F: FnMut(&Path, PathKind) -> FileMatch
-     {
-         self.for_each_lib_search_path(|lib_search_path, kind| {
--            debug!("searching {}", lib_search_path.display());
-+            info!("searching {}", lib_search_path.display());
-             match fs::read_dir(lib_search_path) {
-                 Ok(files) => {
-                     let files = files.filter_map(|p| p.ok().map(|s| s.path()))
-@@ -157,7 +156,7 @@ impl<'a> FileSearch<'a> {
+ prepare-base-$(1)-target: prepare-target-$(1)
+diff --git a/src/librustc/session/filesearch.rs b/src/librustc/session/filesearch.rs
+index 09c6b54..00736c6 100644
+--- a/src/librustc/session/filesearch.rs
++++ b/src/librustc/session/filesearch.rs
+@@ -124,7 +124,7 @@ impl<'a> FileSearch<'a> {
      // Returns a list of directories where target-specific tool binaries are located.
      pub fn get_tools_search_paths(&self) -> Vec<PathBuf> {
          let mut p = PathBuf::from(self.sysroot);
@@ -228,7 +238,7 @@ index 311ab1c..1b03b1a 100644
          p.push(&rustlibdir());
          p.push(&self.triple);
          p.push("bin");
-@@ -165,8 +164,8 @@ impl<'a> FileSearch<'a> {
+@@ -132,8 +132,8 @@ impl<'a> FileSearch<'a> {
      }
  }
  
@@ -239,24 +249,14 @@ index 311ab1c..1b03b1a 100644
      assert!(p.is_relative());
      p.push(&rustlibdir());
      p.push(target_triple);
-@@ -176,17 +175,28 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
+@@ -143,7 +143,19 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
  
  fn make_target_lib_path(sysroot: &Path,
                          target_triple: &str) -> PathBuf {
 -    sysroot.join(&relative_target_lib_path(sysroot, target_triple))
 +    sysroot.join(&relative_target_lib_path(target_triple))
- }
- 
--fn make_rustpkg_lib_path(sysroot: &Path,
--                         dir: &Path,
-+fn make_rustpkg_lib_path(dir: &Path,
-                          triple: &str) -> PathBuf {
--    let mut p = dir.join(&find_libdir(sysroot));
-+    let mut p = dir.join(libdir_str());
-     p.push(triple);
-     p
- }
- 
++}
++
 +pub fn bindir_relative_str() -> &'static str {
 +    env!("CFG_BINDIR_RELATIVE")
 +}
@@ -267,12 +267,10 @@ index 311ab1c..1b03b1a 100644
 +
 +pub fn libdir_str() -> &'static str {
 +    env!("CFG_LIBDIR_RELATIVE")
-+}
-+
+ }
+ 
  pub fn get_or_default_sysroot() -> PathBuf {
-     // Follow symlinks.  If the resolved path is relative, make it absolute.
-     fn canonicalize(path: Option<PathBuf>) -> Option<PathBuf> {
-@@ -202,7 +212,18 @@ pub fn get_or_default_sysroot() -> PathBuf {
+@@ -161,44 +173,22 @@ pub fn get_or_default_sysroot() -> PathBuf {
      }
  
      match canonicalize(env::current_exe().ok()) {
@@ -292,13 +290,8 @@ index 311ab1c..1b03b1a 100644
          None => panic!("can't determine value for sysroot")
      }
  }
-@@ -257,47 +278,6 @@ pub fn rust_path() -> Vec<PathBuf> {
-     env_rust_path
- }
  
 -// The name of the directory rustc expects libraries to be located.
--// On Unix should be "lib", on windows "bin"
--#[cfg(unix)]
 -fn find_libdir(sysroot: &Path) -> String {
 -    // FIXME: This is a quick hack to make the rustc binary able to locate
 -    // Rust libraries in Linux environments where libraries might be installed
@@ -331,20 +324,14 @@ index 311ab1c..1b03b1a 100644
 -        "lib".to_string()
 -    }
 -}
--
--#[cfg(windows)]
--fn find_libdir(_sysroot: &Path) -> String {
--    "bin".to_string()
--}
--
+ 
  // The name of rustc's own place to organize libraries.
  // Used to be "rustc", now the default is "rustlib"
- pub fn rustlibdir() -> String {
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 6171ff1..32f41ff 100644
+index ec1383f..670d637 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -1033,11 +1033,10 @@ fn link_args(cmd: &mut Linker,
+@@ -1042,11 +1042,10 @@ fn link_args(cmd: &mut Linker,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {

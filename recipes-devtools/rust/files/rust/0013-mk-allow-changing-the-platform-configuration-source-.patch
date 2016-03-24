@@ -1,4 +1,4 @@
-From 1fbfa088007054c655741e547bb3e72f1d5f1746 Mon Sep 17 00:00:00 2001
+From f3e8bd9ab353d4b3d7432a02e37a22eed24b5e57 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Thu, 4 Feb 2016 10:44:23 -0500
 Subject: [PATCH] mk: allow changing the platform configuration source
@@ -10,10 +10,10 @@ Subject: [PATCH] mk: allow changing the platform configuration source
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/configure b/configure
-index 01c447b..0f004cf 100755
+index 7d53a66..5d40516 100755
 --- a/configure
 +++ b/configure
-@@ -650,6 +650,7 @@ valopt_nosave local-rust-root "/usr/local" "set prefix for local rust binary"
+@@ -671,6 +671,7 @@ valopt_nosave local-rust-root "/usr/local" "set prefix for local rust binary"
  valopt_nosave host "${CFG_BUILD}" "GNUs ./configure syntax LLVM host triples"
  valopt_nosave target "${CFG_HOST}" "GNUs ./configure syntax LLVM target triples"
  valopt_nosave mandir "${CFG_PREFIX}/share/man" "install man pages in PATH"
@@ -21,7 +21,7 @@ index 01c447b..0f004cf 100755
  
  # Temporarily support old triples until buildbots get updated
  CFG_BUILD=$(to_llvm_triple $CFG_BUILD)
-@@ -1110,7 +1111,7 @@ CFG_MANDIR=${CFG_MANDIR%/}
+@@ -1127,7 +1128,7 @@ CFG_MANDIR=${CFG_MANDIR%/}
  CFG_HOST="$(echo $CFG_HOST | tr ',' ' ')"
  CFG_TARGET="$(echo $CFG_TARGET | tr ',' ' ')"
  CFG_SUPPORTED_TARGET=""
@@ -30,19 +30,19 @@ index 01c447b..0f004cf 100755
    CFG_SUPPORTED_TARGET="${CFG_SUPPORTED_TARGET} $(basename "$target_file" .mk)"
  done
  
-@@ -1763,6 +1764,7 @@ putvar CFG_AARCH64_LINUX_ANDROID_NDK
- putvar CFG_ARM_LINUX_ANDROIDEABI_NDK
- putvar CFG_I686_LINUX_ANDROID_NDK
+@@ -1795,6 +1796,7 @@ putvar CFG_I686_LINUX_ANDROID_NDK
+ putvar CFG_NACL_CROSS_PATH
  putvar CFG_MANDIR
+ putvar CFG_USING_LIBCPP
 +putvar CFG_PLATFORM_CFG
  
  # Avoid spurious warnings from clang by feeding it original source on
  # ccache-miss rather than preprocessed input.
 diff --git a/mk/platform.mk b/mk/platform.mk
-index 59aa560..a964d6f 100644
+index e6317b5..68a20e1 100644
 --- a/mk/platform.mk
 +++ b/mk/platform.mk
-@@ -112,7 +112,7 @@ $(foreach cvar,CC CXX CPP CFLAGS CXXFLAGS CPPFLAGS, \
+@@ -114,7 +114,7 @@ $(foreach cvar,CC CXX CPP CFLAGS CXXFLAGS CPPFLAGS, \
  
  CFG_RLIB_GLOB=lib$(1)-*.rlib
  
@@ -50,7 +50,7 @@ index 59aa560..a964d6f 100644
 +include $(wildcard $(CFG_PLATFORM_CFG)/*.mk)
  
  define ADD_INSTALLED_OBJECTS
-   INSTALLED_OBJECTS_$(1) += $$(call CFG_STATIC_LIB_NAME_$(1),compiler-rt)
+   INSTALLED_OBJECTS_$(1) += $$(CFG_INSTALLED_OBJECTS_$(1))
 -- 
 2.7.0
 

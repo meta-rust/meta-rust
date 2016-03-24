@@ -1,4 +1,4 @@
-From 1bd3ab55ce24b2a54e021ba471a5f934b3b9ad6b Mon Sep 17 00:00:00 2001
+From 04eee951641b9d9c580ee21c481bdf979dc2fe30 Mon Sep 17 00:00:00 2001
 From: Steven Walter <swalter@lexmark.com>
 Date: Tue, 7 Jul 2015 16:49:44 -0400
 Subject: [PATCH 10/12] rustc_trans: make .note.rustc look more like debug info
@@ -18,15 +18,15 @@ stripped later without rearranging important code/data sections.
  mk/platform.mk                   |  1 +
  src/librustc/session/config.rs   |  2 ++
  src/librustc_back/target/mod.rs  |  4 ++++
- src/librustc_trans/back/link.rs  | 38 ++++++++++++++++++++++++++++++++++++++
+ src/librustc_trans/back/link.rs  | 36 ++++++++++++++++++++++++++++++++++++
  src/librustc_trans/trans/base.rs |  3 +++
- 5 files changed, 48 insertions(+)
+ 5 files changed, 46 insertions(+)
 
 diff --git a/mk/platform.mk b/mk/platform.mk
-index 0c90632..4681783 100644
+index 5239086..eb693b8 100644
 --- a/mk/platform.mk
 +++ b/mk/platform.mk
-@@ -181,6 +181,7 @@ define CFG_MAKE_TOOLCHAIN
+@@ -186,6 +186,7 @@ define CFG_MAKE_TOOLCHAIN
         AR_$(1)=$(CROSS_PREFIX_$(1))$(AR_$(1))
         LINK_$(1)=$(CROSS_PREFIX_$(1))$(LINK_$(1))
         RUSTC_CROSS_FLAGS_$(1)=-C linker=$$(call FIND_COMPILER,$$(LINK_$(1))) \
@@ -35,10 +35,10 @@ index 0c90632..4681783 100644
  
         RUSTC_FLAGS_$(1)=$$(RUSTC_CROSS_FLAGS_$(1)) $(RUSTC_FLAGS_$(1))
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index ecb38d4..b74b3c4 100644
+index 4cc059b..600cb4b 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -460,6 +460,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
+@@ -497,6 +497,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
           CG_OPTIONS, cg_type_desc, cgsetters,
      ar: Option<String> = (None, parse_opt_string,
          "tool to assemble archives with"),
@@ -48,19 +48,19 @@ index ecb38d4..b74b3c4 100644
          "system linker to link outputs with"),
      link_args: Option<Vec<String>> = (None, parse_opt_list,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 3ffa484..d52e67c 100644
+index 636a1aa..1b87a7a 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
-@@ -110,6 +110,8 @@ pub struct TargetOptions {
-     /// sysroot folder.
-     pub pre_link_objects: Vec<String>,
-     pub post_link_objects: Vec<String>,
+@@ -118,6 +118,8 @@ pub struct TargetOptions {
+     /// Linker arguments that are unconditionally passed *after* any
+     /// user-defined libraries.
+     pub post_link_args: Vec<String>,
 +    /// Path to objcopy.  Defaults to "objcopy".
 +    pub objcopy: String,
+ 
      /// Default CPU to pass to LLVM. Corresponds to `llc -mcpu=$cpu`. Defaults
      /// to "default".
-     pub cpu: String,
-@@ -198,6 +200,7 @@ impl Default for TargetOptions {
+@@ -213,6 +215,7 @@ impl Default for TargetOptions {
              ar: option_env!("CFG_DEFAULT_AR").unwrap_or("ar").to_string(),
              pre_link_args: Vec::new(),
              post_link_args: Vec::new(),
@@ -68,7 +68,7 @@ index 3ffa484..d52e67c 100644
              cpu: "generic".to_string(),
              features: "".to_string(),
              dynamic_linking: false,
-@@ -314,6 +317,7 @@ impl Target {
+@@ -331,6 +334,7 @@ impl Target {
          key!(cpu);
          key!(ar);
          key!(linker);
@@ -77,10 +77,10 @@ index 3ffa484..d52e67c 100644
          key!(code_model);
          key!(dll_prefix);
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 2a87cd7..53fa913 100644
+index 4e7150e..0d8a125 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -393,6 +393,13 @@ fn command_path(sess: &Session) -> OsString {
+@@ -394,6 +394,13 @@ fn command_path(sess: &Session) -> OsString {
      env::join_paths(new_path).unwrap()
  }
  
@@ -94,7 +94,7 @@ index 2a87cd7..53fa913 100644
  pub fn remove(sess: &Session, path: &Path) {
      match fs::remove_file(path) {
          Ok(..) => {}
-@@ -919,6 +926,34 @@ fn link_natively(sess: &Session, dylib: bool,
+@@ -928,6 +935,32 @@ fn link_natively(sess: &Session, dylib: bool,
      }
  }
  
@@ -115,12 +115,10 @@ index 2a87cd7..53fa913 100644
 +        Ok(exitstatus) => {
 +            if !exitstatus.success() {
 +                sess.err(&format!("objcopy failed with exit code {:?}", exitstatus.code()));
-+                sess.note(&format!("{:?}", &o_cmd));
 +            }
 +        },
 +        Err(exitstatus) => {
 +            sess.err(&format!("objcopy failed: {}", exitstatus));
-+            sess.note(&format!("{:?}", &o_cmd));
 +        }
 +    }
 +    sess.abort_if_errors();
@@ -129,7 +127,7 @@ index 2a87cd7..53fa913 100644
  fn link_args(cmd: &mut Linker,
               sess: &Session,
               dylib: bool,
-@@ -951,6 +986,9 @@ fn link_args(cmd: &mut Linker,
+@@ -960,6 +993,9 @@ fn link_args(cmd: &mut Linker,
      // executable. This metadata is in a separate object file from the main
      // object file, so we link that in here.
      if dylib {
@@ -140,19 +138,19 @@ index 2a87cd7..53fa913 100644
      }
  
 diff --git a/src/librustc_trans/trans/base.rs b/src/librustc_trans/trans/base.rs
-index 14fea61..df019f7 100644
+index 4c619f8..2b68767 100644
 --- a/src/librustc_trans/trans/base.rs
 +++ b/src/librustc_trans/trans/base.rs
-@@ -2560,6 +2560,9 @@ pub fn write_metadata(cx: &SharedCrateContext, krate: &hir::Crate,
+@@ -2924,6 +2924,9 @@ pub fn write_metadata<'a, 'tcx>(cx: &SharedCrateContext<'a, 'tcx>,
      };
      unsafe {
          llvm::LLVMSetInitializer(llglobal, llconst);
 +        llvm::LLVMSetGlobalConstant(llglobal, llvm::True);
 +        llvm::LLVMSetUnnamedAddr(llglobal, llvm::True);
 +        llvm::SetLinkage(llglobal, llvm::Linkage::PrivateLinkage);
-         let name = loader::meta_section_name(&cx.sess().target.target);
+         let name =
+             cx.tcx().sess.cstore.metadata_section_name(&cx.sess().target.target);
          let name = CString::new(name).unwrap();
-         llvm::LLVMSetSection(llglobal, name.as_ptr())
 -- 
 1.9.1
 
