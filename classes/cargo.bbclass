@@ -11,13 +11,8 @@ def cargo_base_dep(d):
 
 BASEDEPENDS_append = " ${@cargo_base_dep(d)}"
 
-# FIXME: this is a workaround for a misbehavior in cargo when used with quilt.
-# See https://github.com/rust-lang/cargo/issues/978
-PATCHTOOL = "patch"
-
 # Cargo only supports in-tree builds at the moment
 B = "${S}"
-
 
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
