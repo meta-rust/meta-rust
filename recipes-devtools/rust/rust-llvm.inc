@@ -33,11 +33,11 @@ do_install_append () {
 	# Remove the debug info (>2 GB) as part of normal operation
 	rm -rf ${D}${bindir}/.debug
 
-	cd ${D}${bindir}
-	ln -s *-llc llc
-	for i in *-llvm-*; do
-		link=$(echo $i | sed -e 's/.*-llvm-\(.*\)/\1/')
-		ln -sf $i llvm-$link
+	cd ${D}${bindir} || bbfatal "failed to cd ${D}${bindir}"
+	for i in *-llvm-* *-llc *-lli *-FileCheck; do
+		link=$(echo $i | sed -e "s/${TARGET_SYS}-\(.*\)/\1/")
+		[ -e "${i}" ] || bbfatal "no such file to symlink to ${i}"
+		ln -sf "$i" "${link}" || bbfatal "failed to symlink ${link} to ${i}"
 	done
 }
 
