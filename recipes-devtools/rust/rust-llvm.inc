@@ -15,11 +15,7 @@ EXTRA_OECONF += "--enable-bindings=none"
 EXTRA_OECONF += "--disable-terminfo"
 EXTRA_OECONF += "--disable-zlib"
 EXTRA_OECONF += "--disable-libffi"
-
 EXTRA_OECONF += "--enable-keep-symbols"
-EXTRA_OECONF += "--disable-terminfo"
-EXTRA_OECONF += "--disable-zlib"
-EXTRA_OECONF += "--disable-libffi"
 
 PACKAGES += "${PN}-data"
 
@@ -31,11 +27,11 @@ do_install_append () {
 	# Remove the debug info (>2 GB) as part of normal operation
 	rm -rf ${D}${bindir}/.debug
 
-	cd ${D}${bindir}
+	cd ${D}${bindir} || bbfatal "failed to cd ${D}${bindir}"
 	ln -s *-llc llc
-	for i in *-llvm-*; do
-		link=$(echo $i | sed -e 's/.*-llvm-\(.*\)/\1/')
-		ln -sf $i llvm-$link
+	for i in *-llvm-* *-llc *-lli *-FileCheck; do
+		link=$(echo $i | sed -e "s/${TARGET_SYS}-\(.*\)/\1/")
+		ln -sf "$i" "${link}" || bbfatal "failed to symlink ${link}"
 	done
 }
 
