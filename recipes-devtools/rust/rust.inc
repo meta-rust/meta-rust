@@ -93,7 +93,6 @@ def llvm_features_from_tune(d):
     return ','.join(f)
 
 ## arm-unknown-linux-gnueabihf
-DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
@@ -101,28 +100,25 @@ FEATURES[arm] = "+v6,+vfp2"
 PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
 POST_LINK_ARGS[arm] = "-lssp"
 
-DATA_LAYOUT[aarch64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-n32:64-S128"
+## aarch64-unknown-linux-gnu
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
 PRE_LINK_ARGS[aarch64] = "-Wl,--as-needed"
 
 ## x86_64-unknown-linux-gnu
-DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
 PRE_LINK_ARGS[x86_64] = "-Wl,--as-needed -m64"
 
 ## i686-unknown-linux-gnu
-DATA_LAYOUT[i686] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
 PRE_LINK_ARGS[i686] = "-Wl,--as-needed -m32"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
-DATA_LAYOUT[i586] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
@@ -214,9 +210,6 @@ def rust_gen_target(d, thing, wd):
     prefix = prefix_for(d, thing)
     o = open(wd + sys + '.json', 'w')
 
-    data_layout = d.getVarFlag('DATA_LAYOUT', arch, True)
-    if not data_layout:
-        bb.utils.fatal("DATA_LAYOUT[{}] required but not set for {}".format(arch, thing))
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     target_pointer_width = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
     endian = d.getVarFlag('TARGET_ENDIAN', arch, True)
@@ -234,7 +227,6 @@ def rust_gen_target(d, thing, wd):
     post_link_args = post_link_args_for(d, thing, arch)
 
     o.write('''{{
-         "data-layout": "{}",
          "llvm-target": "{}",
          "target-endian": "{}",
          "target-word-size": "{}",
@@ -253,7 +245,6 @@ def rust_gen_target(d, thing, wd):
          "pre-link-args": {},
          "post-link-args": {}
     }}'''.format(
-        data_layout,
         llvm_target,
         endian,
         target_pointer_width,
