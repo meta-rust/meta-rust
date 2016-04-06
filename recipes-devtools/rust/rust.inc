@@ -209,7 +209,6 @@ def rust_gen_target(d, thing, wd):
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     target_pointer_width = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
     endian = d.getVarFlag('TARGET_ENDIAN', arch, True)
-    prefix = d.getVar('{}_PREFIX'.format(thing), True)
     ccache = d.getVar('CCACHE', True)
     linker = "{}{}gcc".format(ccache, prefix)
     objcopy = "{}objcopy".format(prefix)
