@@ -167,18 +167,6 @@ def arch_to_rust_target_arch(arch):
     else:
         return arch
 
-def as_json(list_):
-    a = '['
-    for e in list_:
-        if type(e) == str:
-            a += '"{}",'.format(e)
-        else:
-            raise Exception
-    if len(list_):
-        a = a[:-1]
-    a += ']'
-    return a
-
 def post_link_args_for(d, thing, arch):
     post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
     post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
@@ -202,57 +190,41 @@ TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)}"
 TARGET_LLVM_FEATURES_class-native = ""
 
 def rust_gen_target(d, thing, wd):
+    import json
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
-    o = open(wd + sys + '.json', 'w')
-
-    llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
-    target_pointer_width = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
-    endian = d.getVarFlag('TARGET_ENDIAN', arch, True)
-    ccache = d.getVar('CCACHE', True)
-    linker = "{}{}gcc".format(ccache, prefix)
-    objcopy = "{}objcopy".format(prefix)
 
     features = ""
     if thing is "TARGET":
         features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
     features = features or d.getVarFlag('FEATURES', arch, True) or ""
 
-    pre_link_args = pre_link_args_for(d, thing, arch)
-    post_link_args = post_link_args_for(d, thing, arch)
+    # build tspec
+    tspec = {}
+    tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch, True)
+    tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
+    tspec['target-word-size'] = tspec['target-pointer-width']
+    tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch, True)
+    tspec['arch'] = arch_to_rust_target_arch(arch)
+    tspec['os'] = "linux"
+    tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
+    tspec['objcopy'] = "{}objcopy".format(prefix)
+    if features is not "":
+        tspec['features'] = features
+    tspec['dynamic-linking'] = True
+    tspec['executables'] = True
+    tspec['morestack'] = True
+    tspec['linker-is-gnu'] = True
+    tspec['has-rpath'] = True
+    tspec['position-independent-executables'] = True
+    tspec['pre-link-args'] = pre_link_args_for(d, thing, arch)
+    tspec['post-link-args'] = post_link_args_for(d, thing, arch)
 
-    o.write('''{{
-         "llvm-target": "{}",
-         "target-endian": "{}",
-         "target-word-size": "{}",
-         "target-pointer-width": "{}",
-         "arch": "{}",
-         "os": "linux",
-         "linker": "{}",
-         "objcopy": "{}",
-         "features": "{}",
-         "dynamic-linking": true,
-         "executables": true,
-         "morestack": true,
-         "linker-is-gnu": true,
-         "has-rpath": true,
-         "position-independent-executables": true,
-         "pre-link-args": {},
-         "post-link-args": {}
-    }}'''.format(
-        llvm_target,
-        endian,
-        target_pointer_width,
-        target_pointer_width,
-        arch_to_rust_target_arch(arch),
-        linker,
-        objcopy,
-        features,
-        as_json(pre_link_args),
-        as_json(post_link_args),
-    ))
-    o.close()
+    # write out the target spec json file
+    with open(wd + sys + '.json', 'w') as f:
+        json.dump(tspec, f)
+
 
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR', True) + '/targets/'
