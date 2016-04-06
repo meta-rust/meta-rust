@@ -336,6 +336,9 @@ do_rust_arch_fixup[dirs] += "${WORKDIR}/mk-cfg"
 
 llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
 
+# prevent the rust-installer scripts from calling ldconfig
+export CFG_DISABLE_LDCONFIG="notempty"
+
 do_configure () {
     # Note: when we adjust the generated targets, rust doesn't rebuild (even
     # when it should), so for now we need to remove the build dir to keep
