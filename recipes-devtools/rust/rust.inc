@@ -208,6 +208,7 @@ def rust_gen_target(d, thing, wd):
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch, True)
     tspec['arch'] = arch_to_rust_target_arch(arch)
     tspec['os'] = "linux"
+    tspec['env'] = "gnu"
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
     tspec['objcopy'] = "{}objcopy".format(prefix)
     if features is not "":
