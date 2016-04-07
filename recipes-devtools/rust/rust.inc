@@ -264,6 +264,7 @@ def rust_gen_target(d, thing, wd):
     tspec['env'] = "gnu"
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
     tspec['objcopy'] = "{}objcopy".format(prefix)
+    tspec['ar'] = "{}ar".format(prefix)
     tspec['cpu'] = d.getVar('TARGET_LLVM_CPU', True)
     if features is not "":
         tspec['features'] = features
