@@ -92,6 +92,39 @@ def llvm_features_from_tune(d):
 
     return ','.join(f)
 
+# TARGET_CC_ARCH changes from build/cross/target so it'll do the right thing
+# this should go away when https://github.com/rust-lang/rust/pull/31709 is
+# stable (1.9.0?)
+def llvm_features_from_cc_arch(d):
+    f = []
+    feat = d.getVar('TARGET_CC_ARCH', True)
+    if not feat:
+        return ""
+    feat = frozenset(feat.split())
+
+    if '-mmmx' in feat:
+        f.append("+mmx")
+    if '-msse' in feat:
+        f.append("+sse")
+    if '-msse2' in feat:
+        f.append("+sse2")
+    if '-msse3' in feat:
+        f.append("+sse3")
+    if '-mssse3' in feat:
+        f.append("+ssse3")
+    if '-msse4.1' in feat:
+        f.append("+sse4.1")
+    if '-msse4.2' in feat:
+        f.append("+sse4.2")
+    if '-msse4a' in feat:
+        f.append("+sse4a")
+    if '-mavx' in feat:
+        f.append("+avx")
+    if '-mavx2' in feat:
+        f.append("+avx2")
+
+    return ','.join(f)
+
 ## arm-unknown-linux-gnueabihf
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
@@ -199,14 +232,14 @@ def ldflags_for(d, thing, arch):
     return a
 
 TARGET_LLVM_CPU="${@llvm_cpu(d)}"
-TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)}"
+TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
 TARGET_LLVM_CPU_class-cross="${@llvm_cpu(d)}"
-TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)}"
+TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
 TARGET_LLVM_CPU="${@llvm_cpu(d)}"
-TARGET_LLVM_FEATURES_class-native = ""
+TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
     import json
