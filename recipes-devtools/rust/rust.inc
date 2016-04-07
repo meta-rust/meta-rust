@@ -166,6 +166,23 @@ def arch_to_rust_target_arch(arch):
     else:
         return arch
 
+# generates our target CPU value
+def llvm_cpu(d):
+    cpu = d.getVar('TUNE_PKGARCH', True)
+    target = d.getVar('TRANSLATED_TARGET_ARCH', True)
+
+    trans = {}
+    trans['corei7-64'] = "corei7"
+    trans['core2-32'] = "core2"
+    trans['x86-64'] = "x86-64"
+    trans['i686'] = "i686"
+    trans['i586'] = "i586"
+
+    try:
+        return trans[cpu]
+    except:
+        return trans.get(target, "generic")
+
 def post_link_args_for(d, thing, arch):
     post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
     post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
@@ -181,11 +198,14 @@ def ldflags_for(d, thing, arch):
     a.extend(post_link_args_for(d, thing, arch))
     return a
 
+TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)}"
+TARGET_LLVM_CPU_class-cross="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
+TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES_class-native = ""
 
 def rust_gen_target(d, thing, wd):
@@ -210,6 +230,7 @@ def rust_gen_target(d, thing, wd):
     tspec['env'] = "gnu"
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
     tspec['objcopy'] = "{}objcopy".format(prefix)
+    tspec['cpu'] = d.getVar('TARGET_LLVM_CPU', True)
     if features is not "":
         tspec['features'] = features
     tspec['dynamic-linking'] = True
