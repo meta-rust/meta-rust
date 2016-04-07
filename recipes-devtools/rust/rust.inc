@@ -217,6 +217,7 @@ def rust_gen_target(d, thing, wd):
     tspec['morestack'] = True
     tspec['linker-is-gnu'] = True
     tspec['has-rpath'] = True
+    tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
     tspec['pre-link-args'] = pre_link_args_for(d, thing, arch)
     tspec['post-link-args'] = post_link_args_for(d, thing, arch)
