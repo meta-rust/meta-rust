@@ -409,7 +409,6 @@ do_configure () {
         "--disable-docs"                    \
         "--disable-manage-submodules"       \
         "--disable-debug"                   \
-        "--enable-debuginfo"                \
         "--enable-optimize"                 \
         "--enable-optimize-cxx"             \
         "--disable-llvm-version-check"      \
