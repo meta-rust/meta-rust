@@ -2,7 +2,7 @@
 inherit rust
 inherit rust-installer
 require rust-shared-source.inc
-require rust-snapshot-2015-08-11.inc
+require rust-snapshot-2015-12-18.inc
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=9c5a05eab0ffc3590e50db38c51d1425"
 
