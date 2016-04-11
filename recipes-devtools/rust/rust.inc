@@ -413,6 +413,7 @@ do_configure () {
         "--disable-llvm-version-check"      \
         "--llvm-root=${llvmdir}"            \
         "--enable-optimize-tests"           \
+        "--release-channel=stable"          \
         "--prefix=${prefix}"                \
         "--target=${TARGET_SYS}"            \
         "--host=${HOST_SYS}"                \
