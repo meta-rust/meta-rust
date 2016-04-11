@@ -2,7 +2,7 @@
 inherit rust
 inherit rust-installer
 require rust-shared-source.inc
-require rust-snapshot-2015-08-11.inc
+require rust-snapshot-2015-12-18.inc
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=9c5a05eab0ffc3590e50db38c51d1425"
 
@@ -92,8 +92,40 @@ def llvm_features_from_tune(d):
 
     return ','.join(f)
 
+# TARGET_CC_ARCH changes from build/cross/target so it'll do the right thing
+# this should go away when https://github.com/rust-lang/rust/pull/31709 is
+# stable (1.9.0?)
+def llvm_features_from_cc_arch(d):
+    f = []
+    feat = d.getVar('TARGET_CC_ARCH', True)
+    if not feat:
+        return ""
+    feat = frozenset(feat.split())
+
+    if '-mmmx' in feat:
+        f.append("+mmx")
+    if '-msse' in feat:
+        f.append("+sse")
+    if '-msse2' in feat:
+        f.append("+sse2")
+    if '-msse3' in feat:
+        f.append("+sse3")
+    if '-mssse3' in feat:
+        f.append("+ssse3")
+    if '-msse4.1' in feat:
+        f.append("+sse4.1")
+    if '-msse4.2' in feat:
+        f.append("+sse4.2")
+    if '-msse4a' in feat:
+        f.append("+sse4a")
+    if '-mavx' in feat:
+        f.append("+avx")
+    if '-mavx2' in feat:
+        f.append("+avx2")
+
+    return ','.join(f)
+
 ## arm-unknown-linux-gnueabihf
-DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
@@ -101,39 +133,33 @@ FEATURES[arm] = "+v6,+vfp2"
 PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
 POST_LINK_ARGS[arm] = "-lssp"
 
-DATA_LAYOUT[aarch64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-n32:64-S128"
+## aarch64-unknown-linux-gnu
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
 PRE_LINK_ARGS[aarch64] = "-Wl,--as-needed"
 
 ## x86_64-unknown-linux-gnu
-DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
 PRE_LINK_ARGS[x86_64] = "-Wl,--as-needed -m64"
 
 ## i686-unknown-linux-gnu
-DATA_LAYOUT[i686] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
 PRE_LINK_ARGS[i686] = "-Wl,--as-needed -m32"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
-DATA_LAYOUT[i586] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
 PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
 
-# enable-new-dtags causes rpaths to be inserted as DT_RUNPATH (as well as
-# DT_RPATH), which lets LD_LIBRARY_PATH override them
-RPATH_LDFLAGS = "-Wl,--enable-new-dtags"
-TARGET_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-BUILD_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-HOST_PRE_LINK_ARGS = "${RPATH_LDFLAGS} ${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+TARGET_PRE_LINK_ARGS = "${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+BUILD_PRE_LINK_ARGS = "${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
+HOST_PRE_LINK_ARGS = "${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
 
 # These LDFLAGS have '-L' options in them. We need these to come last so they
 # don't screw up the link order and pull in the wrong rust build/version.
@@ -174,17 +200,22 @@ def arch_to_rust_target_arch(arch):
     else:
         return arch
 
-def as_json(list_):
-    a = '['
-    for e in list_:
-        if type(e) == str:
-            a += '"{}",'.format(e)
-        else:
-            raise Exception
-    if len(list_):
-        a = a[:-1]
-    a += ']'
-    return a
+# generates our target CPU value
+def llvm_cpu(d):
+    cpu = d.getVar('TUNE_PKGARCH', True)
+    target = d.getVar('TRANSLATED_TARGET_ARCH', True)
+
+    trans = {}
+    trans['corei7-64'] = "corei7"
+    trans['core2-32'] = "core2"
+    trans['x86-64'] = "x86-64"
+    trans['i686'] = "i686"
+    trans['i586'] = "i586"
+
+    try:
+        return trans[cpu]
+    except:
+        return trans.get(target, "generic")
 
 def post_link_args_for(d, thing, arch):
     post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
@@ -201,71 +232,56 @@ def ldflags_for(d, thing, arch):
     a.extend(post_link_args_for(d, thing, arch))
     return a
 
-TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)}"
-TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)}"
+TARGET_LLVM_CPU="${@llvm_cpu(d)}"
+TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
+TARGET_LLVM_CPU_class-cross="${@llvm_cpu(d)}"
+TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
-TARGET_LLVM_FEATURES_class-native = ""
+TARGET_LLVM_CPU="${@llvm_cpu(d)}"
+TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
+    import json
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
-    o = open(wd + sys + '.json', 'w')
-
-    data_layout = d.getVarFlag('DATA_LAYOUT', arch, True)
-    if not data_layout:
-        bb.utils.fatal("DATA_LAYOUT[{}] required but not set for {}".format(arch, thing))
-    llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
-    target_pointer_width = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
-    endian = d.getVarFlag('TARGET_ENDIAN', arch, True)
-    prefix = d.getVar('{}_PREFIX'.format(thing), True)
-    ccache = d.getVar('CCACHE', True)
-    linker = "{}{}gcc".format(ccache, prefix)
-    objcopy = "{}objcopy".format(prefix)
 
     features = ""
     if thing is "TARGET":
         features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
     features = features or d.getVarFlag('FEATURES', arch, True) or ""
 
-    pre_link_args = pre_link_args_for(d, thing, arch)
-    post_link_args = post_link_args_for(d, thing, arch)
+    # build tspec
+    tspec = {}
+    tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch, True)
+    tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
+    tspec['target-word-size'] = tspec['target-pointer-width']
+    tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch, True)
+    tspec['arch'] = arch_to_rust_target_arch(arch)
+    tspec['os'] = "linux"
+    tspec['env'] = "gnu"
+    tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
+    tspec['objcopy'] = "{}objcopy".format(prefix)
+    tspec['ar'] = "{}ar".format(prefix)
+    tspec['cpu'] = d.getVar('TARGET_LLVM_CPU', True)
+    if features is not "":
+        tspec['features'] = features
+    tspec['dynamic-linking'] = True
+    tspec['executables'] = True
+    tspec['morestack'] = True
+    tspec['linker-is-gnu'] = True
+    tspec['has-rpath'] = True
+    tspec['has-elf-tls'] = True
+    tspec['position-independent-executables'] = True
+    tspec['pre-link-args'] = pre_link_args_for(d, thing, arch)
+    tspec['post-link-args'] = post_link_args_for(d, thing, arch)
 
-    o.write('''{{
-         "data-layout": "{}",
-         "llvm-target": "{}",
-         "target-endian": "{}",
-         "target-word-size": "{}",
-         "target-pointer-width": "{}",
-         "arch": "{}",
-         "os": "linux",
-         "linker": "{}",
-         "objcopy": "{}",
-         "features": "{}",
-         "dynamic-linking": true,
-         "executables": true,
-         "morestack": true,
-         "linker-is-gnu": true,
-         "has-rpath": true,
-         "position-independent-executables": true,
-         "pre-link-args": {},
-         "post-link-args": {}
-    }}'''.format(
-        data_layout,
-        llvm_target,
-        endian,
-        target_pointer_width,
-        target_pointer_width,
-        arch_to_rust_target_arch(arch),
-        linker,
-        objcopy,
-        features,
-        as_json(pre_link_args),
-        as_json(post_link_args),
-    ))
-    o.close()
+    # write out the target spec json file
+    with open(wd + sys + '.json', 'w') as f:
+        json.dump(tspec, f)
+
 
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR', True) + '/targets/'
@@ -348,6 +364,9 @@ do_rust_arch_fixup[dirs] += "${WORKDIR}/mk-cfg"
 
 llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
 
+# prevent the rust-installer scripts from calling ldconfig
+export CFG_DISABLE_LDCONFIG="notempty"
+
 do_configure () {
     # Note: when we adjust the generated targets, rust doesn't rebuild (even
     # when it should), so for now we need to remove the build dir to keep
@@ -390,12 +409,12 @@ do_configure () {
         "--disable-docs"                    \
         "--disable-manage-submodules"       \
         "--disable-debug"                   \
-        "--enable-debuginfo"                \
         "--enable-optimize"                 \
         "--enable-optimize-cxx"             \
         "--disable-llvm-version-check"      \
         "--llvm-root=${llvmdir}"            \
         "--enable-optimize-tests"           \
+        "--release-channel=stable"          \
         "--prefix=${prefix}"                \
         "--target=${TARGET_SYS}"            \
         "--host=${HOST_SYS}"                \
