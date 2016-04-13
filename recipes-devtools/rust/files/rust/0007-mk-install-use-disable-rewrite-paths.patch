@@ -20,7 +20,7 @@ index af6f3ff..430add7 100644
  		--libdir="$(DESTDIR)$(CFG_LIBDIR)" \
 -		--mandir="$(DESTDIR)$(CFG_MANDIR)"
 +		--mandir="$(DESTDIR)$(CFG_MANDIR)" \
-+		"$(MAYBE_DISABLE_VERIFY)"
++		"$(MAYBE_DISABLE_VERIFY)" \
 +		--disable-rewrite-paths
  
  install:
