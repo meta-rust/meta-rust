@@ -1,0 +1,28 @@
+diff --git a/src/libstd/rand/os.rs b/src/libstd/rand/os.rs
+index 92c3bf8..b9fd014 100644
+--- a/src/libstd/rand/os.rs
++++ b/src/libstd/rand/os.rs
+@@ -46,8 +46,10 @@
+         #[cfg(target_arch = "aarch64")]
+         const NR_GETRANDOM: libc::c_long = 278;
+ 
++        const GRND_NONBLOCK: libc::c_uint = 0x0001;
++
+         unsafe {
+-            libc::syscall(NR_GETRANDOM, buf.as_mut_ptr(), buf.len(), 0)
++            libc::syscall(NR_GETRANDOM, buf.as_mut_ptr(), buf.len(), GRND_NONBLOCK)
+         }
+     }
+ 
+@@ -69,6 +71,10 @@
+                 let err = errno() as libc::c_int;
+                 if err == libc::EINTR {
+                     continue;
++                } else if err == libc::EAGAIN {
++                    let mut reader_rng = ReaderRng::new(File::open("/dev/urandom").unwrap());
++                    reader_rng.fill_bytes(&mut v[read..]);
++                    read += v.len() as usize; 
+                 } else {
+                     panic!("unexpected getrandom error: {}", err);
+                 }
+
