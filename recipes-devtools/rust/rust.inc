@@ -470,9 +470,9 @@ rust_do_install () {
         install -m 0644 "$tgt" "$td"
     done
 
-    ## rust will complain about multiple providers of the runtime libs
-    ## (libstd, libsync, etc.) without this.
-    (cd "${D}${libdir}" && ln -sf "rustlib/${HOST_SYS}/lib/lib"*.so .)
+    # Remove any files directly installed into libdir to avoid
+    # conflicts between cross and native
+    rm -f ${D}${libdir}/lib*.so
 }
 
 do_install () {
