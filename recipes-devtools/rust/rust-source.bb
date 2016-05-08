@@ -26,4 +26,5 @@ SRC_URI_append = "\
         file://rust/0013-mk-allow-changing-the-platform-configuration-source-.patch \
         file://rust-llvm/0000-rust-llvm-remove-extra-slash.patch \
         file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
+        file://rust/0001-Add-config-for-musl-based-arm-builds.patch \
 "

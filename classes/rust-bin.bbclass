@@ -34,7 +34,8 @@ OVERLAP_DEPS = "${@get_overlap_deps(d)}"
 
 # Prevents multiple static copies of standard library modules
 # See https://github.com/rust-lang/rust/issues/19680
-RUSTC_FLAGS += "-C prefer-dynamic"
+RUSTC_PREFER_DYNAMIC = "-C prefer-dynamic"
+RUSTC_FLAGS += "${RUSTC_PREFER_DYNAMIC}"
 
 rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
 # Native sysroot standard library path
