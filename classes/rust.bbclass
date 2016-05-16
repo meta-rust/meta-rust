@@ -4,6 +4,11 @@ RUSTC = "rustc"
 RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath -C crate_hash=${BB_TASKHASH}"
 
 RUSTLIB_DEP ?= "rustlib"
+# Prevents multiple static copies of standard library modules
+# See https://github.com/rust-lang/rust/issues/19680
+RUSTC_PREFER_DYNAMIC ?= "-C prefer-dynamic"
+RUSTFLAGS += "${RUSTC_PREFER_DYNAMIC}"
+
 def rust_base_dep(d):
     # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to
     # use rust instead of gcc
