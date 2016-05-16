@@ -11,10 +11,6 @@ def cargo_base_dep(d):
 
 BASEDEPENDS_append = " ${@cargo_base_dep(d)}"
 
-# Cargo only supports in-tree builds at the moment
-B = "${S}"
-
-
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
 export RUST_BACKTRACE = "1"
@@ -54,10 +50,15 @@ export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
 export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
+# Tell cargo to build out-of-tree
+B = "${WORKDIR}/build"
+export CARGO_TARGET_DIR = "${B}"
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
 export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
+	cd "${S}"
+	rm -rf ${B}
 	export RUSTFLAGS="${RUSTFLAGS}"
 	which cargo
 	which rustc

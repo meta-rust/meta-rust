@@ -16,6 +16,7 @@ SRC_URI = "\
 "
 
 B = "${S}"
+CARGO_TARGET_DIR = "target"
 
 PACKAGECONFIG ??= ""
 
