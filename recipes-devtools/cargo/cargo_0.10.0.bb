@@ -6,8 +6,8 @@ SRC_URI += " \
 	file://0001-disable-cargo-snapshot-fetch.patch \
 	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=${BP}/src/rust-installer \
 "
-SRC_URI[cargo.md5sum] = "c3002e297f125ad40b2e0279219163bc"
-SRC_URI[cargo.sha256sum] = "4cadc436be442505851f3a8e9ffff1ef10b6379101a7f8e0afa9fa80f5198f89"
+SRC_URI[cargo.md5sum] = "98ab2a422634d447152380898a974b08"
+SRC_URI[cargo.sha256sum] = "1e73c038681fe308195427b71322a6350c65d3b8cbea199e45c7b672b4754e0e"
 
 SRCREV_rust-installer = "c37d3747da75c280237dc2d6b925078e69555499"
 
