@@ -101,13 +101,22 @@ cargo_do_compile () {
 # All but the most simple projects will need to override this.
 cargo_do_install () {
 	local have_installed=false
-	install -d "${D}${bindir}"
-	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
-		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
-			install -m755 "$tgt" "${D}${bindir}"
+
+	pushd "${B}/target/${CARGO_TARGET_SUBDIR}"
+	for tgt in *; do
+		if [[ $tgt == *.so ]]; then
+			install -D -m755 "$tgt" "${D}${rustlibdir}/$tgt"
+			have_installed=true
+		elif [[ $tgt == *.rlib ]]; then
+			install -D -m644 "$tgt" "${D}${rustlibdir}/$tgt"
+			have_installed=true
+		elif [ -f "$tgt" ] && [ -x "$tgt" ]; then
+			install -D -m755 "$tgt" "${D}${bindir}/$tgt"
 			have_installed=true
 		fi
 	done
+	popd
+
 	if ! $have_installed; then
 		die "Did not find anything to install"
 	fi
