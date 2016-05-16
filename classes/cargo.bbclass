@@ -74,6 +74,7 @@ export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 # change if CARGO_BUILD_FLAGS changes.
 export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
+	export RUSTFLAGS="${RUSTFLAGS}"
 	which cargo
 	which rustc
 	bbnote ${CARGO} build ${CARGO_BUILD_FLAGS} "$@"

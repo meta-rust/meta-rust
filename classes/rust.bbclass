@@ -1,7 +1,8 @@
 RUSTC = "rustc"
 
 # FIXME: --sysroot might be needed
-RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath -C crate_hash=${BB_TASKHASH}"
+RUSTFLAGS += "-C crate_hash=${BB_TASKHASH}"
+RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} -C rpath ${RUSTFLAGS}"
 
 RUSTLIB_DEP ?= "rustlib"
 # Prevents multiple static copies of standard library modules
