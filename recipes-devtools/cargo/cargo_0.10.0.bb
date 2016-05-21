@@ -4,6 +4,9 @@ require cargo.inc
 SRC_URI += " \
 	https://github.com/rust-lang/cargo/archive/${PV}.tar.gz;name=cargo \
 	file://0001-disable-cargo-snapshot-fetch.patch \
+	file://0001-Add-option-for-version-in-library-file-name.patch \
+	file://0002-package_id-don-t-hash-source_id.patch \
+	file://0003-Allow-prebuilt-dependencies.patch \
 	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=${BP}/src/rust-installer \
 "
 SRC_URI[cargo.md5sum] = "98ab2a422634d447152380898a974b08"

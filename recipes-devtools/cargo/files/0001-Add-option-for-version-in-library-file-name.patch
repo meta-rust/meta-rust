@@ -1,0 +1,39 @@
+From c5ba190ad08722b2a4689660206f115c070f3a32 Mon Sep 17 00:00:00 2001
+From: Tyler Hall <tylerwhall@gmail.com>
+Date: Sat, 21 May 2016 16:24:35 -0400
+Subject: [PATCH 1/3] Add option for version in library file name
+
+File names of dependencies normally have their metadata hash in the file
+name, but the root crate library does not. Add the build.versioned
+config option which adds the metadata hash to the root crate as well.
+---
+ src/cargo/ops/cargo_rustc/context.rs | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/cargo/ops/cargo_rustc/context.rs b/src/cargo/ops/cargo_rustc/context.rs
+index 824ba13..dbb8ce2 100644
+--- a/src/cargo/ops/cargo_rustc/context.rs
++++ b/src/cargo/ops/cargo_rustc/context.rs
+@@ -258,6 +258,11 @@ impl<'a, 'cfg> Context<'a, 'cfg> {
+         &self.target_triple
+     }
+ 
++    fn versioned_libs(&self) -> bool {
++        self.config.get_bool("build.versioned").unwrap()
++            .map(|b| b.val).unwrap_or(false)
++    }
++
+     /// Get the metadata for a target in a specific profile
+     pub fn target_metadata(&self, unit: &Unit) -> Option<Metadata> {
+         let metadata = unit.target.metadata();
+@@ -276,6 +281,7 @@ impl<'a, 'cfg> Context<'a, 'cfg> {
+             metadata.mix(&format!("bin-{}", unit.target.name()));
+             Some(metadata)
+         } else if unit.pkg.package_id() == self.resolve.root() &&
++                  !(unit.target.is_lib() && self.versioned_libs()) &&
+                   !unit.profile.test {
+             // If we're not building a unit test then the root package never
+             // needs any metadata as it's guaranteed to not conflict with any
+-- 
+2.8.2
+
