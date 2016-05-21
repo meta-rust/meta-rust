@@ -39,7 +39,7 @@ LIB_SRC ?= "${S}/src/lib.rs"
 get_overlap_externs () {
     externs=
     for dep in ${OVERLAP_DEPS}; do
-        extern=$(ls ${STAGING_DIR_HOST}/${rustlibdir}/lib$dep-rs.{so,rlib} 2>/dev/null \
+        extern=$(echo ${STAGING_DIR_HOST}/${rustlibdir}/lib$dep-*.{so,rlib} 2>/dev/null \
                     | awk '{print $1}');
         if [ -n "$extern" ]; then
             externs="$externs --extern $dep=$extern"
