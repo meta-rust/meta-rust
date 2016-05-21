@@ -20,6 +20,7 @@ CARGO_TARGET_DIR = "target"
 
 # Cargo still pulls dependencies from crates.io for now
 LOCAL_CARGO_INDEX = "0"
+CARGO_SYSROOT_DEPS = "0"
 PACKAGECONFIG ??= ""
 
 # Note: this does not appear to work very well due to our use of bitbake triples

@@ -6,6 +6,11 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 # Maintain a cargo index in the sysroot publishing locally built crates
 LOCAL_CARGO_INDEX ?= "1"
 CREATE_LOCAL_CARGO_INDEX ?= "${LOCAL_CARGO_INDEX}"
+# Link only against libraries in the sysroot rather than rebuilding all
+# dependencies locally
+CARGO_SYSROOT_DEPS ?= "1"
+# Include the manifest hash in output library file names
+CARGO_VERSIONED_LIBS ?= "${CARGO_SYSROOT_DEPS}"
 
 def cargo_base_dep(d):
     deps = ""
@@ -44,6 +49,16 @@ cargo_do_configure () {
 	if [ "${LOCAL_CARGO_INDEX}" == "1" ]; then
 		echo '[registry]' >>../.cargo/config
 		echo 'index="file://${LOCAL_CARGO_INDEX_DIR}"' >>../.cargo/config
+	fi
+
+	if [ "${CARGO_VERSIONED_LIBS}" == "1" ]; then
+		echo '[build]' >>../.cargo/config
+		echo 'versioned = true' >>../.cargo/config
+	fi
+
+	if [ "${CARGO_SYSROOT_DEPS}" == "1" ]; then
+		echo '[${HOST_SYS}]' >>../.cargo/config
+		echo 'prebuilt = ["${STAGING_DIR_HOST}/${rustlibdir}"]' >>../.cargo/config
 	fi
 }
 
