@@ -8,10 +8,11 @@ LIC_FILES_CHKSUM = "\
 
 inherit rust-bin
 
-SRC_URI = "git://github.com/rust-lang/rustc-serialize.git;protocol=https"
-SRCREV = "376f43a4b94dbe411bd9534ab83f02fbcb5a3b04"
+SRC_URI = "https://github.com/rust-lang-nursery/rustc-serialize/archive/0.3.19.tar.gz"
+SRC_URI[md5sum] = "575425ea16d171da8f799a5eb170b4c1"
+SRC_URI[sha256sum] = "9e96ba43f2722bf4e79a38acad35d5f1fe19a6f3d2b5316f90b2fb2b87ddbecd"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/rustc-serialize-${PV}"
 
 do_compile () {
 	oe_compile_rust_lib
