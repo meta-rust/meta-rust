@@ -11,6 +11,7 @@ CREATE_LOCAL_CARGO_INDEX ?= "${LOCAL_CARGO_INDEX}"
 CARGO_SYSROOT_DEPS ?= "1"
 # Include the manifest hash in output library file names
 CARGO_VERSIONED_LIBS ?= "${CARGO_SYSROOT_DEPS}"
+CARGO_CRATE_TYPE_OVERRIDE ?= "dylib rlib"
 
 def cargo_base_dep(d):
     deps = ""
@@ -28,6 +29,31 @@ export RUST_BACKTRACE = "1"
 # cross compiling unless this is defined. We set up pkg-config appropriately
 # for cross compilation, so tell it we know better than it.
 export PKG_CONFIG_ALLOW_CROSS = "1"
+
+def get_crate_types(d):
+    types = d.getVar("CARGO_CRATE_TYPE_OVERRIDE", True)
+    return "crate-type = [" + \
+        ', '.join(['"' + t + '"' for t in types.split()]) + \
+        ']'
+
+do_cargo_override_crate_type () {
+	[ -z "${CARGO_CRATE_TYPE_OVERRIDE}" ] && return
+
+	toml="${S}/Cargo.toml"
+	crate_type='${@get_crate_types(d)}'
+	if grep -q '^crate-type' $toml; then
+		# crate-type already in file. Replace.
+		sed -i "s/^crate-type.\*/$crate_type/" $toml
+	elif grep -q '^\[lib\]' $toml; then
+		# lib section with no crate type
+		sed -i "/^\[lib\]/a$crate_type" $toml
+	elif [ -e "${S}/src/lib.rs" ]; then
+		# no lib section
+		echo '[lib]' >> $toml
+		echo "$crate_type" >> $toml
+	fi
+}
+do_patch[postfuncs] += "do_cargo_override_crate_type"
 
 EXTRA_OECARGO_PATHS ??= ""
 
