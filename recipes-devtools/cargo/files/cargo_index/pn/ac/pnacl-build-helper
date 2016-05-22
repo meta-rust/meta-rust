@@ -1,0 +1,1 @@
+{"name":"pnacl-build-helper","vers":"1.4.10","deps":[{"name":"tempdir","req":"*","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"61c9231d31aea845007443d62fcbb58bb6949ab9c18081ee1e09920e0cf1118b","features":{},"yanked":false}

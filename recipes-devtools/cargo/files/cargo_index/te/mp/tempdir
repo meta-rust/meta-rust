@@ -1,0 +1,1 @@
+{"name":"tempdir","vers":"0.3.4","deps":[{"name":"rand","req":"^0.3","features":[""],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"0b62933a3f96cd559700662c34f8bab881d9e3540289fb4f368419c7f13a5aa9","features":{},"yanked":false}

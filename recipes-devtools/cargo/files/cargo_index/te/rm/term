@@ -1,0 +1,1 @@
+{"name":"term","vers":"0.4.4","deps":[{"name":"kernel32-sys","req":"^0.2","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"},{"name":"winapi","req":"^0.2","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"3deff8a2b3b6607d6d7cc32ac25c0b33709453ca9cceac006caac51e963cf94a","features":{},"yanked":false}

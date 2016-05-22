@@ -1,0 +1,1 @@
+{"name":"miniz-sys","vers":"0.1.7","deps":[{"name":"libc","req":"^0.2","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"},{"name":"gcc","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"build"}],"cksum":"9d1f4d337a01c32e1f2122510fed46393d53ca35a7f429cb0450abaedfa3ed54","features":{},"yanked":false}

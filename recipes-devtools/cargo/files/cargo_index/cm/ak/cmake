@@ -1,0 +1,1 @@
+{"name":"cmake","vers":"0.1.16","deps":[{"name":"gcc","req":"^0.3.17","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"eb61a8d3b65f8e0af52ac579923ec48bdd5ca4e335c0fde4071e5860eb650532","features":{},"yanked":false}
