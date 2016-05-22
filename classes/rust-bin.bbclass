@@ -1,14 +1,7 @@
 inherit rust
 
-RUSTLIB_DEP ?= " rustlib"
-DEPENDS .= "${RUSTLIB_DEP}"
 RDEPENDS_${PN} .= "${RUSTLIB_DEP}"
 DEPENDS += "patchelf-native"
-
-export rustlibdir = "${libdir}/rust"
-FILES_${PN} += "${rustlibdir}/*.so"
-FILES_${PN}-dev += "${rustlibdir}/*.rlib"
-FILES_${PN}-dbg += "${rustlibdir}/.debug"
 
 RUSTC_ARCHFLAGS += "-C opt-level=3 -g -L ${STAGING_DIR_HOST}/${rustlibdir}"
 EXTRA_OEMAKE += 'RUSTC_ARCHFLAGS="${RUSTC_ARCHFLAGS}"'
