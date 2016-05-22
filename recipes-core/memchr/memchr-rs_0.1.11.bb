@@ -6,10 +6,11 @@ DEPENDS = "libc-rs"
 
 inherit rust-bin
 
-SRC_URI = "git://github.com/BurntSushi/rust-memchr.git;protocol=https"
-SRCREV = "a91e63378bf6f4bba5c7d88f4fe98efdcb432c99"
+SRC_URI = "https://github.com/BurntSushi/rust-memchr/archive/${PV}.tar.gz"
+SRC_URI[md5sum] = "398b9b640981d6d5b276126f82dc2faf"
+SRC_URI[sha256sum] = "2c138b8a2b86e3c570d854049893d6496c810f7682a0f81e033fdeb9a4b941cf"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/rust-memchr-${PV}"
 
 do_compile () {
 	oe_compile_rust_lib
