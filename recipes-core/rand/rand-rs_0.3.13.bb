@@ -10,7 +10,7 @@ DEPENDS = "libc-rs"
 inherit rust-bin
 
 SRC_URI = "git://github.com/rust-lang/rand.git;protocol=https"
-SRCREV = "164659b01e6fdb4d9a8e52b7a7451e8174e91821"
+SRCREV = "8feb9df678990f91c39759f62c05f5ad5a6a78c8"
 
 S = "${WORKDIR}/git"
 
