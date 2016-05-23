@@ -98,14 +98,15 @@ export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
-export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
+CARGO_PROFILE ?= "release"
+export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --${CARGO_PROFILE}"
 
 # Tell cargo to build out-of-tree
 B = "${WORKDIR}/build"
 export CARGO_TARGET_DIR = "${B}"
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
-export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
+export CARGO_TARGET_SUBDIR="${HOST_SYS}/${CARGO_PROFILE}"
 oe_cargo_build () {
 	cd "${S}"
 	rm -rf ${B}
