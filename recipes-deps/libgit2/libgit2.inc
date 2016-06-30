@@ -2,7 +2,7 @@ SUMMARY = "the Git linkable library"
 HOMEPAGE = "http://libgit2.github.com/"
 LICENSE = "GPL-2.0-with-linking-exception"
 
-DEPENDS = "zlib"
+DEPENDS = "openssl zlib"
 
 inherit cmake
 
