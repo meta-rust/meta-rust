@@ -1,0 +1,1 @@
+{"name":"regex-syntax","vers":"0.3.0","deps":[{"name":"quickcheck","req":"^0.2","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"},{"name":"rand","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"}],"cksum":"91f025592c64aca084b1eb1f556fcac9c016da96a66dbebd5f9a7bda6f92b540","features":{},"yanked":false}

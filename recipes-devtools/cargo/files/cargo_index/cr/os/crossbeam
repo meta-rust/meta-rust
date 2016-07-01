@@ -1,0 +1,1 @@
+{"name":"crossbeam","vers":"0.2.8","deps":[{"name":"rand","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"}],"cksum":"348228ce9f93d20ffc30c18e575f82fa41b9c8bf064806c65d41eba4771595a0","features":{"nightly":[]},"yanked":false}

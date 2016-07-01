@@ -1,0 +1,34 @@
+#!/bin/sh
+
+usage () {
+    echo "Usage:"
+    echo "$0 [crates path]"
+    echo
+    echo "Generates SRC_URI entries for all *.crate files in the given directory"
+    echo "Intended to operate on the output of cargo-local-registry"
+    echo "https://github.com/alexcrichton/cargo-local-registry/"
+    exit 1
+}
+
+dir=${1:-$PWD}
+crates=$(find $dir -maxdepth 1 -name '*.crate')
+registry_url="https://crates.io/api/v1/crates/"
+
+if [ -z "$crates" ]; then
+    echo "Error: no crates found"
+    usage
+fi
+
+for crate in $crates; do
+    # Convert foo-0.1.0.crate to registry URL foo/0.1.0
+    path=$(basename $crate | sed 's#-\([0-9]\+.[0-9]\+.[0-9]\+\).crate#/\1#')
+    name=$(echo $path | cut -d/ -f1)
+    vers=$(echo $path | cut -d/ -f2)
+    echo "# $name $vers"
+    #https://crates.io/api/v1/crates/pnacl-build-helper/1.4.10/download;name=pnacl-build-helper-1.4.10;downloadfilename=pnacl-build-helper-1.4.10.crate;subdir=rustdeps/pnacl-build-helper/1.4.10"
+    echo "SRC_URI += \"$registry_url$path/download;name=$name-$vers;downloadfilename=$name-$vers.crate;subdir=rustdeps/$path\""
+    echo "SRC_URI[$name-$vers.md5sum] = \"$(md5sum $crate | cut -d' ' -f 1)\""
+    echo "SRC_URI[$name-$vers.sha256sum] = \"$(sha256sum $crate | cut -d' ' -f 1)\""
+    echo
+done
+

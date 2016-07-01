@@ -1,0 +1,1 @@
+{"name":"env_logger","vers":"0.3.2","deps":[{"name":"regex","req":"^0.1","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"},{"name":"log","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"b6bbe7c0b619c81b9a1fd122ab3c7ef19a7b27cdba3c8486314b6f275ca211a4","features":{},"yanked":false}

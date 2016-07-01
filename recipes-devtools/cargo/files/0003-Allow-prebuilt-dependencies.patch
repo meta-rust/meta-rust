@@ -1,0 +1,144 @@
+From fb5e221e76d2a096a591715563c4bf2f98cbcbb9 Mon Sep 17 00:00:00 2001
+From: Tyler Hall <tylerwhall@gmail.com>
+Date: Sun, 15 May 2016 21:13:59 -0400
+Subject: [PATCH 3/3] Allow prebuilt dependencies
+
+Add an option to specify the directory to search for prebuilt libraries.
+If $target.prebuilt is set to a list of paths, all library dependencies
+will be considered prebuilt and those paths will be searched for the
+expected library file name.
+
+This allows separate cargo invocations to publish artifacts which can be
+consumed by later cargo invocations. This is particularly useful for
+integration into Linux distro build systems that have an existing
+concept of package dependencies. Combined with -C prefer-dynamic, this
+can construct a distro ecosystem with maximum code sharing and no
+redundant builds.
+---
+ src/cargo/ops/cargo_rustc/context.rs | 57 ++++++++++++++++++++++++++++++++++++
+ src/cargo/ops/cargo_rustc/mod.rs     | 14 ++++++++-
+ 2 files changed, 70 insertions(+), 1 deletion(-)
+
+diff --git a/src/cargo/ops/cargo_rustc/context.rs b/src/cargo/ops/cargo_rustc/context.rs
+index dbb8ce2..bc6a1af 100644
+--- a/src/cargo/ops/cargo_rustc/context.rs
++++ b/src/cargo/ops/cargo_rustc/context.rs
+@@ -1,5 +1,6 @@
+ use std::collections::{HashSet, HashMap};
+ use std::env;
++use std::path;
+ use std::path::{Path, PathBuf};
+ use std::str::{self, FromStr};
+ use std::sync::Arc;
+@@ -211,6 +212,24 @@ impl<'a, 'cfg> Context<'a, 'cfg> {
+         }
+     }
+ 
++    pub fn prebuilt_path(&self, unit: &Unit) -> CargoResult<Option<Vec<(String, PathBuf)>>> {
++        // Could have lib-specific config here also (unit.pkg.name())
++        if unit.pkg.package_id() == self.resolve.root() {
++            Ok(None)
++        } else {
++            let key = format!("{}.prebuilt", self.target_triple());
++            self.config.get_list(&key).map(|p| p.map(|p| p.val))
++        }
++    }
++
++    pub fn is_prebuilt(&self, unit: &Unit) -> CargoResult<bool> {
++        Ok(if !unit.target.for_host() {
++            try!(self.prebuilt_path(unit)).is_some()
++        } else {
++            false
++        })
++    }
++
+     /// Returns the appropriate output directory for the specified package and
+     /// target.
+     pub fn out_dir(&self, unit: &Unit) -> PathBuf {
+@@ -305,6 +324,41 @@ impl<'a, 'cfg> Context<'a, 'cfg> {
+         }
+     }
+ 
++    /// Return full paths of the prebuilt files that should provide this unit
++    pub fn prebuilt_filepaths(&self, unit: &Unit) -> CargoResult<Option<Vec<String>>> {
++        let stem = self.file_stem(unit);
++
++        self.prebuilt_path(unit).map(|p| p.map(|paths| {
++            let mut pref_sufs = Vec::with_capacity(3);
++
++            pref_sufs.push(("lib", ".rlib"));
++            if let Ok(pref_suf) = self.dylib(unit.kind) {
++                pref_sufs.push(pref_suf)
++            }
++            if let Ok(pref_suf) = self.staticlib(unit.kind) {
++                pref_sufs.push(pref_suf)
++            }
++
++            let mut ret = Vec::new();
++
++            for (path, _) in paths {
++                for &pref_suf in pref_sufs.iter() {
++                    let (prefix, suffix) = pref_suf;
++                    let s = format!("{}{}{}{}{}",
++                                    path, path::MAIN_SEPARATOR,
++                                    prefix, stem, suffix);
++                    trace!("Search prebuilt {}", s);
++                    if Path::new(&s).is_file() {
++                        trace!("Found {}", s);
++                        ret.push(s);
++                    }
++                }
++            }
++
++            ret
++        }))
++    }
++
+     /// Return the filenames that the given target for the given profile will
+     /// generate.
+     pub fn target_filenames(&self, unit: &Unit) -> CargoResult<Vec<String>> {
+@@ -316,6 +370,9 @@ impl<'a, 'cfg> Context<'a, 'cfg> {
+         };
+ 
+         let mut ret = Vec::new();
++        if try!(self.is_prebuilt(unit)) {
++            return Ok(ret)
++        }
+         match *unit.target.kind() {
+             TargetKind::Example | TargetKind::Bin | TargetKind::CustomBuild |
+             TargetKind::Bench | TargetKind::Test => {
+diff --git a/src/cargo/ops/cargo_rustc/mod.rs b/src/cargo/ops/cargo_rustc/mod.rs
+index 59e649f..d76ae95 100644
+--- a/src/cargo/ops/cargo_rustc/mod.rs
++++ b/src/cargo/ops/cargo_rustc/mod.rs
+@@ -181,7 +181,9 @@ fn compile<'a, 'cfg: 'a>(cx: &mut Context<'a, 'cfg>,
+     try!(fingerprint::prepare_init(cx, unit));
+     try!(cx.links.validate(unit));
+ 
+-    let (dirty, fresh, freshness) = if unit.profile.run_custom_build {
++    let (dirty, fresh, freshness) = if try!(cx.is_prebuilt(unit)) {
++        (Work::noop(), Work::noop(), util::Freshness::Fresh)
++    } else if unit.profile.run_custom_build {
+         try!(custom_build::prepare(cx, unit))
+     } else {
+         let (freshness, dirty, fresh) = try!(fingerprint::prepare_target(cx,
+@@ -591,6 +593,16 @@ fn build_deps_args(cmd: &mut CommandPrototype, cx: &Context, unit: &Unit)
+             v.push(&filename);
+             cmd.arg("--extern").arg(&v);
+         }
++
++        if let Some(prebuilts) = try!(cx.prebuilt_filepaths(unit)) {
++            for prebuilt in prebuilts {
++                let mut v = OsString::new();
++                v.push(&unit.target.crate_name());
++                v.push("=");
++                v.push(prebuilt);
++                cmd.arg("--extern").arg(&v);
++            }
++        }
+         Ok(())
+     }
+ }
+-- 
+2.8.2
+

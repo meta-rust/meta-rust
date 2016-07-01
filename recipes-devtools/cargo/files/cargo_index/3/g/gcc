@@ -1,0 +1,1 @@
+{"name":"gcc","vers":"0.3.26","deps":[{"name":"tempdir","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"}],"cksum":"3337bf4deec8dd33c331a62b59708f5b438779b8089b1888d56976ac2c325d3e","features":{},"yanked":false}

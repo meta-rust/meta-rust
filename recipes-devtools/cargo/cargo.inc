@@ -16,7 +16,9 @@ SRC_URI = "\
 "
 
 B = "${S}"
+CARGO_TARGET_DIR = "target"
 
+CARGO_SYSROOT_DEPS = "0"
 PACKAGECONFIG ??= ""
 
 # Note: this does not appear to work very well due to our use of bitbake triples

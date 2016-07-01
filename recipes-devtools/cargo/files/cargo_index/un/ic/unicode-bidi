@@ -1,0 +1,1 @@
+{"name":"unicode-bidi","vers":"0.2.3","deps":[{"name":"matches","req":"^0.1","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"c1f7ceb96afdfeedee42bade65a0d585a6a0106f681b6749c8ff4daa8df30b3f","features":{},"yanked":false}

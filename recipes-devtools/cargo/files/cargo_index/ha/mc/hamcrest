@@ -1,0 +1,1 @@
+{"name":"hamcrest","vers":"0.1.0","deps":[{"name":"num","req":"^0.1.25","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"27c180b409b988760a018e5cb5f0812bd67e87f40236e41d3b9375d3046e04ab","features":{},"yanked":false}

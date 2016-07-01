@@ -1,0 +1,1 @@
+{"name":"libressl-pnacl-sys","vers":"2.1.6","deps":[{"name":"pnacl-build-helper","req":"^1.4","features":[""],"optional":false,"default_features":true,"target":null,"kind":"build"}],"cksum":"cbc058951ab6a3ef35ca16462d7642c4867e6403520811f28537a4e2f2db3e71","features":{},"yanked":false}

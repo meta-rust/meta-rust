@@ -1,14 +1,6 @@
 inherit rust
 
-RUSTLIB_DEP ?= " rustlib"
-DEPENDS .= "${RUSTLIB_DEP}"
 RDEPENDS_${PN} .= "${RUSTLIB_DEP}"
-DEPENDS += "patchelf-native"
-
-export rustlibdir = "${libdir}/rust"
-FILES_${PN} += "${rustlibdir}/*.so"
-FILES_${PN}-dev += "${rustlibdir}/*.rlib"
-FILES_${PN}-dbg += "${rustlibdir}/.debug"
 
 RUSTC_ARCHFLAGS += "-C opt-level=3 -g -L ${STAGING_DIR_HOST}/${rustlibdir}"
 EXTRA_OEMAKE += 'RUSTC_ARCHFLAGS="${RUSTC_ARCHFLAGS}"'
@@ -32,11 +24,6 @@ def get_overlap_deps(d):
     return " ".join(overlap_deps)
 OVERLAP_DEPS = "${@get_overlap_deps(d)}"
 
-# Prevents multiple static copies of standard library modules
-# See https://github.com/rust-lang/rust/issues/19680
-RUSTC_PREFER_DYNAMIC = "-C prefer-dynamic"
-RUSTC_FLAGS += "${RUSTC_PREFER_DYNAMIC}"
-
 rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
 # Native sysroot standard library path
 rustlib_src="${prefix}/lib/${rustlib_suffix}"
@@ -52,7 +39,7 @@ LIB_SRC ?= "${S}/src/lib.rs"
 get_overlap_externs () {
     externs=
     for dep in ${OVERLAP_DEPS}; do
-        extern=$(ls ${STAGING_DIR_HOST}/${rustlibdir}/lib$dep-rs.{so,rlib} 2>/dev/null \
+        extern=$(echo ${STAGING_DIR_HOST}/${rustlibdir}/lib$dep-*.{so,rlib} 2>/dev/null \
                     | awk '{print $1}');
         if [ -n "$extern" ]; then
             externs="$externs --extern $dep=$extern"
@@ -101,19 +88,3 @@ oe_install_rust_bin () {
     echo Installing ${BINNAME}
     install -D -m 755 ${BINNAME} ${D}/${bindir}/${BINNAME}
 }
-
-do_rust_bin_fixups() {
-    for f in `find ${PKGD} -name '*.so*'`; do
-        echo "Strip rust note: $f"
-        ${OBJCOPY} -R .note.rustc $f $f
-    done
-
-    for f in `find ${PKGD}`; do
-        file "$f" | grep -q ELF || continue
-        readelf -d "$f" | grep RUNPATH | grep -q rustlib || continue
-        echo "Set rpath:" "$f"
-        patchelf --set-rpath '$ORIGIN:'${rustlibdir}:${rustlib} "$f"
-    done
-}
-
-PACKAGE_PREPROCESS_FUNCS += "do_rust_bin_fixups"

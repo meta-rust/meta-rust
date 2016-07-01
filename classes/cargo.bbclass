@@ -3,6 +3,16 @@ inherit rust
 CARGO ?= "cargo"
 export CARGO_HOME = "${WORKDIR}/cargo_home"
 
+# Maintain a cargo index in the sysroot publishing locally built crates
+LOCAL_CARGO_INDEX ?= "1"
+CREATE_LOCAL_CARGO_INDEX ?= "${LOCAL_CARGO_INDEX}"
+# Link only against libraries in the sysroot rather than rebuilding all
+# dependencies locally
+CARGO_SYSROOT_DEPS ?= "1"
+# Include the manifest hash in output library file names
+CARGO_VERSIONED_LIBS ?= "${CARGO_SYSROOT_DEPS}"
+CARGO_CRATE_TYPE_OVERRIDE ?= "dylib rlib"
+
 def cargo_base_dep(d):
     deps = ""
     if not d.getVar('INHIBIT_DEFAULT_DEPS', True) and not d.getVar('INHIBIT_CARGO_DEP', True):
@@ -10,14 +20,6 @@ def cargo_base_dep(d):
     return deps
 
 BASEDEPENDS_append = " ${@cargo_base_dep(d)}"
-
-# FIXME: this is a workaround for a misbehavior in cargo when used with quilt.
-# See https://github.com/rust-lang/cargo/issues/978
-PATCHTOOL = "patch"
-
-# Cargo only supports in-tree builds at the moment
-B = "${S}"
-
 
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
@@ -27,6 +29,31 @@ export RUST_BACKTRACE = "1"
 # cross compiling unless this is defined. We set up pkg-config appropriately
 # for cross compilation, so tell it we know better than it.
 export PKG_CONFIG_ALLOW_CROSS = "1"
+
+def get_crate_types(d):
+    types = d.getVar("CARGO_CRATE_TYPE_OVERRIDE", True)
+    return "crate-type = [" + \
+        ', '.join(['"' + t + '"' for t in types.split()]) + \
+        ']'
+
+do_cargo_override_crate_type () {
+	[ -z "${CARGO_CRATE_TYPE_OVERRIDE}" ] && return
+
+	toml="${S}/Cargo.toml"
+	crate_type='${@get_crate_types(d)}'
+	if grep -q '^crate-type' $toml; then
+		# crate-type already in file. Replace.
+		sed -i "s/^crate-type.\*/$crate_type/" $toml
+	elif grep -q '^\[lib\]' $toml; then
+		# lib section with no crate type
+		sed -i "/^\[lib\]/a$crate_type" $toml
+	elif [ -e "${S}/src/lib.rs" ]; then
+		# no lib section
+		echo '[lib]' >> $toml
+		echo "$crate_type" >> $toml
+	fi
+}
+do_patch[postfuncs] += "do_cargo_override_crate_type"
 
 EXTRA_OECARGO_PATHS ??= ""
 
@@ -44,18 +71,21 @@ cargo_do_configure () {
 		printf "\"%s\"\n" "$p"
 	done | sed -e 's/$/,/' >>../.cargo/config
 	echo "]" >>../.cargo/config
-}
 
-rust_cargo_patch () {
-	# FIXME: if there is already an entry for this target, in an existing
-	# cargo/config, this won't work.
-	cd "${S}"
-	cat >>Cargo.toml <<EOF
-[profile.dev]
-rpath = true
-[profile.release]
-rpath = true
-EOF
+	if [ "${LOCAL_CARGO_INDEX}" == "1" ]; then
+		echo '[registry]' >>../.cargo/config
+		echo 'index="file://${LOCAL_CARGO_INDEX_DIR}"' >>../.cargo/config
+	fi
+
+	if [ "${CARGO_VERSIONED_LIBS}" == "1" ]; then
+		echo '[build]' >>../.cargo/config
+		echo 'versioned = true' >>../.cargo/config
+	fi
+
+	if [ "${CARGO_SYSROOT_DEPS}" == "1" ]; then
+		echo '[${HOST_SYS}]' >>../.cargo/config
+		echo 'prebuilt = ["${STAGING_DIR_HOST}/${rustlibdir}"]' >>../.cargo/config
+	fi
 }
 
 # All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
@@ -68,16 +98,24 @@ export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
-export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
+CARGO_PROFILE ?= "release"
+export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --${CARGO_PROFILE}"
 
+# Tell cargo to build out-of-tree
+B = "${WORKDIR}/build"
+export CARGO_TARGET_DIR = "${B}"
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
-export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
+export CARGO_TARGET_SUBDIR="${HOST_SYS}/${CARGO_PROFILE}"
 oe_cargo_build () {
+	cd "${S}"
+	rm -rf ${B}
+	export RUSTFLAGS="${RUSTFLAGS}"
 	which cargo
 	which rustc
 	bbnote ${CARGO} build ${CARGO_BUILD_FLAGS} "$@"
 	"${CARGO}" build ${CARGO_BUILD_FLAGS} "$@"
+	"${CARGO}" package --no-verify
 }
 
 oe_cargo_fix_env () {
@@ -98,19 +136,106 @@ cargo_do_compile () {
 	oe_cargo_build
 }
 
+CARGO_INDEX_DIR = "${datadir}/cargo/index"
+CARGO_INDEX_DEST = "${D}/${CARGO_INDEX_DIR}"
+CARGO_CRATE_DIR = "${datadir}/cargo/crates"
+CARGO_CRATE_DEST = "${D}/${CARGO_CRATE_DIR}"
+LOCAL_CARGO_INDEX_DIR = "${WORKDIR}/cargo_index"
+
+do_cargo_create_registry () {
+    cp -al ${STAGING_DIR_HOST}/${CARGO_INDEX_DIR}/* ${LOCAL_CARGO_INDEX_DIR} || true
+    echo '{
+    "dl": "file://${STAGING_DIR_HOST}/${CARGO_CRATE_DIR}",
+    "api": "invalid"
+}' >config.json
+    git init
+    git add .
+    git commit -m "registry"
+}
+do_cargo_create_registry[dirs] = "${LOCAL_CARGO_INDEX_DIR}"
+do_cargo_create_registry[cleandirs] = "${LOCAL_CARGO_INDEX_DIR} ${CARGO_HOME}"
+do_configure[prefuncs] += "${@base_conditional('CREATE_LOCAL_CARGO_INDEX', '1', 'do_cargo_create_registry', '', d)}"
+
+python do_cargo_publish_registry () {
+    import os
+    import json
+    import hashlib
+    import shutil
+    import subprocess
+
+    os.chdir(d.getVar("S", True))
+    cargo = d.getVar("CARGO", True)
+    output = subprocess.check_output(cargo + " read-manifest", shell=True)
+    pkg = json.loads(output)
+
+    # Massage json into registry format
+    pkg["vers"] = pkg["version"]
+    pkg["deps"] = pkg["dependencies"]
+    pkg["yanked"] = False
+
+    cratefile = os.path.join(d.getVar("CARGO_TARGET_DIR", True), "package",
+                             pkg["name"] + "-" + pkg["vers"] + ".crate")
+    with open(cratefile, 'rb') as f:
+        pkg["cksum"] = hashlib.sha256(f.read()).hexdigest()
+
+    wanted_keys = ("name", "vers" ,"deps", "cksum", "features", "yanked")
+    # Filter out unwanted metadata
+    pkg = { k: pkg[k] for k in pkg if k in wanted_keys }
+
+    missing = set(wanted_keys) - set(pkg)
+    if missing:
+        raise bb.build.FuncFailed("Missing keys %s in pkg manifest" % missing)
+
+    name = pkg["name"]
+    if len(name) == 1:
+        path = os.path.join("1")
+    elif len(name) == 2:
+        path = os.path.join("2")
+    elif len(name) == 3:
+        path = os.path.join("3", name[0])
+    else:
+        path = os.path.join(name[:2], name[2:4])
+    index = d.getVar("CARGO_INDEX_DEST", True)
+    path = os.path.join(index, path)
+    bb.utils.mkdirhier(path)
+    path = os.path.join(path, name)
+    with open(path, "w") as f:
+        f.write(json.dumps(pkg))
+
+    # Move the crate into the download dir
+    # Yes, the file name is "download"
+    path = d.getVar("CARGO_CRATE_DEST", True)
+    path = os.path.join(path, pkg["name"], pkg["vers"])
+    bb.utils.mkdirhier(path)
+    shutil.copyfile(cratefile,
+                    os.path.join(path, "download"))
+}
+do_install[postfuncs] += "${@base_conditional('CREATE_LOCAL_CARGO_INDEX', '1', 'do_cargo_publish_registry', '', d)}"
+
 # All but the most simple projects will need to override this.
 cargo_do_install () {
 	local have_installed=false
-	install -d "${D}${bindir}"
-	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
-		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
-			install -m755 "$tgt" "${D}${bindir}"
+
+	pushd "${CARGO_TARGET_DIR}/${CARGO_TARGET_SUBDIR}"
+	for tgt in *; do
+		if [[ $tgt == *.so ]]; then
+			install -D -m755 "$tgt" "${D}${rustlibdir}/$tgt"
+			have_installed=true
+		elif [[ $tgt == *.rlib ]]; then
+			install -D -m644 "$tgt" "${D}${rustlibdir}/$tgt"
+			have_installed=true
+		elif [ -f "$tgt" ] && [ -x "$tgt" ]; then
+			install -D -m755 "$tgt" "${D}${bindir}/$tgt"
 			have_installed=true
 		fi
 	done
+	popd
+
 	if ! $have_installed; then
 		die "Did not find anything to install"
 	fi
 }
+
+FILES_${PN}-dev += "${CARGO_INDEX_DIR} ${CARGO_CRATE_DIR}"
 
 EXPORT_FUNCTIONS do_compile do_install do_configure

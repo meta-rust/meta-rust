@@ -1,0 +1,1 @@
+{"name":"rand","vers":"0.3.14","deps":[{"name":"libc","req":"^0.2","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"},{"name":"log","req":"^0.3.0","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"}],"cksum":"2791d88c6defac799c3f20d74f094ca33b9332612d9aef9078519c82e4fe04a5","features":{},"yanked":false}

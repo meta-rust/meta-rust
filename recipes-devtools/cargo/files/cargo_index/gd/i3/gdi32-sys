@@ -1,0 +1,1 @@
+{"name":"gdi32-sys","vers":"0.1.1","deps":[{"name":"winapi","req":"*","features":[""],"optional":false,"default_features":true,"target":null,"kind":"normal"}],"cksum":"65256ec4dc2592e6f05bfc1ca3b956a4e0698aa90b1dff1f5687d55a5a3fd59a","features":{},"yanked":false}

@@ -1,0 +1,1 @@
+{"name":"user32-sys","vers":"0.1.2","deps":[{"name":"winapi","req":"*","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"},{"name":"winapi-build","req":"*","features":[],"optional":false,"default_features":true,"target":null,"kind":"build"}],"cksum":"6717129de5ac253f5642fc78a51d0c7de6f9f53d617fc94e9bae7f6e71cf5504","features":{},"yanked":false}

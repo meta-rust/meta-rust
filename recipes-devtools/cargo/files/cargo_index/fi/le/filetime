@@ -1,0 +1,1 @@
+{"name":"filetime","vers":"0.1.10","deps":[{"name":"libc","req":"^0.2","features":[],"optional":false,"default_features":true,"target":null,"kind":"normal"},{"name":"tempdir","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"}],"cksum":"5363ab8e4139b8568a6237db5248646e5a8a2f89bd5ccb02092182b11fd3e922","features":{},"yanked":false}

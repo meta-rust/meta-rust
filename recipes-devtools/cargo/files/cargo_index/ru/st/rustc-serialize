@@ -1,0 +1,1 @@
+{"name":"rustc-serialize","vers":"0.3.18","deps":[{"name":"rand","req":"^0.3","features":[],"optional":false,"default_features":true,"target":null,"kind":"dev"}],"cksum":"9cf81518cd579f8a9c58c0a71328bdb9be15c754181261da82583092dc8a7ff0","features":{},"yanked":false}
