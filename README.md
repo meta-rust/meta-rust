@@ -59,10 +59,7 @@ On the target:
 
 Open a Pull Request.
 
-Generally, I try to support the latest master of poky. I'm happy to support
-older versions too by applying backwards compat patches as long as I don't need
-to maintain a seperate branch. Of course, others are welcome to create forks to
-support their individual needs.
+The master branch supports the latest master of poky. When poky creates releases, we will create a branch with the same name as the poky release. This release branch should always work with that poky release. Note that these release branches will typically be less tested than the master branch.
 
 ## Copyright
 
