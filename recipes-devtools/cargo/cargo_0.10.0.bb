@@ -38,8 +38,8 @@ SRC_URI += "\
 	file://ssh2-rs/0001-libssh2-sys-avoid-explicitly-linking-in-openssl.patch;patchdir=../ssh2-rs \
 "
 
-# 0.2.10 / -sys 0.1.34
-SRCREV_ssh2-rs = "00af6ead0c3d4b82e05bee4d9963ef3823bcf524"
+# 0.2.11 / -sys 0.1.37
+SRCREV_ssh2-rs = "ced77751cb780d0725a3411bd588c5a26ea79953"
 
 SRCREV_FORMAT .= "_ssh2-rs"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/ssh2-rs"
