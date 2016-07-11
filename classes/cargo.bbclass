@@ -42,18 +42,6 @@ cargo_do_configure () {
 	echo "]" >>../.cargo/config
 }
 
-rust_cargo_patch () {
-	# FIXME: if there is already an entry for this target, in an existing
-	# cargo/config, this won't work.
-	cd "${S}"
-	cat >>Cargo.toml <<EOF
-[profile.dev]
-rpath = true
-[profile.release]
-rpath = true
-EOF
-}
-
 # All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
 # command. Fixup the ones we give it so that is the case.
 # XXX: this is hard coded based on meta/conf/bitbake.conf
@@ -70,6 +58,7 @@ export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 # change if CARGO_BUILD_FLAGS changes.
 export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
+	export RUSTFLAGS="${RUSTFLAGS}"
 	which cargo
 	which rustc
 	bbnote ${CARGO} build ${CARGO_BUILD_FLAGS} "$@"
