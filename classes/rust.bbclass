@@ -15,7 +15,7 @@ def rust_base_dep(d):
             deps += " rust-native"
     return deps
 
-DEPENDS_append = " ${@rust_base_dep(d)}"
+DEPENDS_append = " ${@rust_base_dep(d)} patchelf-native"
 
 def rust_base_triple(d, thing):
     '''
@@ -85,6 +85,21 @@ HOST_CXXFLAGS ?= "${CXXFLAGS}"
 HOST_CPPFLAGS ?= "${CPPFLAGS}"
 
 EXTRA_OECONF_remove = "--disable-static"
+
+do_rust_bin_fixups() {
+    for f in `find ${PKGD} -name '*.so*'`; do
+        echo "Strip rust note: $f"
+        ${OBJCOPY} -R .note.rustc $f $f
+    done
+
+    for f in `find ${PKGD}`; do
+        file "$f" | grep -q ELF || continue
+        readelf -d "$f" | grep RUNPATH | grep -q rustlib || continue
+        echo "Set rpath:" "$f"
+        patchelf --set-rpath '$ORIGIN:'${rustlibdir}:${rustlib} "$f"
+    done
+}
+PACKAGE_PREPROCESS_FUNCS += "do_rust_bin_fixups"
 
 rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
 # Native sysroot standard library path
