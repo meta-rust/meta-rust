@@ -5,7 +5,6 @@ This openembedded layer provides the rust compiler, tools for building packages
 
 ## What works:
 
- - MACHINE="beaglebone" (TARGET_SYS=arm-poky-linux-gnueabi)
  - Building rust-native, rust-cross, rust-hello-world, cargo-native
  - Running/using all of these (including rust-hello-world)
 
