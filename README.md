@@ -1,6 +1,6 @@
 ## Introduction
 
-This openembedded layer provides the rust compiler, tools for building packages
+This OpenEmbedded layer provides the rust compiler, tools for building packages
 (cargo), and a few example projects.
 
 ## What works:
