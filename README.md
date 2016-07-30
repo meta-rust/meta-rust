@@ -39,9 +39,6 @@ do this.
 
  - -crosssdk and -buildsdk packages
  - Upstream local rustc patches for libdir and bindir support
- - add bitbake fetch support for crates.io
- - add required cargo package registry clones in SRC_URI to prevent the need
-   for network when building.
 
 ## Pitfalls
 
