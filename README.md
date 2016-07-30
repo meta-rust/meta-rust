@@ -6,16 +6,16 @@ This openembedded layer provides the rust compiler, tools for building packages
 ## What works:
 
  - Building rust-native, rust-cross, rust-hello-world, cargo-native
- - Running/using all of these (including rust-hello-world)
+ - Building Rust based projects with Cargo for the TARGET
 
 ## What doesn't:
 
+ - Using anything but x86_64 as the build environment
  - Probably some of the untested things
 
 ## What's untested:
 
  - rust (built for target)
- - Other TARGETs
 
 ## Common issues when packaging things using cargo
 
