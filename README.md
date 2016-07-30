@@ -58,6 +58,10 @@ Open a Pull Request.
 
 The master branch supports the latest master of poky. When poky creates releases, we will create a branch with the same name as the poky release. This release branch should always work with that poky release. Note that these release branches will typically be less tested than the master branch.
 
+All new patches against rust, rust-llvm, and cargo must have referenced
+upstream issues or PRs opened or an explanation why the patch cannot be
+upstreamed. This cooresponds to the OpenEmbedded policy for other meta layers.
+
 ## Copyright
 
 MIT OR Apache-2.0 - Same as rust
