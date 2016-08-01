@@ -5,18 +5,17 @@ This openembedded layer provides the rust compiler, tools for building packages
 
 ## What works:
 
- - MACHINE="beaglebone" (TARGET_SYS=arm-poky-linux-gnueabi)
  - Building rust-native, rust-cross, rust-hello-world, cargo-native
- - Running/using all of these (including rust-hello-world)
+ - Building Rust based projects with Cargo for the TARGET
 
 ## What doesn't:
 
+ - Using anything but x86_64 as the build environment
  - Probably some of the untested things
 
 ## What's untested:
 
  - rust (built for target)
- - Other TARGETs
 
 ## Common issues when packaging things using cargo
 
@@ -39,9 +38,6 @@ do this.
 
  - -crosssdk and -buildsdk packages
  - Upstream local rustc patches for libdir and bindir support
- - add bitbake fetch support for crates.io
- - add required cargo package registry clones in SRC_URI to prevent the need
-   for network when building.
 
 ## Pitfalls
 
@@ -60,6 +56,10 @@ On the target:
 Open a Pull Request.
 
 The master branch supports the latest master of poky. When poky creates releases, we will create a branch with the same name as the poky release. This release branch should always work with that poky release. Note that these release branches will typically be less tested than the master branch.
+
+All new patches against rust, rust-llvm, and cargo must have referenced
+upstream issues or PRs opened or an explanation why the patch cannot be
+upstreamed. This cooresponds to the OpenEmbedded policy for other meta layers.
 
 ## Copyright
 
