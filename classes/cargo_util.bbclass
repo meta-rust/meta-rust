@@ -62,8 +62,9 @@ oe_cargo_fix_env () {
 cargo_util_do_compile () {
 	cd "${B}"
 
-    # prevent cargo from trying to fetch down new data
-    touch "${WORKDIR}/cargo_home/registry/index/.cargo-index-lock"
+	# prevent cargo from trying to fetch down new data
+	mkdir -p "${WORKDIR}/cargo_home/registry/index/"
+	touch "${WORKDIR}/cargo_home/registry/index/.cargo-index-lock"
 
 	oe_cargo_fix_env
 	oe_cargo_build
