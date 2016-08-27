@@ -1,7 +1,7 @@
-From 1a9ada8070bb9cd293cfb93913721c68ca0b7766 Mon Sep 17 00:00:00 2001
+From a73a748cd73920380ae1f069be91ff833e99d003 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 13:34:59 -0500
-Subject: [PATCH 7/9] mk/install: use disable-rewrite-paths
+Subject: [PATCH 07/11] mk/install: use disable-rewrite-paths
 
 This stops the install scripts from doing work we've already handled.
 
@@ -11,7 +11,7 @@ Path rewriting is only useful for prepackaged binary installers.
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/mk/install.mk b/mk/install.mk
-index af6f3ff..430add7 100644
+index d2e5449..e67650b 100644
 --- a/mk/install.mk
 +++ b/mk/install.mk
 @@ -12,7 +12,9 @@ RUN_INSTALLER = cd tmp/empty_dir && \
@@ -26,5 +26,5 @@ index af6f3ff..430add7 100644
  install:
  ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
 -- 
-2.4.10
+2.7.4
 
