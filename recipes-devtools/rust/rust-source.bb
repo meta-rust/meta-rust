@@ -24,5 +24,6 @@ SRC_URI_append = "\
         file://rust/0009-mk-platform.mk-pass-C-crate_hash-to-builds.patch \
         file://rust/0010-mk-allow-changing-the-platform-configuration-source-.patch \
         file://rust/0011-Get-rid-of-the-.note-interpretation-of-rustc-dylib-m.patch \
+        file://rust-llvm/0001-Don-t-build-unittests.patch;patchdir=src/llvm \
         file://rust-installer/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
 "
