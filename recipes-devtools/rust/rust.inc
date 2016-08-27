@@ -2,7 +2,7 @@
 inherit rust
 inherit rust-installer
 require rust-shared-source.inc
-require rust-snapshot-2015-12-18.inc
+require rust-snapshot-2016-05-24.inc
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
@@ -25,7 +25,9 @@ PACKAGECONFIG ??= ""
 # to have rust-cross built using rust-native.
 PACKAGECONFIG[local-rust] = ""
 
-SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0;name=rust-snapshot', d)}"
+FETCH_STAGE0 = "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}"
+
+SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', '${RUST_SNAPSHOT_URI};unpack=0;name=rust-snapshot', d)}"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
@@ -389,15 +391,16 @@ do_configure () {
     # where we're reinstalling the compiler. May want to try for a real
     # path based on bitbake vars
     # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-    local_maybe_enable=disable
     local_rust_root=/not/set/do/not/use
-    if which rustc >/dev/null 2>&1; then
+    if ${FETCH_STAGE0}; then
+        mkdir -p dl
+        tar -xf ${WORKDIR}/${RUST_SNAPSHOT} -C dl
+        ./dl/rustc-${RS_VERSION}-${RS_ARCH}/install.sh --prefix=$PWD/dl
+        local_rust_root="$PWD/dl"
+    elif which rustc >/dev/null 2>&1; then
         local_rustc=$(which rustc)
         if [ -n "$local_rustc" ]; then
             local_rust_root=$(dirname $(dirname $local_rustc))
-            if [ -e "$local_rust_root/bin/rustc" ]; then
-                local_maybe_enable=enable
-            fi
         fi
     fi
 
@@ -426,7 +429,7 @@ do_configure () {
         "--libdir=${libdir}"                \
         "--bindir=${bindir}"                \
         "--platform-cfg=${WORKDIR}/mk-cfg/" \
-        ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
+        "--enable-local-rust --local-rust-root=$local_rust_root" \
         ${EXTRA_OECONF}
 }
 
@@ -446,10 +449,6 @@ rust_runmake () {
 }
 
 do_compile () {
-    if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
-        mkdir -p dl
-        cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
-    fi
     rust_runmake
 }
 
