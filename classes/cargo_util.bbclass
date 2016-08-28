@@ -71,12 +71,15 @@ cargo_util_do_compile () {
 	oe_cargo_build
 }
 
-# All but the most simple projects will need to override this.
 cargo_util_do_install () {
 	local have_installed=false
-	install -d "${D}${bindir}"
 	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
-		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
+		if [[ $tgt == *.so || $tgt == *.rlib ]]; then
+			install -d "${D}${rustlibdir}"
+			install -m755 "$tgt" "${D}${rustlibdir}"
+			have_installed=true
+		elif [ -f "$tgt" ] && [ -x "$tgt" ]; then
+			install -d "${D}${bindir}"
 			install -m755 "$tgt" "${D}${bindir}"
 			have_installed=true
 		fi
