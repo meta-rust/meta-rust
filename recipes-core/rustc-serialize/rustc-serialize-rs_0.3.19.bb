@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "\
 inherit rust-bin
 
 SRC_URI = "git://github.com/rust-lang/rustc-serialize.git;protocol=https"
-SRCREV = "376f43a4b94dbe411bd9534ab83f02fbcb5a3b04"
+SRCREV = "64b38a1f31a9af6eabf2894437aa5ccc3e457e68"
 
 S = "${WORKDIR}/git"
 
