@@ -1,3 +1,4 @@
+inherit rust-vars
 # add crate fetch support
 inherit crate-fetch
 

@@ -1,3 +1,5 @@
+inherit rust-vars
+
 RUSTC = "rustc"
 
 # FIXME: --sysroot might be needed
@@ -107,7 +109,3 @@ rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/li
 rustlib_src="${prefix}/lib/${rustlib_suffix}"
 # Host sysroot standard library path
 rustlib="${libdir}/${rustlib_suffix}"
-export rustlibdir = "${libdir}/rust"
-FILES_${PN} += "${rustlibdir}/*.so"
-FILES_${PN}-dev += "${rustlibdir}/*.rlib"
-FILES_${PN}-dbg += "${rustlibdir}/.debug"
