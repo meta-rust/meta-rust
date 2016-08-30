@@ -7,7 +7,7 @@ DEPENDS = "libc-rs"
 inherit rust-bin
 
 SRC_URI = "git://github.com/BurntSushi/rust-memchr.git;protocol=https"
-SRCREV = "a91e63378bf6f4bba5c7d88f4fe98efdcb432c99"
+SRCREV = "4f9a13f95e6e00f2847c093c56b41b9c1d58d3c4"
 
 S = "${WORKDIR}/git"
 

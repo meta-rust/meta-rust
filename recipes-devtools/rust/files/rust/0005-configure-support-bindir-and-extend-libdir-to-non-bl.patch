@@ -1,7 +1,7 @@
-From 93ef6b8b93c7695280aba7f3541bf8f1ae18c722 Mon Sep 17 00:00:00 2001
+From 0365e3349e373b95fcf4260ba5bcf70ada6328cf Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 24 Nov 2014 13:10:15 -0500
-Subject: [PATCH 5/9] configure: support --bindir, and extend libdir to
+Subject: [PATCH 05/11] configure: support --bindir, and extend libdir to
  non-blessed dirs
 
 Adds --bindir, and:
@@ -13,55 +13,61 @@ relative to sysroot, and allows libdir to end in an arbitrary directory
 Note that this assumes absolute paths start with '/', which may break
 windows platforms
 ---
- configure                          | 44 ++++++++++++++++++++-----
+ configure                          | 51 ++++++++++++++++++++++++-----
  mk/host.mk                         |  6 +++-
  mk/main.mk                         | 11 +++++++
- mk/perf.mk                         |  4 +--
  mk/prepare.mk                      | 27 +++++++---------
  src/librustc/session/filesearch.rs | 66 ++++++++++++++++----------------------
  src/librustc_trans/back/link.rs    |  3 +-
- 7 files changed, 94 insertions(+), 67 deletions(-)
+ 6 files changed, 99 insertions(+), 65 deletions(-)
 
 diff --git a/configure b/configure
-index 287b7b3..7d53a66 100755
+index d417896..e3b7c20 100755
 --- a/configure
 +++ b/configure
-@@ -334,6 +334,32 @@ enable_if_not_disabled() {
+@@ -342,6 +342,39 @@ enable_if_not_disabled() {
      fi
  }
  
 +abspath () {
-+	case "$1" in
-+	/*) echo "$1" ;;
-+	*)  echo "$PWD/$1" ;;
-+	esac
++      case "$1" in
++      /*) echo "$1" ;;
++      *)  echo "$PWD/$1" ;;
++      esac
 +}
 +
 +relpath () {
-+	local src=$(abspath "$1")
-+	local dst=$(abspath "$2")
-+	local common=$src
-+	local result=
++      local src=$(abspath "$1")
++      local dst=$(abspath "$2")
++      local common=$src
++      local result=
 +
-+	# Start by checking if the whole src is common, then strip off pack
-+	# components until we find the common element.
-+	while [ "${dst#"$common"}" = "$dst" ]; do
-+		common=$(dirname "$common")
-+		result="../$result"
-+	done
++      # Start by checking if the whole src is common, then strip off pack
++      # components until we find the common element.
++      while [ "${dst#"$common"}" = "$dst" ]; do
++              common=$(dirname "$common")
++              result="../$result"
++      done
 +
-+	local down="${dst#"$common"}"
-+	result="${result}${down#/}"
-+	echo "$result"
++      local down="${dst#"$common"}"
++      result="${result}${down#/}"
++      echo "$result"
 +}
 +
++to_llvm_triple() {
++    case $1 in
++        i686-w64-mingw32) echo i686-pc-windows-gnu ;;
++        x86_64-w64-mingw32) echo x86_64-pc-windows-gnu ;;
++        *) echo $1 ;;
++    esac
++}
 +
- to_llvm_triple() {
+ to_gnu_triple() {
      case $1 in
-         i686-w64-mingw32) echo i686-pc-windows-gnu ;;
-@@ -652,18 +678,19 @@ putvar CFG_BUILD # Yes, this creates a duplicate entry, but the last one wins.
- CFG_HOST=$(to_llvm_triple $CFG_HOST)
- CFG_TARGET=$(to_llvm_triple $CFG_TARGET)
+         i686-pc-windows-gnu) echo i686-w64-mingw32 ;;
+@@ -656,18 +689,19 @@ valopt_nosave host "${CFG_BUILD}" "GNUs ./configure syntax LLVM host triples"
+ valopt_nosave target "${CFG_HOST}" "GNUs ./configure syntax LLVM target triples"
+ valopt_nosave mandir "${CFG_PREFIX}/share/man" "install man pages in PATH"
  
 +CFG_LIBDIR_RELATIVE=lib
 +
@@ -87,7 +93,7 @@ index 287b7b3..7d53a66 100755
  
  if [ $HELP -eq 1 ]
  then
-@@ -1760,6 +1787,7 @@ putvar CFG_PREFIX
+@@ -1762,6 +1796,7 @@ putvar CFG_PREFIX
  putvar CFG_HOST
  putvar CFG_TARGET
  putvar CFG_LIBDIR_RELATIVE
@@ -96,7 +102,7 @@ index 287b7b3..7d53a66 100755
  putvar CFG_AARCH64_LINUX_ANDROID_NDK
  putvar CFG_ARM_LINUX_ANDROIDEABI_NDK
 diff --git a/mk/host.mk b/mk/host.mk
-index 59a0095..b8e8345 100644
+index d17479b..a95f886 100644
 --- a/mk/host.mk
 +++ b/mk/host.mk
 @@ -59,9 +59,13 @@ endef
@@ -115,10 +121,10 @@ index 59a0095..b8e8345 100644
  
  endef
 diff --git a/mk/main.mk b/mk/main.mk
-index 04b3e25..ba11e5e 100644
+index fcf1409..1c663ee 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -351,7 +351,9 @@ export CFG_RELEASE_CHANNEL
+@@ -368,7 +368,9 @@ export CFG_RELEASE_CHANNEL
  export CFG_LLVM_ROOT
  export CFG_PREFIX
  export CFG_LIBDIR
@@ -128,7 +134,7 @@ index 04b3e25..ba11e5e 100644
  export CFG_DISABLE_INJECT_STD_VERSION
  ifdef CFG_DISABLE_UNSTABLE_FEATURES
  CFG_INFO := $(info cfg: disabling unstable features (CFG_DISABLE_UNSTABLE_FEATURES))
-@@ -381,7 +383,16 @@ define SREQ
+@@ -401,7 +403,16 @@ define SREQ
  
  # Destinations of artifacts for the host compiler
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
@@ -145,31 +151,11 @@ index 04b3e25..ba11e5e 100644
  
  HLIB_RELATIVE$(1)_H_$(3) = $$(CFG_LIBDIR_RELATIVE)
  
-diff --git a/mk/perf.mk b/mk/perf.mk
-index 16cbaab..f8a354c 100644
---- a/mk/perf.mk
-+++ b/mk/perf.mk
-@@ -10,13 +10,13 @@
- 
- 
- ifdef CFG_PERF_TOOL
--rustc-perf$(X): $(CFG_BUILD)/stage2/bin/rustc$(X_$(CFG_BUILD))
-+rustc-perf$(X): $(CFG_BUILD)/stage2/$(CFG_BINDIR_RELATIVE)/rustc$(X_$(CFG_BUILD))
- 	@$(call E, perf compile: $@)
- 	$(PERF_STAGE2_T_$(CFG_BUILD)_H_$(CFG_BUILD)) \
- 		 -o $@ $(COMPILER_CRATE) >rustc-perf.err 2>&1
- 	$(Q)rm -f $(LIBRUSTC_GLOB)
- else
--rustc-perf$(X): $(CFG_BUILD)/stage2/bin/rustc$(X_$(CFG_BUILD))
-+rustc-perf$(X): $(CFG_BUILD)/stage2/$(CFG_BINDIR_RELATIVE)/rustc$(X_$(CFG_BUILD))
- 	$(Q)touch $@
- endif
- 
 diff --git a/mk/prepare.mk b/mk/prepare.mk
-index 87a4450..c358bbc 100644
+index 20e20e9..efaec75 100644
 --- a/mk/prepare.mk
 +++ b/mk/prepare.mk
-@@ -90,8 +90,6 @@ PREPARE_TOOLS = $(filter-out compiletest rustbook error-index-generator, $(TOOLS
+@@ -90,8 +90,6 @@ PREPARE_TOOLS = $(filter-out compiletest rustbook error_index_generator, $(TOOLS
  # $(3) is host
  # $(4) tag
  define DEF_PREPARE_HOST_TOOL
@@ -189,7 +175,7 @@ index 87a4450..c358bbc 100644
 +prepare-host-lib-$(1)-$(2)-$(3)-$(4): PREPARE_WORKING_SOURCE_LIB_DIR=$$(PREPARE_SOURCE_LIB_DIR)
 +prepare-host-lib-$(1)-$(2)-$(3)-$(4): PREPARE_WORKING_DEST_LIB_DIR=$$(PREPARE_DEST_LIB_DIR)
  prepare-host-lib-$(1)-$(2)-$(3)-$(4): prepare-maybe-clean-$(4) \
-                                  $$(foreach dep,$$(RUST_DEPS_$(1)),prepare-host-lib-$$(dep)-$(2)-$(3)-$(4)) \
+                                  $$(foreach dep,$$(RUST_DEPS_$(1)_T_$(3)),prepare-host-lib-$$(dep)-$(2)-$(3)-$(4)) \
                                   $$(HLIB$(2)_H_$(3))/stamp.$(1) \
 @@ -138,14 +134,10 @@ endef
  # $(4) tag
@@ -208,7 +194,7 @@ index 87a4450..c358bbc 100644
 +prepare-target-$(2)-host-$(3)-$(1)-$(4): PREPARE_SOURCE_BIN_DIR=$$(PREPARE_SOURCE_LIB_DIR)/rustlib/$(3)/bin
 +prepare-target-$(2)-host-$(3)-$(1)-$(4): PREPARE_DEST_BIN_DIR=$$(PREPARE_DEST_LIB_DIR)/rustlib/$(3)/bin
  prepare-target-$(2)-host-$(3)-$(1)-$(4): prepare-maybe-clean-$(4) \
-         $$(foreach crate,$$(TARGET_CRATES), \
+         $$(foreach crate,$$(TARGET_CRATES_$(2)), \
            $$(TLIB$(1)_T_$(2)_H_$(3))/stamp.$$(crate)) \
 @@ -198,9 +190,12 @@ INSTALL_DEBUGGER_SCRIPT_COMMANDS=$(if $(findstring windows,$(1)),\
  
@@ -226,10 +212,10 @@ index 87a4450..c358bbc 100644
  
  prepare-base-$(1)-target: prepare-target-$(1)
 diff --git a/src/librustc/session/filesearch.rs b/src/librustc/session/filesearch.rs
-index 09c6b54..00736c6 100644
+index a3eea32..e5e449d 100644
 --- a/src/librustc/session/filesearch.rs
 +++ b/src/librustc/session/filesearch.rs
-@@ -124,7 +124,7 @@ impl<'a> FileSearch<'a> {
+@@ -123,7 +123,7 @@ impl<'a> FileSearch<'a> {
      // Returns a list of directories where target-specific tool binaries are located.
      pub fn get_tools_search_paths(&self) -> Vec<PathBuf> {
          let mut p = PathBuf::from(self.sysroot);
@@ -238,7 +224,7 @@ index 09c6b54..00736c6 100644
          p.push(&rustlibdir());
          p.push(&self.triple);
          p.push("bin");
-@@ -132,8 +132,8 @@ impl<'a> FileSearch<'a> {
+@@ -131,8 +131,8 @@ impl<'a> FileSearch<'a> {
      }
  }
  
@@ -249,7 +235,7 @@ index 09c6b54..00736c6 100644
      assert!(p.is_relative());
      p.push(&rustlibdir());
      p.push(target_triple);
-@@ -143,7 +143,19 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
+@@ -142,7 +142,19 @@ pub fn relative_target_lib_path(sysroot: &Path, target_triple: &str) -> PathBuf
  
  fn make_target_lib_path(sysroot: &Path,
                          target_triple: &str) -> PathBuf {
@@ -270,7 +256,7 @@ index 09c6b54..00736c6 100644
  }
  
  pub fn get_or_default_sysroot() -> PathBuf {
-@@ -161,44 +173,22 @@ pub fn get_or_default_sysroot() -> PathBuf {
+@@ -160,44 +172,22 @@ pub fn get_or_default_sysroot() -> PathBuf {
      }
  
      match canonicalize(env::current_exe().ok()) {
@@ -287,7 +273,7 @@ index 09c6b54..00736c6 100644
 +            }
 +            p
 +        }
-         None => panic!("can't determine value for sysroot")
+         None => bug!("can't determine value for sysroot")
      }
  }
  
@@ -328,10 +314,10 @@ index 09c6b54..00736c6 100644
  // The name of rustc's own place to organize libraries.
  // Used to be "rustc", now the default is "rustlib"
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index ec1383f..670d637 100644
+index 53cc031..222d447 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
-@@ -1042,11 +1042,10 @@ fn link_args(cmd: &mut Linker,
+@@ -819,11 +819,10 @@ fn link_args(cmd: &mut Linker,
      // where extern libraries might live, based on the
      // addl_lib_search_paths
      if sess.opts.cg.rpath {
@@ -345,5 +331,5 @@ index ec1383f..670d637 100644
              path.push(&tlib);
  
 -- 
-2.4.10
+2.7.4
 

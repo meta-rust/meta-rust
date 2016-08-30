@@ -1,7 +1,7 @@
-From 185c77dbb5708bed7c916b8e01ff867b6c215bfb Mon Sep 17 00:00:00 2001
+From 69b65762ccdf459143fc273a39b0a0e0c6d8fe3e Mon Sep 17 00:00:00 2001
 From: Steven Walter <swalter@lexmark.com>
 Date: Mon, 2 May 2016 19:57:46 -0400
-Subject: [PATCH] Add config for musl-based arm builds
+Subject: [PATCH 01/11] Add config for musl-based arm builds
 
 ---
  mk/cfg/arm-unknown-linux-musleabi.mk | 26 ++++++++++++++++++++++++++

@@ -1,4 +1,4 @@
-From 6d74b6af6a23e195fc54c81a9bbdb21e7d5b6414 Mon Sep 17 00:00:00 2001
+From 8f82cc69e50e7c8e48a2e20b7061483a28bd0d7f Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Sat, 12 Dec 2015 22:36:26 -0500
 Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl
@@ -6,21 +6,26 @@ Subject: [PATCH 1/2] curl-sys: avoid explicitly linking in openssl
 linking libcurl with libssl is handled by pkg-config, not us
 This also allows non-blessed triples to work.
 ---
- curl-sys/Cargo.toml | 26 --------------------------
+ curl-sys/Cargo.toml | 38 --------------------------------------
  curl-sys/lib.rs     |  2 --
- 2 files changed, 28 deletions(-)
+ 2 files changed, 40 deletions(-)
 
 diff --git a/curl-sys/Cargo.toml b/curl-sys/Cargo.toml
-index bf994bf..f153039 100644
+index 24bc4fa..dd56209 100644
 --- a/curl-sys/Cargo.toml
 +++ b/curl-sys/Cargo.toml
-@@ -19,29 +19,3 @@ path = "lib.rs"
+@@ -19,42 +19,4 @@ path = "lib.rs"
  [dependencies]
  libz-sys = ">= 0"
  libc = "0.2"
 -
+-[target."cfg(all(unix, not(target_os = \"macos\")))".dependencies]
+-openssl-sys = ">= 0"
+-
 -# Unix platforms use OpenSSL for now to provide SSL functionality
 -[target.i686-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.i586-unknown-linux-gnu.dependencies]
 -openssl-sys = ">= 0"
 -[target.i686-linux-android.dependencies]
 -openssl-sys = ">= 0"
@@ -30,9 +35,17 @@ index bf994bf..f153039 100644
 -openssl-sys = ">= 0"
 -[target.arm-unknown-linux-gnueabihf.dependencies]
 -openssl-sys = ">= 0"
+-[target.armv7-unknown-linux-gnueabihf.dependencies]
+ openssl-sys = "0.7.0"
 -[target.arm-linux-androideabi.dependencies]
 -openssl-sys = ">= 0"
 -[target.aarch64-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.powerpc-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.powerpc64-unknown-linux-gnu.dependencies]
+-openssl-sys = ">= 0"
+-[target.powerpc64le-unknown-linux-gnu.dependencies]
 -openssl-sys = ">= 0"
 -[target.i686-unknown-freebsd.dependencies]
 -openssl-sys = ">= 0"
@@ -45,7 +58,7 @@ index bf994bf..f153039 100644
 -[target.x86_64-unknown-dragonfly.dependencies]
 -openssl-sys = ">= 0"
 diff --git a/curl-sys/lib.rs b/curl-sys/lib.rs
-index be80469..b53b445 100644
+index 7990bd6..eb6c27a 100644
 --- a/curl-sys/lib.rs
 +++ b/curl-sys/lib.rs
 @@ -3,8 +3,6 @@
@@ -58,5 +71,5 @@ index be80469..b53b445 100644
  use libc::{c_void, c_int, c_char, c_uint, c_long};
  
 -- 
-2.4.10
+2.9.2
 

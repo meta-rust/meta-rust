@@ -2,9 +2,9 @@
 inherit rust
 inherit rust-installer
 require rust-shared-source.inc
-require rust-snapshot-2015-12-18.inc
+require rust-snapshot-2016-05-24.inc
 
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=9c5a05eab0ffc3590e50db38c51d1425"
+LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
 SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
@@ -25,7 +25,9 @@ PACKAGECONFIG ??= ""
 # to have rust-cross built using rust-native.
 PACKAGECONFIG[local-rust] = ""
 
-SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', 'https://static.rust-lang.org/stage0-snapshots/${RUST_SNAPSHOT};unpack=0;name=rust-snapshot', d)}"
+FETCH_STAGE0 = "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}"
+
+SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', '${RUST_SNAPSHOT_URI};unpack=0;name=rust-snapshot', d)}"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
@@ -126,31 +128,35 @@ def llvm_features_from_cc_arch(d):
     return ','.join(f)
 
 ## arm-unknown-linux-gnueabihf
+DATA_LAYOUT[arm] = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:64:128-a0:0:64-n32"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
 PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
 
-## aarch64-unknown-linux-gnu
+DATA_LAYOUT[aarch64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
 PRE_LINK_ARGS[aarch64] = "-Wl,--as-needed"
 
 ## x86_64-unknown-linux-gnu
+DATA_LAYOUT[x86_64] = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
 PRE_LINK_ARGS[x86_64] = "-Wl,--as-needed -m64"
 
 ## i686-unknown-linux-gnu
+DATA_LAYOUT[i686] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
 PRE_LINK_ARGS[i686] = "-Wl,--as-needed -m32"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
+DATA_LAYOUT[i586] = "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
@@ -255,6 +261,7 @@ def rust_gen_target(d, thing, wd):
     # build tspec
     tspec = {}
     tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch, True)
+    tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch, True)
     tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
     tspec['target-word-size'] = tspec['target-pointer-width']
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch, True)
@@ -389,15 +396,16 @@ do_configure () {
     # where we're reinstalling the compiler. May want to try for a real
     # path based on bitbake vars
     # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-    local_maybe_enable=disable
     local_rust_root=/not/set/do/not/use
-    if which rustc >/dev/null 2>&1; then
+    if ${FETCH_STAGE0}; then
+        mkdir -p dl
+        tar -xf ${WORKDIR}/${RUST_SNAPSHOT} -C dl
+        ./dl/rustc-${RS_VERSION}-${RS_ARCH}/install.sh --prefix=$PWD/dl
+        local_rust_root="$PWD/dl"
+    elif which rustc >/dev/null 2>&1; then
         local_rustc=$(which rustc)
         if [ -n "$local_rustc" ]; then
             local_rust_root=$(dirname $(dirname $local_rustc))
-            if [ -e "$local_rust_root/bin/rustc" ]; then
-                local_maybe_enable=enable
-            fi
         fi
     fi
 
@@ -426,7 +434,7 @@ do_configure () {
         "--libdir=${libdir}"                \
         "--bindir=${bindir}"                \
         "--platform-cfg=${WORKDIR}/mk-cfg/" \
-        ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '--$local_maybe_enable-local-rust --local-rust-root=$local_rust_root', '--local-rust-root=/not/a/dir', d)} \
+        "--enable-local-rust --local-rust-root=$local_rust_root" \
         ${EXTRA_OECONF}
 }
 
@@ -446,10 +454,6 @@ rust_runmake () {
 }
 
 do_compile () {
-    if ${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}; then
-        mkdir -p dl
-        cp -f ${WORKDIR}/${RUST_SNAPSHOT} dl
-    fi
     rust_runmake
 }
 
