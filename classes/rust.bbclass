@@ -2,11 +2,8 @@ inherit rust-vars
 
 RUSTC = "rustc"
 
-# FIXME: --sysroot might be needed
-RUSTFLAGS += "-C rpath -C crate_hash=${BB_TASKHASH}"
 RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} ${RUSTFLAGS}"
 
-RUSTLIB_DEP ?= "rustlib"
 def rust_base_dep(d):
     # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to
     # use rust instead of gcc

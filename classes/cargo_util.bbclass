@@ -12,7 +12,7 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 BASEDEPENDS_append = " cargo-native"
 
 # Ensure we get the right rust variant
-DEPENDS_append_class-target = " virtual/${TARGET_PREFIX}rust"
+DEPENDS_append_class-target = " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
 
 # Cargo only supports in-tree builds at the moment
 B = "${S}"

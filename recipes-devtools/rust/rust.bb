@@ -1,3 +1,4 @@
+inherit rust-installer
 require rust.inc
 
 DEPENDS += "rust-llvm"

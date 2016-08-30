@@ -1,6 +1,5 @@
 # ex: sts=4 et sw=4 ts=8
 inherit rust
-inherit rust-installer
 require rust-shared-source.inc
 require rust-snapshot-2016-05-24.inc
 
