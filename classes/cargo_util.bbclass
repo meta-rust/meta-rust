@@ -62,6 +62,21 @@ oe_cargo_fix_env () {
 	export HOST_AR="${BUILD_AR}"
 }
 
+EXTRA_OECARGO_PATHS ??= ""
+
+cargo_util_do_configure () {
+	mkdir -p ${CARGO_HOME}
+	# NOTE: we cannot pass more flags via this interface, the 'linker' is
+	# assumed to be a path to a binary. If flags are needed, a wrapper must
+	# be used.
+	echo "paths = [" > ${CARGO_HOME}/config
+
+	for p in ${EXTRA_OECARGO_PATHS}; do
+		printf "\"%s\"\n" "$p"
+	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
+	echo "]" >> ${CARGO_HOME}/config
+}
+
 cargo_util_do_compile () {
 	cd "${B}"
 
@@ -91,4 +106,4 @@ cargo_util_do_install () {
 	fi
 }
 
-EXPORT_FUNCTIONS do_compile do_install
+EXPORT_FUNCTIONS do_configure do_compile do_install
