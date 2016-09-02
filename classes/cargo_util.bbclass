@@ -76,6 +76,15 @@ cargo_util_do_configure () {
 		printf "\"%s\"\n" "$p"
 	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
 	echo "]" >> ${CARGO_HOME}/config
+
+	# Point cargo at our local mirror of the registry
+	cat >> ${CARGO_HOME}/config <<EOF
+[source.local]
+local-registry = "${WORKDIR}/cargo_registry"
+[source.crates-io]
+replace-with = "local"
+registry = "https://github.com/rust-lang/crates.io-index"
+EOF
 }
 
 cargo_util_do_compile () {
