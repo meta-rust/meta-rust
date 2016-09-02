@@ -4,6 +4,7 @@ require cargo.inc
 SRC_URI += " \
 	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
 	file://0001-disable-cargo-snapshot-fetch.patch \
+	file://0001-Never-update-the-registry-index.patch \
 	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=${S}/src/rust-installer \
 "
 # Compatible with Rust 1.10.0
