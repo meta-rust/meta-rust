@@ -88,8 +88,6 @@ EOF
 }
 
 cargo_util_do_compile () {
-	cd "${B}"
-
 	# prevent cargo from trying to fetch down new data
 	mkdir -p "${WORKDIR}/cargo_home/registry/index/github.com-1ecc6299db9ec823"
 	touch "${WORKDIR}/cargo_home/registry/index/github.com-1ecc6299db9ec823/.cargo-index-lock"

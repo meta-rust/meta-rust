@@ -23,12 +23,10 @@ RUSTFLAGS += "-L ${STAGING_LIBDIR}"
 
 B = "${WORKDIR}/build"
 
-do_compile () {
+do_compile_prepend () {
     cd ${S}/src/rustc/std_shim
     export CARGO_TARGET_DIR="${B}"
     export RUSTC_BOOTSTRAP_KEY="e8edd0fd"
-    oe_cargo_fix_env
-    oe_cargo_build
 }
 
 do_install () {
