@@ -39,11 +39,11 @@ do_compile () {
 }
 
 do_install () {
-	mkdir -p ${D}${prefix}/${baselib}/rustlib
-	cp ${WORKDIR}/targets/${TARGET_ARCH}* ${D}${prefix}/${baselib}/rustlib
+	mkdir -p ${D}${prefix}/${base_libdir_native}/rustlib
+	cp ${WORKDIR}/targets/${TARGET_ARCH}* ${D}${prefix}/${base_libdir_native}/rustlib
 }
 
 rust_cross_sysroot_preprocess() {
-    sysroot_stage_dir ${D}${prefix}/${baselib}/rustlib ${SYSROOT_DESTDIR}${prefix}/${baselib}/rustlib
+    sysroot_stage_dir ${D}${prefix}/${base_libdir_native}/rustlib ${SYSROOT_DESTDIR}${prefix}/${base_libdir_native}/rustlib
 }
 SYSROOT_PREPROCESS_FUNCS += "rust_cross_sysroot_preprocess"
