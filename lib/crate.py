@@ -35,7 +35,8 @@ class Crate(Wget):
 
     def _cargo_path(self, rootdir, component):
         # TODO: make this less brittle
-        repo = "github.com-88ac128001ac3a9a"
+        # This can go away entirely once we can build a cargo that supports source-replacement
+        repo = "github.com-1ecc6299db9ec823"
         return os.path.join(rootdir, "cargo_home", "registry", component, repo)
 
     def _cargo_src_path(self, rootdir):
