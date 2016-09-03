@@ -1,3 +1,4 @@
+inherit rust-vars
 # add crate fetch support
 inherit crate-fetch
 
@@ -11,7 +12,7 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 BASEDEPENDS_append = " cargo-native"
 
 # Ensure we get the right rust variant
-DEPENDS_append_class-target = "virtual/${TARGET_PREFIX}rust"
+DEPENDS_append_class-target = " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
 
 # Cargo only supports in-tree builds at the moment
 B = "${S}"
@@ -35,12 +36,14 @@ export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
+RUSTFLAGS ??= ""
 export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
 export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
+	export RUSTFLAGS="${RUSTFLAGS}"
 	bbnote "cargo = $(which cargo)"
 	bbnote "rustc = $(which rustc)"
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
@@ -70,12 +73,15 @@ cargo_util_do_compile () {
 	oe_cargo_build
 }
 
-# All but the most simple projects will need to override this.
 cargo_util_do_install () {
 	local have_installed=false
-	install -d "${D}${bindir}"
 	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
-		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
+		if [[ $tgt == *.so || $tgt == *.rlib ]]; then
+			install -d "${D}${rustlibdir}"
+			install -m755 "$tgt" "${D}${rustlibdir}"
+			have_installed=true
+		elif [ -f "$tgt" ] && [ -x "$tgt" ]; then
+			install -d "${D}${bindir}"
 			install -m755 "$tgt" "${D}${bindir}"
 			have_installed=true
 		fi

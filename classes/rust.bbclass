@@ -1,10 +1,9 @@
+inherit rust-vars
+
 RUSTC = "rustc"
 
-# FIXME: --sysroot might be needed
-RUSTFLAGS += "-C rpath -C crate_hash=${BB_TASKHASH}"
 RUSTC_ARCHFLAGS += "--target=${TARGET_SYS} ${RUSTFLAGS}"
 
-RUSTLIB_DEP ?= "rustlib"
 def rust_base_dep(d):
     # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to
     # use rust instead of gcc
@@ -107,7 +106,3 @@ rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/li
 rustlib_src="${prefix}/lib/${rustlib_suffix}"
 # Host sysroot standard library path
 rustlib="${libdir}/${rustlib_suffix}"
-export rustlibdir = "${libdir}/rust"
-FILES_${PN} += "${rustlibdir}/*.so"
-FILES_${PN}-dev += "${rustlibdir}/*.rlib"
-FILES_${PN}-dbg += "${rustlibdir}/.debug"
