@@ -9,6 +9,9 @@ LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=27b14ab4ce08d04c3a9a5f0ed7997362"
 S .= "/src/compiler-rt"
 B = "${WORKDIR}/build"
 
+# Pick up $CC from the environment
+EXTRA_OEMAKE += "-e"
+
 do_compile () {
 	oe_runmake -C ${S} \
 		ProjSrcRoot="${S}" \
