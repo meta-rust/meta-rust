@@ -16,7 +16,7 @@ SRC_URI += "\
 DEPENDS += "compiler-rt"
 
 RUSTLIB_DEP = ""
-inherit cargo_util
+inherit cargo
 
 # Needed so cargo can find libbacktrace
 RUSTFLAGS += "-L ${STAGING_LIBDIR}"

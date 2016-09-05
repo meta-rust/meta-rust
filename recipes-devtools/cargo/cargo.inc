@@ -1,4 +1,4 @@
-inherit cargo_util
+inherit cargo
 inherit patch
 inherit rust-installer
 
@@ -94,7 +94,7 @@ do_configure () {
 		${EXTRA_OECONF} \
 		|| die "Could not configure cargo"
 
-	cargo_util_do_configure
+	cargo_do_configure
 }
 
 do_compile () {

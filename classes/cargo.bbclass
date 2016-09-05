@@ -1,19 +1,22 @@
-inherit rust
+inherit rust-vars
+# add crate fetch support
+inherit crate-fetch
 
-CARGO ?= "cargo"
+# the binary we will use
+CARGO = "cargo"
+
+# Where we download our registry and dependencies to
 export CARGO_HOME = "${WORKDIR}/cargo_home"
 
-def cargo_base_dep(d):
-    deps = ""
-    if not d.getVar('INHIBIT_DEFAULT_DEPS', True) and not d.getVar('INHIBIT_CARGO_DEP', True):
-        deps += " cargo-native"
-    return deps
+# We need cargo to compile for the target
+BASEDEPENDS_append = " cargo-native"
 
-BASEDEPENDS_append = " ${@cargo_base_dep(d)}"
+# Ensure we get the right rust variant
+DEPENDS_append_class-target = " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
+DEPENDS_append_class-native = " rust-native"
 
 # Cargo only supports in-tree builds at the moment
 B = "${S}"
-
 
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
@@ -24,22 +27,26 @@ export RUST_BACKTRACE = "1"
 # for cross compilation, so tell it we know better than it.
 export PKG_CONFIG_ALLOW_CROSS = "1"
 
-EXTRA_OECARGO_PATHS ??= ""
-
 cargo_do_configure () {
-	# FIXME: we currently make a mess in the directory above us
-	# (${WORKDIR}), which may not be ideal. Look into whether this is
-	# allowed
-	mkdir -p ../.cargo
+	mkdir -p ${CARGO_HOME}
 	# NOTE: we cannot pass more flags via this interface, the 'linker' is
 	# assumed to be a path to a binary. If flags are needed, a wrapper must
 	# be used.
-	echo "paths = [" >../.cargo/config
+	echo "paths = [" > ${CARGO_HOME}/config
 
 	for p in ${EXTRA_OECARGO_PATHS}; do
 		printf "\"%s\"\n" "$p"
-	done | sed -e 's/$/,/' >>../.cargo/config
-	echo "]" >>../.cargo/config
+	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
+	echo "]" >> ${CARGO_HOME}/config
+
+	# Point cargo at our local mirror of the registry
+	cat >> ${CARGO_HOME}/config <<EOF
+[source.local]
+local-registry = "${WORKDIR}/cargo_registry"
+[source.crates-io]
+replace-with = "local"
+registry = "https://github.com/rust-lang/crates.io-index"
+EOF
 }
 
 # All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
@@ -52,6 +59,7 @@ export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
+RUSTFLAGS ??= ""
 export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
@@ -59,9 +67,9 @@ export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
-	which cargo
-	which rustc
-	bbnote ${CARGO} build ${CARGO_BUILD_FLAGS} "$@"
+	bbnote "cargo = $(which cargo)"
+	bbnote "rustc = $(which rustc)"
+	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
 	"${CARGO}" build ${CARGO_BUILD_FLAGS} "$@"
 }
 
@@ -77,18 +85,26 @@ oe_cargo_fix_env () {
 	export HOST_AR="${BUILD_AR}"
 }
 
+EXTRA_OECARGO_PATHS ??= ""
+
 cargo_do_compile () {
-	cd "${B}"
+	# prevent cargo from trying to fetch down new data
+	mkdir -p "${WORKDIR}/cargo_home/registry/index/github.com-1ecc6299db9ec823"
+	touch "${WORKDIR}/cargo_home/registry/index/github.com-1ecc6299db9ec823/.cargo-index-lock"
+
 	oe_cargo_fix_env
 	oe_cargo_build
 }
 
-# All but the most simple projects will need to override this.
 cargo_do_install () {
 	local have_installed=false
-	install -d "${D}${bindir}"
 	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
-		if [ -f "$tgt" ] && [ -x "$tgt" ]; then
+		if [[ $tgt == *.so || $tgt == *.rlib ]]; then
+			install -d "${D}${rustlibdir}"
+			install -m755 "$tgt" "${D}${rustlibdir}"
+			have_installed=true
+		elif [ -f "$tgt" ] && [ -x "$tgt" ]; then
+			install -d "${D}${bindir}"
 			install -m755 "$tgt" "${D}${bindir}"
 			have_installed=true
 		fi
@@ -98,4 +114,4 @@ cargo_do_install () {
 	fi
 }
 
-EXPORT_FUNCTIONS do_compile do_install do_configure
+EXPORT_FUNCTIONS do_configure do_compile do_install
