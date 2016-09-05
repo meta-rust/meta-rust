@@ -1,4 +1,4 @@
-inherit cargo_util
+inherit cargo
 
 CARGO_INDEX_COMMIT = "3b3994e099281c394a6a66604d1af6c0920e4c31"
 
