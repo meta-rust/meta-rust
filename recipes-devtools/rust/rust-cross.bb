@@ -40,7 +40,7 @@ do_compile () {
 
 do_install () {
 	mkdir -p ${D}${prefix}/${base_libdir_native}/rustlib
-	cp ${WORKDIR}/targets/${TARGET_ARCH}* ${D}${prefix}/${base_libdir_native}/rustlib
+	cp ${WORKDIR}/targets/${TARGET_SYS}.json ${D}${prefix}/${base_libdir_native}/rustlib
 }
 
 rust_cross_sysroot_preprocess() {
