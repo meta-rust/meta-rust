@@ -76,6 +76,9 @@ PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
 export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 
+# cargo's configure doesn't recognize --disable-static, so remove it.
+DISABLE_STATIC = ""
+
 do_configure () {
 	${@bb.utils.contains('PACKAGECONFIG', 'rust-snapshot', '${S}/.travis.install.deps.sh', ':', d)}
 
