@@ -453,6 +453,12 @@ rust_runmake () {
 }
 
 do_compile () {
+    # rust build needs to hit the internet
+    if [ ! -z "${http_proxy}" ]; then
+        export http_proxy=${http_proxy}
+        export https_proxy=${https_proxy}
+        export no_proxy=${no_proxy}
+    fi
     rust_runmake
 }
 
