@@ -238,12 +238,9 @@ def ldflags_for(d, thing, arch):
 
 TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
-TARGET_LLVM_CPU_class-cross="${@llvm_cpu(d)}"
-TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
-TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
