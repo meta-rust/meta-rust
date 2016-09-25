@@ -359,6 +359,13 @@ def rust_gen_mk_cfg(d, thing):
     if r:
         raise Exception
     o.write("OBJCOPY_{} := {}objcopy\n".format(sys, prefix))
+    # Note: this isn't how this variable is supposed to be used, but for
+    # non-msvc platforms nothing else touches it.
+    # These are the only extra flags passed to the rustllvm (c++ code) build.
+    # These are only used for host (even though we emit them for all targets)
+    # Without this, there are link failures due to GLIBC_CXX11_ABI issues in
+    # certain setups.
+    o.write("EXTRA_RUSTLLVM_CXXFLAGS_{} := {}\n".format(sys, cxxflags_for(d, thing)))
     o.close()
     i.close()
 
