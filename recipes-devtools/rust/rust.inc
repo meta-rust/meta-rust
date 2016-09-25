@@ -320,6 +320,15 @@ def rust_gen_mk_cfg(d, thing):
     i = open(d.getVar('S', True) + '/mk/cfg/' + rust_base_sys + '.mk', 'r')
 
     r = subprocess.call(['sed',
+        # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+        # wide range of targets (not just HOST). Yocto's settings for them will
+        # be inappropriate, avoid having random targets try to use them, we'll
+        # add as needed.
+        '-e', 's/$(CFLAGS)//',
+        '-e', 's/$(CXXFLAGS)//',
+        '-e', 's/$(CPPFLAGS)//',
+        '-e', 's/$(LDFLAGS)//',
+
         # update all triplets to the new one
         '-e', 's/{}/{}/g'.format(rust_base_sys, sys),
 
@@ -376,14 +385,6 @@ do_configure () {
     cd "${B}"
 
     # FIXME: target_prefix vs prefix, see cross.bbclass
-
-    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-    # wide range of targets (not just HOST). Yocto's settings for them will
-    # be inappropriate, avoid using.
-    unset CFLAGS
-    unset LDFLAGS
-    unset CXXFLAGS
-    unset CPPFLAGS
 
     # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
     # where we're reinstalling the compiler. May want to try for a real
