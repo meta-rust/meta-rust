@@ -13,9 +13,6 @@ B = "${WORKDIR}/build"
 
 DEPENDS += "file-native"
 
-# Avoid having the default bitbake.conf disable sub-make parallelization
-EXTRA_OEMAKE = ""
-
 PACKAGECONFIG ??= ""
 
 # Controls whether we use the local rust to build.
