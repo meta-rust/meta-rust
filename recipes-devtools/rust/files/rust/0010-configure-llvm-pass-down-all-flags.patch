@@ -1,0 +1,41 @@
+From 9c8e14dc3b1c1bcd3b7844aae50616acf47ffcd4 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Thu, 29 Sep 2016 22:22:40 -0400
+Subject: [PATCH 10/10] configure/llvm: pass down all flags
+
+When CFLAGS, CXXFLAGS, or LDFLAGS are specified for building rust, be
+sure that we use them for building llvm too.
+---
+ configure | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/configure b/configure
+index 4bd9195..45b7fc9 100755
+--- a/configure
++++ b/configure
+@@ -1730,6 +1730,10 @@ do
+         LLVM_LDFLAGS=$LLVM_LDFLAGS_32
+     fi
+ 
++    LLVM_CFLAGS="$LLVM_CFLAGS $CFG_CFLAGS"
++    LLVM_CXXFLAGS="$LLVM_CXXFLAGS $CFG_CXXFLAGS"
++    LLVM_LDFLAGS="$LLVM_LDFLAGS $CFG_LDFLAGS"
++
+     if [ "$CFG_USING_LIBCPP" != "0" ]; then
+         CMAKE_ARGS="$CMAKE_ARGS -DLLVM_ENABLE_LIBCXX=ON"
+     fi
+@@ -1769,7 +1773,10 @@ do
+         if [ -n "$LLVM_CXX_ARG1" ]; then
+             CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_CXX_COMPILER_ARG1=$LLVM_CXX_ARG1"
+         fi
+-        # FIXME: What about LDFLAGS?
++	CMAKE_ARGS="$CMAKE_ARGS '-DCMAKE_EXE_LINKER_FLAGS=$LLVM_LDFLAGS'"
++	CMAKE_ARGS="$CMAKE_ARGS '-DCMAKE_SHARED_LINKER_FLAGS=$LLVM_LDFLAGS'"
++	#CMAKE_ARGS="$CMAKE_ARGS '-DCMAKE_STATIC_LINKER_FLAGS=$LLVM_LDFLAGS'"
++	CMAKE_ARGS="$CMAKE_ARGS '-DCMAKE_MODULE_LINKER_FLAGS=$LLVM_LDFLAGS'"
+     fi
+ 
+     if [ -n "$CFG_DISABLE_OPTIMIZE_LLVM" ]; then
+-- 
+2.10.0
+

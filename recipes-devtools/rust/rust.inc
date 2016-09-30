@@ -1,7 +1,7 @@
 # ex: sts=4 et sw=4 ts=8
 inherit rust
 require rust-shared-source.inc
-require rust-snapshot-2016-05-24.inc
+require rust-snapshot.inc
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 

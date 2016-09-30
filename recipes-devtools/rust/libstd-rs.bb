@@ -5,6 +5,7 @@ LICENSE = "MIT | Apache-2.0"
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 require rust-shared-source.inc
+require rust-snapshot.inc
 
 CARGO_INDEX_COMMIT = "6127fc24b0b6fe73fe4d339817fbf000b9a798a2"
 
@@ -26,7 +27,7 @@ B = "${WORKDIR}/build"
 do_compile_prepend () {
     cd ${S}/src/rustc/std_shim
     export CARGO_TARGET_DIR="${B}"
-    export RUSTC_BOOTSTRAP_KEY="e8edd0fd"
+    export RUSTC_BOOTSTRAP_KEY="${RS_KEY}"
 }
 
 do_install () {

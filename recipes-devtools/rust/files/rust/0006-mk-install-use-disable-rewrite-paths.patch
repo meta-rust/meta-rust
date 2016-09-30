@@ -1,7 +1,7 @@
-From a73a748cd73920380ae1f069be91ff833e99d003 Mon Sep 17 00:00:00 2001
+From f8d4b1ea925789bca1aa6261017d63f5efa95c0f Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Mon, 2 Mar 2015 13:34:59 -0500
-Subject: [PATCH 07/11] mk/install: use disable-rewrite-paths
+Subject: [PATCH 06/10] mk/install: use disable-rewrite-paths
 
 This stops the install scripts from doing work we've already handled.
 
@@ -26,5 +26,5 @@ index d2e5449..e67650b 100644
  install:
  ifeq (root user, $(USER) $(patsubst %,user,$(SUDO_USER)))
 -- 
-2.7.4
+2.10.0
 

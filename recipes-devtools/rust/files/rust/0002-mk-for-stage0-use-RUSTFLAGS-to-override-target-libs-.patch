@@ -1,7 +1,7 @@
-From 4290b8f28222824a558ac4471d26fe88b2889a5b Mon Sep 17 00:00:00 2001
+From 0829743c109a147213d06d38052662a5f2b0dd9b Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 14:52:56 -0500
-Subject: [PATCH 03/11] mk: for stage0, use RUSTFLAGS to override target libs
+Subject: [PATCH 02/10] mk: for stage0, use RUSTFLAGS to override target libs
  dir
 
 Setting HLIB specially for stage0 (and even more specially for windows)
@@ -13,10 +13,10 @@ stage0-rustc at the appropriate location.
  1 file changed, 12 insertions(+), 17 deletions(-)
 
 diff --git a/mk/main.mk b/mk/main.mk
-index c47020c..fcf1409 100644
+index 90d3563..cdcbdf2 100644
 --- a/mk/main.mk
 +++ b/mk/main.mk
-@@ -403,32 +403,26 @@ define SREQ
+@@ -420,32 +420,26 @@ define SREQ
  HROOT$(1)_H_$(3) = $(3)/stage$(1)
  HBIN$(1)_H_$(3) = $$(HROOT$(1)_H_$(3))/bin
  
@@ -60,7 +60,7 @@ index c47020c..fcf1409 100644
  # Preqrequisites for using the stageN compiler
  ifeq ($(1),0)
  HSREQ$(1)_H_$(3) = $$(HBIN$(1)_H_$(3))/rustc$$(X_$(3))
-@@ -536,6 +530,7 @@ STAGE$(1)_T_$(2)_H_$(3) := \
+@@ -558,6 +552,7 @@ STAGE$(1)_T_$(2)_H_$(3) := \
  		$$(HBIN$(1)_H_$(3))/rustc$$(X_$(3)) \
  		--cfg $$(CFGFLAG$(1)_T_$(2)_H_$(3)) \
  		$$(CFG_RUSTC_FLAGS) $$(EXTRAFLAGS_STAGE$(1)) --target=$(2)) \
@@ -69,5 +69,5 @@ index c47020c..fcf1409 100644
  
  endef
 -- 
-2.7.4
+2.10.0
 

@@ -1,19 +1,22 @@
-From 8efc27cfdbebcfb0e544ce1b7ee242955af0f68a Mon Sep 17 00:00:00 2001
+From b2bdf782aeeb733728a7f3255d0075bfe047c260 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Thu, 4 Feb 2016 10:44:23 -0500
-Subject: [PATCH 10/11] mk: allow changing the platform configuration source
+Subject: [PATCH 09/10] mk: allow changing the platform configuration source
  directory
 
+Upstream-Link: https://github.com/rust-lang/rust/pull/34788
+Upstream-Status: rejected, upstream doesn't want to expose these
+configuration options (those in *.mk).
 ---
  configure      | 4 +++-
  mk/platform.mk | 2 +-
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/configure b/configure
-index 7747850..f5224ca 100755
+index 517fb77..4bd9195 100755
 --- a/configure
 +++ b/configure
-@@ -663,6 +663,7 @@ valopt_nosave local-rust-root "/usr/local" "set prefix for local rust binary"
+@@ -701,6 +701,7 @@ valopt_nosave local-rust-root "/usr/local" "set prefix for local rust binary"
  valopt_nosave host "${CFG_BUILD}" "GNUs ./configure syntax LLVM host triples"
  valopt_nosave target "${CFG_HOST}" "GNUs ./configure syntax LLVM target triples"
  valopt_nosave mandir "${CFG_PREFIX}/share/man" "install man pages in PATH"
@@ -21,7 +24,7 @@ index 7747850..f5224ca 100755
  
  CFG_LIBDIR_RELATIVE=lib
  
-@@ -1084,7 +1085,7 @@ CFG_MANDIR=${CFG_MANDIR%/}
+@@ -1152,7 +1153,7 @@ CFG_MANDIR=${CFG_MANDIR%/}
  CFG_HOST="$(echo $CFG_HOST | tr ',' ' ')"
  CFG_TARGET="$(echo $CFG_TARGET | tr ',' ' ')"
  CFG_SUPPORTED_TARGET=""
@@ -30,7 +33,7 @@ index 7747850..f5224ca 100755
    CFG_SUPPORTED_TARGET="${CFG_SUPPORTED_TARGET} $(basename "$target_file" .mk)"
  done
  
-@@ -1780,6 +1781,7 @@ putvar CFG_I686_LINUX_ANDROID_NDK
+@@ -1832,6 +1833,7 @@ putvar CFG_I686_LINUX_ANDROID_NDK
  putvar CFG_NACL_CROSS_PATH
  putvar CFG_MANDIR
  putvar CFG_USING_LIBCPP
@@ -39,7 +42,7 @@ index 7747850..f5224ca 100755
  # Avoid spurious warnings from clang by feeding it original source on
  # ccache-miss rather than preprocessed input.
 diff --git a/mk/platform.mk b/mk/platform.mk
-index b959d59..bddd203 100644
+index 0b5e9f2..c93ad05 100644
 --- a/mk/platform.mk
 +++ b/mk/platform.mk
 @@ -97,7 +97,7 @@ $(foreach cvar,CC CXX CPP CFLAGS CXXFLAGS CPPFLAGS, \
@@ -52,5 +55,5 @@ index b959d59..bddd203 100644
  define ADD_INSTALLED_OBJECTS
    INSTALLED_OBJECTS_$(1) += $$(CFG_INSTALLED_OBJECTS_$(1))
 -- 
-2.7.4
+2.10.0
 
