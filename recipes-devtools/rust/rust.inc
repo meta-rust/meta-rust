@@ -13,9 +13,6 @@ B = "${WORKDIR}/build"
 
 DEPENDS += "file-native"
 
-# Avoid having the default bitbake.conf disable sub-make parallelization
-EXTRA_OEMAKE = ""
-
 PACKAGECONFIG ??= ""
 
 # Controls whether we use the local rust to build.
@@ -238,12 +235,9 @@ def ldflags_for(d, thing, arch):
 
 TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
-TARGET_LLVM_CPU_class-cross="${@llvm_cpu(d)}"
-TARGET_LLVM_FEATURES_class-cross  = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
-TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
@@ -253,8 +247,10 @@ def rust_gen_target(d, thing, wd):
     prefix = prefix_for(d, thing)
 
     features = ""
+    cpu = "generic"
     if thing is "TARGET":
         features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
+        cpu = d.getVar('TARGET_LLVM_CPU', True)
     features = features or d.getVarFlag('FEATURES', arch, True) or ""
 
     # build tspec
@@ -270,7 +266,7 @@ def rust_gen_target(d, thing, wd):
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
     tspec['objcopy'] = "{}objcopy".format(prefix)
     tspec['ar'] = "{}ar".format(prefix)
-    tspec['cpu'] = d.getVar('TARGET_LLVM_CPU', True)
+    tspec['cpu'] = cpu
     if features is not "":
         tspec['features'] = features
     tspec['dynamic-linking'] = True
@@ -326,6 +322,15 @@ def rust_gen_mk_cfg(d, thing):
     i = open(d.getVar('S', True) + '/mk/cfg/' + rust_base_sys + '.mk', 'r')
 
     r = subprocess.call(['sed',
+        # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+        # wide range of targets (not just HOST). Yocto's settings for them will
+        # be inappropriate, avoid having random targets try to use them, we'll
+        # add as needed.
+        '-e', 's/$(CFLAGS)//',
+        '-e', 's/$(CXXFLAGS)//',
+        '-e', 's/$(CPPFLAGS)//',
+        '-e', 's/$(LDFLAGS)//',
+
         # update all triplets to the new one
         '-e', 's/{}/{}/g'.format(rust_base_sys, sys),
 
@@ -356,6 +361,13 @@ def rust_gen_mk_cfg(d, thing):
     if r:
         raise Exception
     o.write("OBJCOPY_{} := {}objcopy\n".format(sys, prefix))
+    # Note: this isn't how this variable is supposed to be used, but for
+    # non-msvc platforms nothing else touches it.
+    # These are the only extra flags passed to the rustllvm (c++ code) build.
+    # These are only used for host (even though we emit them for all targets)
+    # Without this, there are link failures due to GLIBC_CXX11_ABI issues in
+    # certain setups.
+    o.write("EXTRA_RUSTLLVM_CXXFLAGS_{} := {}\n".format(sys, cxxflags_for(d, thing)))
     o.close()
     i.close()
 
@@ -382,14 +394,6 @@ do_configure () {
     cd "${B}"
 
     # FIXME: target_prefix vs prefix, see cross.bbclass
-
-    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-    # wide range of targets (not just HOST). Yocto's settings for them will
-    # be inappropriate, avoid using.
-    unset CFLAGS
-    unset LDFLAGS
-    unset CXXFLAGS
-    unset CPPFLAGS
 
     # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
     # where we're reinstalling the compiler. May want to try for a real
