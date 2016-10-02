@@ -247,8 +247,10 @@ def rust_gen_target(d, thing, wd):
     prefix = prefix_for(d, thing)
 
     features = ""
+    cpu = "generic"
     if thing is "TARGET":
         features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
+        cpu = d.getVar('TARGET_LLVM_CPU', True)
     features = features or d.getVarFlag('FEATURES', arch, True) or ""
 
     # build tspec
@@ -264,7 +266,7 @@ def rust_gen_target(d, thing, wd):
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
     tspec['objcopy'] = "{}objcopy".format(prefix)
     tspec['ar'] = "{}ar".format(prefix)
-    tspec['cpu'] = d.getVar('TARGET_LLVM_CPU', True)
+    tspec['cpu'] = cpu
     if features is not "":
         tspec['features'] = features
     tspec['dynamic-linking'] = True
