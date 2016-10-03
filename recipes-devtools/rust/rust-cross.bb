@@ -8,7 +8,6 @@ INHIBIT_DEFAULT_RUST_DEPS = "1"
 # Generally, we (and cross in general) need the same things that native needs,
 # so it might make sense to take it's mapping. For now, though, we just mention
 # the bits we need explicitly.
-DEPENDS += "rust-llvm-native"
 DEPENDS += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
 DEPENDS += "rust-native"
 
