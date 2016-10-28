@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # the repos we want to check out, must setup variables below
 # NOTE: poky must remain first
@@ -33,7 +33,11 @@ update_repo() {
 		git fetch origin || die "unable to fetch ${uri}"
 	else
 		echo "Cloning '${path}'"
-		git clone ${uri} ${path} || die "unable to clone ${uri}"
+        if [ -z "${GIT_LOCAL_REF_DIR}" ]; then
+		    git clone ${uri} ${path} || die "unable to clone ${uri}"
+        else
+            git clone --reference ${GIT_LOCAL_REF_DIR}/`basename ${path}` ${uri} ${path}
+        fi
 		pushd ${path} > /dev/null
 	fi
 
