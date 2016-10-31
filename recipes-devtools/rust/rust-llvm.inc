@@ -1,9 +1,14 @@
-require rust-shared-source.inc
-
 SUMMARY = "LLVM compiler framework (packaged with rust)"
 LICENSE = "NCSA"
 
-S .= "/src/llvm"
+SRC_URI = "\
+	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
+	file://rust-llvm/0001-Don-t-build-unittests.patch \
+"
+
+S = "${WORKDIR}/rustc-${PV}/src/llvm"
+
+LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
 
 inherit autotools
 
