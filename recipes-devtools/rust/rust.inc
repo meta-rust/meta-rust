@@ -1,7 +1,7 @@
 # ex: sts=4 et sw=4 ts=8
 inherit rust
 require rust-shared-source.inc
-require rust-snapshot-2016-05-24.inc
+require rust-snapshot.inc
 
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
@@ -379,8 +379,6 @@ python do_rust_arch_fixup () {
 addtask rust_arch_fixup before do_configure after do_patch
 do_rust_arch_fixup[dirs] += "${WORKDIR}/mk-cfg"
 
-llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
-
 # prevent the rust-installer scripts from calling ldconfig
 export CFG_DISABLE_LDCONFIG="notempty"
 
@@ -422,7 +420,6 @@ do_configure () {
         "--enable-optimize"                 \
         "--enable-optimize-cxx"             \
         "--disable-llvm-version-check"      \
-        "--llvm-root=${llvmdir}"            \
         "--enable-optimize-tests"           \
         "--release-channel=stable"          \
         "--prefix=${prefix}"                \

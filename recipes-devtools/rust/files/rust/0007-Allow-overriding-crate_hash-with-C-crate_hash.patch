@@ -1,7 +1,7 @@
-From 042a5df36597c2c6c23900667ae1b4299279092f Mon Sep 17 00:00:00 2001
+From 2a42d59c3671f3ab68d8ff49c46240842aff6eb6 Mon Sep 17 00:00:00 2001
 From: Steven Walter <swalter@lexmark.com>
 Date: Wed, 18 Nov 2015 08:33:26 -0500
-Subject: [PATCH 08/11] Allow overriding crate_hash with -C crate_hash
+Subject: [PATCH 07/10] Allow overriding crate_hash with -C crate_hash
 
 The current crate hash is not stable from run-to-run.  This causes
 problems with bitbake; it needs a guarantee that every build with the
@@ -9,26 +9,31 @@ same input will generate compatible output, otherwise sstate won't work.
 Using -C crate_hash, we can do that by using the bitbake input hash to
 determine the crate hash; the bitbake input hash will be stable, but
 still different for different rust recipes.
+
+Upstream-Status: not-appropriate
+
+Upstream wants to fix it's actual object generation here. See
+https://github.com/rust-lang/rust/issues/34902 (and others) for details.
 ---
  src/librustc/session/config.rs  |  2 ++
  src/librustc_trans/back/link.rs | 12 +++++++++++-
  2 files changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index 6cd0ea9..f90398d 100644
+index 563f3ac..52a5130 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -585,6 +585,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
-          "choose the code model to use (llc -code-model for details)"),
-     metadata: Vec<String> = (Vec::new(), parse_list,
+@@ -804,6 +804,8 @@ options! {CodegenOptions, CodegenSetter, basic_codegen_options,
+          "choose the code model to use (rustc --print code-models for details)"),
+     metadata: Vec<String> = (Vec::new(), parse_list, [TRACKED],
           "metadata to mangle symbol names with"),
-+    crate_hash: String = ("".to_string(), parse_string,
++    crate_hash: String = ("".to_string(), parse_string, [TRACKED],
 +         "override crate hash with given value"),
-     extra_filename: String = ("".to_string(), parse_string,
+     extra_filename: String = ("".to_string(), parse_string, [UNTRACKED],
           "extra data to put in each output filename"),
-     codegen_units: usize = (1, parse_uint,
+     codegen_units: usize = (1, parse_uint, [UNTRACKED],
 diff --git a/src/librustc_trans/back/link.rs b/src/librustc_trans/back/link.rs
-index 222d447..e951476 100644
+index 3cf2500..0e48063 100644
 --- a/src/librustc_trans/back/link.rs
 +++ b/src/librustc_trans/back/link.rs
 @@ -125,12 +125,22 @@ pub fn find_crate_name(sess: Option<&Session>,
@@ -56,5 +61,5 @@ index 222d447..e951476 100644
      info!("{:?}", r);
      return r;
 -- 
-2.7.4
+2.10.0
 
