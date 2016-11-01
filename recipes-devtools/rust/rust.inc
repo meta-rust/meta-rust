@@ -1,15 +1,17 @@
-# ex: sts=4 et sw=4 ts=8
-inherit rust
-require rust-shared-source.inc
-require rust-snapshot-2016-05-24.inc
-
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
-
 SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
+LICENSE = "MIT | Apache-2.0"
+LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
-B = "${WORKDIR}/build"
+inherit rust
+require rust-snapshot-2016-05-24.inc
+
+SRC_URI = "\
+	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
+    "
+
+S = "${WORKDIR}/rustc-${PV}"
 
 DEPENDS += "file-native"
 
@@ -385,14 +387,6 @@ llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
 export CFG_DISABLE_LDCONFIG="notempty"
 
 do_configure () {
-    # Note: when we adjust the generated targets, rust doesn't rebuild (even
-    # when it should), so for now we need to remove the build dir to keep
-    # things in sync.
-    cd "${WORKDIR}"
-    rm -rf "${B}/"
-    mkdir -p "${B}/"
-    cd "${B}"
-
     # FIXME: target_prefix vs prefix, see cross.bbclass
 
     # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
@@ -484,4 +478,4 @@ rust_do_install () {
 do_install () {
     rust_do_install
 }
-
+# ex: sts=4 et sw=4 ts=8
