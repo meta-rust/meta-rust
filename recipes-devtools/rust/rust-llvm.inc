@@ -3,42 +3,38 @@ LICENSE = "NCSA"
 
 SRC_URI = "\
 	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
-	file://rust-llvm/0001-Don-t-build-unittests.patch \
 "
 
 S = "${WORKDIR}/rustc-${PV}/src/llvm"
 
 LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
 
-inherit autotools
+inherit cmake pythonnative
 
-EXTRA_OECONF += "--enable-targets=x86,x86_64,arm,aarch64,mips,powerpc"
-EXTRA_OECONF += "--enable-optimized"
-EXTRA_OECONF += "--disable-assertions"
-EXTRA_OECONF += "--disable-docs"
-EXTRA_OECONF += "--enable-bindings=none"
-EXTRA_OECONF += "--disable-terminfo"
-EXTRA_OECONF += "--disable-zlib"
-EXTRA_OECONF += "--disable-libffi"
+EXTRA_OECMAKE = " \
+    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64;PowerPC' \
+    -DLLVM_ENABLE_ASSERTIONS=OFF \
+    -DLLVM_BUILD_DOCS=OFF \
+    -DLLVM_ENABLE_TERMINFO=OFF \
+    -DLLVM_ENABLE_ZLIB=OFF \
+    -DLLVM_ENABLE_FFI=OFF \
+    -DLLVM_INSTALL_UTILS=ON \
+    -DLLVM_BUILD_TOOLS=ON \
+    -DLLVM_BUILD_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_BUILD_TESTS=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_TARGET_ARCH=${TARGET_ARCH} \
+"
 
-EXTRA_OECONF += "--enable-keep-symbols"
+# The debug symbols are huge here (>2GB) so suppress them since they
+# provide almost no value. If you really need them then override this
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 PACKAGES += "${PN}-data"
 
 # Add the extra locations to avoid the complaints about unpackaged files
 FILES_${PN}-data = "${datadir}"
 FILES_${PN}-dev += "${libdir}"
-
-do_install_append () {
-	# Remove the debug info (>2 GB) as part of normal operation
-	rm -rf ${D}${bindir}/.debug
-
-	cd ${D}${bindir} || bbfatal "failed to cd ${D}${bindir}"
-	for i in *-llvm-* *-llc *-lli *-FileCheck; do
-		link=$(echo $i | sed -e "s/${TARGET_SYS}-\(.*\)/\1/")
-		[ -e "${i}" ] || bbfatal "no such file to symlink to ${i}"
-		ln -sf "$i" "${link}" || bbfatal "failed to symlink ${link} to ${i}"
-	done
-}
 
 BBCLASSEXTEND = "native"
