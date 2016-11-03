@@ -252,6 +252,7 @@ def rust_gen_target(d, thing, wd):
     if thing is "TARGET":
         features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
     features = features or d.getVarFlag('FEATURES', arch, True) or ""
+    features = features.strip()
 
     # build tspec
     tspec = {}
