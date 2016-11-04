@@ -105,10 +105,13 @@ llvm_native_sysroot_preprocess() {
     sysroot_stage_dir ${D}${STAGING_DIR_NATIVE}/usr/libexec ${SYSROOT_DESTDIR}${bindir}
 }
 
-PACKAGES += "${PN}-data"
+PACKAGES =+ "${PN}-bugpointpasses ${PN}-llvmhello ${PN}-liblto"
 
 # Add the extra locations to avoid the complaints about unpackaged files
-FILES_${PN}-data = "${datadir}"
-FILES_${PN}-dev += "${libdir}"
+FILES_${PN} += "${libdir}/libLLVM*.so"
+FILES_${PN}-dev += "${datadir}/llvm"
+FILES_${PN}-bugpointpasses = "${libdir}/BugpointPasses.so"
+FILES_${PN}-llvmhello = "${libdir}/LLVMHello.so"
+FILES_${PN}-liblto = "${libdir}/libLTO.so"
 
 BBCLASSEXTEND = "native"
