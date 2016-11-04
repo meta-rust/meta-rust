@@ -5,7 +5,6 @@ LICENSE = "MIT | Apache-2.0"
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
 inherit rust
-require rust-snapshot-2016-05-24.inc
 
 SRC_URI = "\
 	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \

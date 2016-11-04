@@ -1,5 +1,6 @@
 inherit rust-installer
 require rust.inc
+require rust-source-${PV}.inc
 
 SRC_URI += " \
         file://rust-${PV}/0001-Add-config-for-musl-based-arm-builds.patch \
@@ -15,9 +16,6 @@ SRC_URI += " \
         file://rust-${PV}/0011-Get-rid-of-the-.note-interpretation-of-rustc-dylib-m.patch \
         file://rust-installer-${PV}/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
         "
-
-SRC_URI[rust.md5sum] = "a48fef30353fc9daa70b484b690ce5db"
-SRC_URI[rust.sha256sum] = "a4015aacf4f6d8a8239253c4da46e7abaa8584f8214d1828d2ff0a8f56176869"
 
 DEPENDS += "rust-llvm (=${PV})"
 

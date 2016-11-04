@@ -7,8 +7,8 @@ LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 SRC_URI = "\
 	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
     "
-SRC_URI[rust.md5sum] = "a48fef30353fc9daa70b484b690ce5db"
-SRC_URI[rust.sha256sum] = "a4015aacf4f6d8a8239253c4da46e7abaa8584f8214d1828d2ff0a8f56176869"
+
+require rust-source-${PV}.inc
 
 S = "${WORKDIR}/rustc-${PV}"
 
@@ -32,7 +32,7 @@ S = "${WORKDIR}/rustc-${PV}"
 do_compile_prepend () {
     cd ${S}/src/rustc/std_shim
     export CARGO_TARGET_DIR="${B}"
-    export RUSTC_BOOTSTRAP_KEY="e8edd0fd"
+    export RUSTC_BOOTSTRAP_KEY="${RS_KEY}"
 }
 
 do_install () {
