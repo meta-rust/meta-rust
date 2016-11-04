@@ -19,7 +19,7 @@ SRC_URI += " \
 SRC_URI[rust.md5sum] = "a48fef30353fc9daa70b484b690ce5db"
 SRC_URI[rust.sha256sum] = "a4015aacf4f6d8a8239253c4da46e7abaa8584f8214d1828d2ff0a8f56176869"
 
-DEPENDS += "rust-llvm"
+DEPENDS += "rust-llvm (=${PV})"
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS_class-native = "1"
