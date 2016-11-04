@@ -1,10 +1,6 @@
 SUMMARY = "LLVM compiler framework (packaged with rust)"
 LICENSE = "NCSA"
 
-SRC_URI = "\
-	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
-"
-
 S = "${WORKDIR}/rustc-${PV}/src/llvm"
 
 LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"

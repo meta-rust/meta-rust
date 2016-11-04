@@ -7,7 +7,6 @@ LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 inherit rust
 
 SRC_URI = "\
-	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
 	https://static.rust-lang.org/dist/${RUST_SNAPSHOT}.tar.gz;name=rust-snapshot \
     "
 
