@@ -8,23 +8,12 @@ inherit rust
 
 SRC_URI = "\
 	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
+	https://static.rust-lang.org/dist/${RUST_SNAPSHOT}.tar.gz;name=rust-snapshot \
     "
 
 S = "${WORKDIR}/rustc-${PV}"
 
 DEPENDS += "file-native"
-
-PACKAGECONFIG ??= ""
-
-# Controls whether we use the local rust to build.
-# By default, we use the rust-snapshot. In some cases (non-supported host
-# systems) this may not be possible.  In other cases, it might be desirable
-# to have rust-cross built using rust-native.
-PACKAGECONFIG[local-rust] = ""
-
-FETCH_STAGE0 = "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', 'false', 'true', d)}"
-
-SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'local-rust', '', '${RUST_SNAPSHOT_URI};unpack=0;name=rust-snapshot', d)}"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
@@ -393,18 +382,7 @@ do_configure () {
     # where we're reinstalling the compiler. May want to try for a real
     # path based on bitbake vars
     # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-    local_rust_root=/not/set/do/not/use
-    if ${FETCH_STAGE0}; then
-        mkdir -p dl
-        tar -xf ${WORKDIR}/${RUST_SNAPSHOT} -C dl
-        ./dl/rustc-${RS_VERSION}-${RS_ARCH}/install.sh --prefix=$PWD/dl
-        local_rust_root="$PWD/dl"
-    elif which rustc >/dev/null 2>&1; then
-        local_rustc=$(which rustc)
-        if [ -n "$local_rustc" ]; then
-            local_rust_root=$(dirname $(dirname $local_rustc))
-        fi
-    fi
+    local_rust_root="$PWD/dl"
 
     # - rpath is required otherwise rustc fails to resolve symbols
     # - submodule management is done by bitbake's fetching
@@ -431,7 +409,8 @@ do_configure () {
         "--libdir=${libdir}"                \
         "--bindir=${bindir}"                \
         "--platform-cfg=${WORKDIR}/mk-cfg/" \
-        "--enable-local-rust --local-rust-root=$local_rust_root" \
+        "--enable-local-rust"               \
+        "--local-rust-root=${WORKDIR}/${RUST_SNAPSHOT}/rustc" \
         ${EXTRA_OECONF}
 }
 
