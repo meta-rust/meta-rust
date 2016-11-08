@@ -407,7 +407,6 @@ do_configure () {
         "--infodir=${infodir}"              \
         "--mandir=${mandir}"                \
         "--libdir=${libdir}"                \
-        "--bindir=${bindir}"                \
         "--platform-cfg=${WORKDIR}/mk-cfg/" \
         "--enable-local-rust"               \
         "--local-rust-root=${WORKDIR}/${RUST_SNAPSHOT}/rustc" \
