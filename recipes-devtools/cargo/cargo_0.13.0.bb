@@ -3,7 +3,6 @@ require cargo.inc
 
 SRC_URI += " \
 	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
-	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=${S}/src/rust-installer \
 	crate://crates.io/advapi32-sys/0.2.0 \
 	crate://crates.io/aho-corasick/0.5.2 \
 	crate://crates.io/bitflags/0.1.1 \
@@ -77,8 +76,6 @@ SRC_URI += " \
 # Compatible with Rust 1.12.1
 # https://static.rust-lang.org/dist/channel-rust-1.12.1.toml
 SRCREV_cargo = "109cb7c33d426044d141457049bd0fffaca1327c"
-
-SRCREV_rust-installer = "c37d3747da75c280237dc2d6b925078e69555499"
 
 S = "${WORKDIR}/git"
 

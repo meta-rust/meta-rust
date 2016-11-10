@@ -54,7 +54,7 @@ do_compile () {
 }
 
 do_install () {
-	oe_runmake DESTDIR="${D}" install
+	oe_runmake prepare-image-${TARGET_SYS} IMGDIR_${TARGET_SYS}="${D}${prefix}"
 }
 
 BBCLASSEXTEND = "native"
