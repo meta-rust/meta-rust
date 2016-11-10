@@ -19,7 +19,7 @@ do_compile () {
 	oe_runmake -C ${S} \
 		ProjSrcRoot="${S}" \
 		ProjObjRoot="${B}" \
-		TargetTriple=${HOST_SYS} \
+		TargetTriple=${TARGET_SYS} \
 		triple-builtins
 }
 
