@@ -107,11 +107,11 @@ do_compile () {
 	mkdir -p target
 	cp -R ${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/cargo target/snapshot
 
-	oe_runmake ARGS="--verbose"
+	oe_runmake VERBOSE=1
 }
 
 do_install () {
-	oe_runmake DESTDIR="${D}" install
+	oe_runmake prepare-image-${TARGET_SYS} IMGDIR_${TARGET_SYS}="${D}/usr"
 }
 
 BBCLASSEXTEND = "native"
