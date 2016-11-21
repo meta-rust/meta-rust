@@ -9,10 +9,9 @@ def rust_base_triple(d, thing):
     '''
 
     arch = d.getVar('{}_ARCH'.format(thing), True)
-    vendor = d.getVar('{}_VENDOR'.format(thing), True)
-    os = d.getVar('{}_OS'.format(thing), True)
-
+    # All the Yocto targets are Linux and are 'unknown'
     vendor = "-unknown"
+    os = d.getVar('{}_OS'.format(thing), True)
 
     if arch.startswith("arm"):
         if os.endswith("gnueabi"):
