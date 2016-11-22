@@ -415,7 +415,6 @@ do_configure () {
 
 rust_runmake () {
     echo "COMPILE ${PN}" "$@"
-    env
 
     # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
     # wide range of targets (not just TARGET). Yocto's settings for them will
