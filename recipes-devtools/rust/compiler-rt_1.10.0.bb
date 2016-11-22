@@ -12,13 +12,14 @@ require rust-source-${PV}.inc
 
 S = "${WORKDIR}/rustc-${PV}/src/compiler-rt"
 
-# Pick up $CC from the environment
-EXTRA_OEMAKE += "-e"
-
 do_compile () {
 	oe_runmake -C ${S} \
 		ProjSrcRoot="${S}" \
 		ProjObjRoot="${B}" \
+		CC="${CC}" \
+		AR="${AR}" \
+		RANLIB="${RANLIB}" \
+		CFLAGS="${CFLAGS}" \
 		TargetTriple=${HOST_SYS} \
 		triple-builtins
 }
