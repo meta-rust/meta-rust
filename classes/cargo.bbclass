@@ -60,11 +60,11 @@ export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
 RUSTFLAGS ??= ""
-export CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
+CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
-export CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
+CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
 	bbnote "cargo = $(which cargo)"
