@@ -107,7 +107,7 @@ do_compile () {
 	mkdir -p target
 	cp -R ${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/cargo target/snapshot
 
-	oe_runmake ARGS="--verbose"
+	oe_runmake VERBOSE=1
 }
 
 do_install () {
