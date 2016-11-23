@@ -71,12 +71,6 @@ B = "${S}"
 # the crate_hash option will cause the compiler to crash
 RUSTFLAGS = "-C rpath ${RUSTLIB}"
 
-PACKAGECONFIG ??= ""
-
-# Note: this does not appear to work very well due to our use of bitbake triples
-# & rust's use of cooked triples
-PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
-
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
 export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 
@@ -84,8 +78,6 @@ export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 DISABLE_STATIC = ""
 
 do_configure () {
-	${@bb.utils.contains('PACKAGECONFIG', 'rust-snapshot', '${S}/.travis.install.deps.sh', ':', d)}
-
 	"${S}/configure" \
 		"--prefix=${prefix}"			\
 		"--build=${BUILD_SYS}"			\
