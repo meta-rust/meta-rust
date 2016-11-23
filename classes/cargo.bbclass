@@ -49,14 +49,20 @@ replace-with = "local"
 registry = "https://github.com/rust-lang/crates.io-index"
 EOF
 
-    # We need to use the real Yocto linker and get the linker
-    # flags to it. Yocto has the concept of BUILD and TARGET
-    # and uses HOST to be the currently selected one. However
-    # LDFLAGS and TOOLCHAIN_OPTIONS are not prefixed with HOST
-    echo "[build]" >> ${CARGO_HOME}/config
-    echo "rustflags = ['-C', 'link-args=${LDFLAGS}${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS}']" >> ${CARGO_HOME}/config
-    echo "[target.${RUST_HOST_SYS}]" >> ${CARGO_HOME}/config
-    echo "linker = '${HOST_PREFIX}gcc'" >> ${CARGO_HOME}/config
+	# We need to use the real Yocto linker and get the linker
+	# flags to it. Yocto has the concept of BUILD and TARGET
+	# and uses HOST to be the currently selected one. However
+	# LDFLAGS and TOOLCHAIN_OPTIONS are not prefixed with HOST
+	echo "[build]" >> ${CARGO_HOME}/config
+	echo "rustflags = [" >> ${CARGO_HOME}/config
+	echo "'-C'," >> ${CARGO_HOME}/config
+	echo "'link-args=${LDFLAGS}${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS}'," >> ${CARGO_HOME}/config
+	for p in ${RUSTFLAGS}; do
+		printf "'%s'\n" "$p"
+	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
+	echo "]" >> ${CARGO_HOME}/config
+	echo "[target.${RUST_HOST_SYS}]" >> ${CARGO_HOME}/config
+	echo "linker = '${HOST_PREFIX}gcc'" >> ${CARGO_HOME}/config
 }
 
 # All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
@@ -75,6 +81,7 @@ CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 # change if CARGO_BUILD_FLAGS changes.
 CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
+	unset RUSTFLAGS
 	bbnote "cargo = $(which cargo)"
 	bbnote "rustc = $(which rustc)"
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"

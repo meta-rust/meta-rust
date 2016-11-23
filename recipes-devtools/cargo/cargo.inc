@@ -67,6 +67,10 @@ SRC_URI = "\
 
 B = "${S}"
 
+# Can't use the default from rust-vars as it cause a compiler crash
+# the crate_hash option will cause the compiler to crash
+RUSTFLAGS = "-C rpath ${RUSTLIB}"
+
 PACKAGECONFIG ??= ""
 
 # Note: this does not appear to work very well due to our use of bitbake triples
