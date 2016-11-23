@@ -1,6 +1,7 @@
 inherit rust-vars
 # add crate fetch support
 inherit crate-fetch
+inherit rust-triples
 
 # the binary we will use
 CARGO = "cargo"
@@ -47,6 +48,15 @@ local-registry = "${WORKDIR}/cargo_registry"
 replace-with = "local"
 registry = "https://github.com/rust-lang/crates.io-index"
 EOF
+
+    # We need to use the real Yocto linker and get the linker
+    # flags to it. Yocto has the concept of BUILD and TARGET
+    # and uses HOST to be the currently selected one. However
+    # LDFLAGS and TOOLCHAIN_OPTIONS are not prefixed with HOST
+    echo "[build]" >> ${CARGO_HOME}/config
+    echo "rustflags = ['-C', 'link-args=${LDFLAGS}${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS}']" >> ${CARGO_HOME}/config
+    echo "[target.${RUST_HOST_SYS}]" >> ${CARGO_HOME}/config
+    echo "linker = '${HOST_PREFIX}gcc'" >> ${CARGO_HOME}/config
 }
 
 # All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
@@ -59,14 +69,12 @@ export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
 export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
-RUSTFLAGS ??= ""
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
 CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
-	export RUSTFLAGS="${RUSTFLAGS}"
 	bbnote "cargo = $(which cargo)"
 	bbnote "rustc = $(which rustc)"
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
