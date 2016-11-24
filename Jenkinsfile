@@ -15,7 +15,7 @@ for (int i = 0; i < targets.size(); i++) {
                     sh "./scripts/setup-env.sh"
                 }
                 stage('Yocto Fetch') {
-                    sh "GIT_LOCAL_REF_DIR=/srv/git-cache/ ./scripts/fetch.sh master"
+                    sh "GIT_LOCAL_REF_DIR=/srv/git-cache/ ./scripts/fetch.sh morty"
                 }
                 stage('Build') {
                     sh "MACHINE=${machine} ./scripts/build.sh"
