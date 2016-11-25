@@ -119,45 +119,29 @@ LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
-PRE_LINK_ARGS[arm] = "-Wl,--as-needed"
 
 DATA_LAYOUT[aarch64] = "e-m:e-i64:64-i128:128-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
-PRE_LINK_ARGS[aarch64] = "-Wl,--as-needed"
 
 ## x86_64-unknown-linux-gnu
 DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
-PRE_LINK_ARGS[x86_64] = "-Wl,--as-needed -m64"
 
 ## i686-unknown-linux-gnu
 DATA_LAYOUT[i686] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
-PRE_LINK_ARGS[i686] = "-Wl,--as-needed -m32"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
 DATA_LAYOUT[i586] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
-PRE_LINK_ARGS[i586] = "-Wl,--as-needed -m32"
-
-TARGET_PRE_LINK_ARGS = "${TARGET_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-BUILD_PRE_LINK_ARGS = "${BUILD_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-HOST_PRE_LINK_ARGS = "${HOST_CC_ARCH} ${TOOLCHAIN_OPTIONS}"
-
-# These LDFLAGS have '-L' options in them. We need these to come last so they
-# don't screw up the link order and pull in the wrong rust build/version.
-# TODO: may want to strip out all the '-L' flags entirely here
-TARGET_POST_LINK_ARGS = "${TARGET_LDFLAGS}"
-BUILD_POST_LINK_ARGS = "${BUILD_LDFLAGS}"
-HOST_POST_LINK_ARGS = "${HOST_LDFLAGS}"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing), True)
@@ -208,21 +192,6 @@ def llvm_cpu(d):
     except:
         return trans.get(target, "generic")
 
-def post_link_args_for(d, thing, arch):
-    post_link_args = (d.getVar('{}_POST_LINK_ARGS'.format(thing), True) or "").split()
-    post_link_args.extend((d.getVarFlag('POST_LINK_ARGS', arch, True) or "").split())
-    return post_link_args
-
-def pre_link_args_for(d, thing, arch):
-    ldflags = (d.getVar('{}_PRE_LINK_ARGS'.format(thing), True) or "").split()
-    ldflags.extend((d.getVarFlag('PRE_LINK_ARGS', arch, True) or "").split())
-    return ldflags
-
-def ldflags_for(d, thing, arch):
-    a = pre_link_args_for(d, thing, arch)
-    a.extend(post_link_args_for(d, thing, arch))
-    return a
-
 TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
 
@@ -267,8 +236,6 @@ def rust_gen_target(d, thing, wd):
     tspec['has-rpath'] = True
     tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
-    tspec['pre-link-args'] = pre_link_args_for(d, thing, arch)
-    tspec['post-link-args'] = post_link_args_for(d, thing, arch)
 
     # write out the target spec json file
     with open(wd + sys + '.json', 'w') as f:
@@ -306,7 +273,7 @@ def rust_gen_mk_cfg(d, thing):
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
-    ldflags = ' '.join(ldflags_for(d, thing, arch))
+    ldflags = d.getVar('LDFLAGS', True) + d.getVar('HOST_CC_ARCH', True) + d.getVar('TOOLCHAIN_OPTIONS', True)
 
     b = d.getVar('WORKDIR', True) + '/mk-cfg/'
     o = open(b + sys_for(d, thing) + '.mk', 'w')

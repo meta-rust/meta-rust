@@ -67,11 +67,9 @@ SRC_URI = "\
 
 B = "${S}"
 
-PACKAGECONFIG ??= ""
-
-# Note: this does not appear to work very well due to our use of bitbake triples
-# & rust's use of cooked triples
-PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
+# Can't use the default from rust-vars as it cause a compiler crash
+# the crate_hash option will cause the compiler to crash
+RUSTFLAGS = "-C rpath ${RUSTLIB}"
 
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
 export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
@@ -80,8 +78,6 @@ export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 DISABLE_STATIC = ""
 
 do_configure () {
-	${@bb.utils.contains('PACKAGECONFIG', 'rust-snapshot', '${S}/.travis.install.deps.sh', ':', d)}
-
 	"${S}/configure" \
 		"--prefix=${prefix}"			\
 		"--build=${BUILD_SYS}"			\
@@ -107,7 +103,7 @@ do_compile () {
 	mkdir -p target
 	cp -R ${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/cargo target/snapshot
 
-	oe_runmake ARGS="--verbose"
+	oe_runmake VERBOSE=1
 }
 
 do_install () {

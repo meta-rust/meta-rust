@@ -1,5 +1,6 @@
 inherit rust
 
+DEPENDS_append = " patchelf-native"
 RDEPENDS_${PN} += "${RUSTLIB_DEP}"
 
 RUSTC_ARCHFLAGS += "-C opt-level=3 -g -L ${STAGING_DIR_HOST}/${rustlibdir}"
@@ -54,6 +55,11 @@ get_overlap_externs () {
 do_configure () {
 }
 
+oe_runrustc () {
+	bbnote ${RUSTC} ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
+	"${RUSTC}" ${RUSTC_ARCHFLAGS} ${RUSTC_FLAGS} "$@"
+}
+
 oe_compile_rust_lib () {
     [ "${CRATE_TYPE}" == "dylib" ] && suffix=so || suffix=rlib
     rm -rf ${LIBNAME}.{rlib,so}
@@ -88,3 +94,19 @@ oe_install_rust_bin () {
     echo Installing ${BINNAME}
     install -D -m 755 ${BINNAME} ${D}/${bindir}/${BINNAME}
 }
+
+do_rust_bin_fixups() {
+    for f in `find ${PKGD} -name '*.so*'`; do
+        echo "Strip rust note: $f"
+        ${OBJCOPY} -R .note.rustc $f $f
+    done
+
+    for f in `find ${PKGD}`; do
+        file "$f" | grep -q ELF || continue
+        readelf -d "$f" | grep RUNPATH | grep -q rustlib || continue
+        echo "Set rpath:" "$f"
+        patchelf --set-rpath '$ORIGIN:'${rustlibdir}:${rustlib} "$f"
+    done
+}
+PACKAGE_PREPROCESS_FUNCS += "do_rust_bin_fixups"
+
