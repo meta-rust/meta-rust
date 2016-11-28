@@ -31,6 +31,28 @@ def rust_base_triple(d, thing):
         libc = bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
     return arch + vendor + '-' + os + libc
 
+# Naming explanation
+# Yocto
+# - BUILD_SYS - Yocto triple of the build environment
+# - HOST_SYS - What we're building for in Yocto
+# - TARGET_SYS - What we're building for in Yocto
+#
+# So when building '-native' packages BUILD_SYS == HOST_SYS == TARGET_SYS
+# When building packages for the image HOST_SYS == TARGET_SYS
+# This is a gross over simplification as there are other modes but
+# currently this is all that's supported.
+#
+# Rust
+# - TARGET - the system where the binary will run
+# - HOST - the system where the binary is being built
+#
+# Rust additionally will use two additional cases:
+# - undecorated (e.g. CC) - equivalent to TARGET
+# - triple suffix (e.g. CC_x86_64_unknown_linux_gnu) - both
+#   see: https://github.com/alexcrichton/gcc-rs
+# The way that Rust's internal triples and Yocto triples are mapped together
+# its likely best to not use the triple suffix due to potential confusion.
+
 RUST_BUILD_SYS = "${@rust_base_triple(d, 'BUILD')}"
 RUST_HOST_SYS = "${@rust_base_triple(d, 'HOST')}"
 RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
