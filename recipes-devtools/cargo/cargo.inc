@@ -67,10 +67,6 @@ SRC_URI = "\
 
 B = "${S}"
 
-# Can't use the default from rust-vars as it cause a compiler crash
-# the crate_hash option will cause the compiler to crash
-RUSTFLAGS = "-C rpath ${RUSTLIB}"
-
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
 export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 
