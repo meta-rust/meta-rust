@@ -58,7 +58,7 @@ EOF
 		printf "'%s'\n" "$p"
 	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
 	echo "]" >> ${CARGO_HOME}/config
-	echo "[target.${RUST_HOST_SYS}]" >> ${CARGO_HOME}/config
+	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
 	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
 }
 
