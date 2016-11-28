@@ -30,9 +30,6 @@ export PKG_CONFIG_ALLOW_CROSS = "1"
 
 cargo_do_configure () {
 	mkdir -p ${CARGO_HOME}
-	# NOTE: we cannot pass more flags via this interface, the 'linker' is
-	# assumed to be a path to a binary. If flags are needed, a wrapper must
-	# be used.
 	echo "paths = [" > ${CARGO_HOME}/config
 
 	for p in ${EXTRA_OECARGO_PATHS}; do
@@ -62,7 +59,7 @@ EOF
 	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
 	echo "]" >> ${CARGO_HOME}/config
 	echo "[target.${RUST_HOST_SYS}]" >> ${CARGO_HOME}/config
-	echo "linker = '${HOST_PREFIX}gcc'" >> ${CARGO_HOME}/config
+	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
 }
 
 # All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
@@ -70,9 +67,7 @@ EOF
 # XXX: this is hard coded based on meta/conf/bitbake.conf
 # TODO: we do quite a bit very similar to this in rust.inc, see if it can be
 # generalized.
-export RUST_CC = "${CCACHE}${HOST_PREFIX}gcc"
 export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
-export RUST_BUILD_CC = "${CCACHE}${BUILD_PREFIX}gcc"
 export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
@@ -89,10 +84,10 @@ oe_cargo_build () {
 }
 
 oe_cargo_fix_env () {
-	export CC="${RUST_CC}"
+	export CC="${RUST_TARGET_CC}"
 	export CFLAGS="${RUST_CFLAGS}"
 	export AR="${AR}"
-	export TARGET_CC="${RUST_CC}"
+	export TARGET_CC="${RUST_TARGET_CC}"
 	export TARGET_CFLAGS="${RUST_CFLAGS}"
 	export TARGET_AR="${AR}"
 	export HOST_CC="${RUST_BUILD_CC}"
