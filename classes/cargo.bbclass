@@ -62,13 +62,6 @@ EOF
 	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
 }
 
-# All the rust & cargo ecosystem assume that CC, LD, etc are a path to a single
-# command. Fixup the ones we give it so that is the case.
-# XXX: this is hard coded based on meta/conf/bitbake.conf
-# TODO: we do quite a bit very similar to this in rust.inc, see if it can be
-# generalized.
-export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
-
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
@@ -84,10 +77,10 @@ oe_cargo_build () {
 
 oe_cargo_fix_env () {
 	export CC="${RUST_TARGET_CC}"
-	export CFLAGS="${RUST_CFLAGS}"
+	export CFLAGS="${CFLAGS}"
 	export AR="${AR}"
 	export TARGET_CC="${RUST_TARGET_CC}"
-	export TARGET_CFLAGS="${RUST_CFLAGS}"
+	export TARGET_CFLAGS="${CFLAGS}"
 	export TARGET_AR="${AR}"
 	export HOST_CC="${RUST_BUILD_CC}"
 	export HOST_CFLAGS="${BUILD_CFLAGS}"
