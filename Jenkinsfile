@@ -8,23 +8,23 @@ for (int i = 0; i < targets.size(); i++) {
     machine_builds["$machine"] = {
         node {
             try {
-                stage('Checkout') {
+                stage("checkout $machine") {
                     checkout scm
                 }
-                stage('Setup Environment') {
+                stage("setup-env $machine") {
                     sh "./scripts/setup-env.sh"
                 }
-                stage('Yocto Fetch') {
+                stage("fetch $machine") {
                     sh "GIT_LOCAL_REF_DIR=/srv/git-cache/ ./scripts/fetch.sh morty"
                 }
-                stage('Build') {
+                stage("build $machine") {
                     sh "MACHINE=${machine} ./scripts/build.sh"
                 }
             } catch (e) {
                 echo "Caught: ${e}"
                 throw e
             } finally {
-                stage('Cleanup Environment') {
+                stage("cleanup $machine") {
                     sh "./scripts/cleanup-env.sh"
                     deleteDir()
                 }
