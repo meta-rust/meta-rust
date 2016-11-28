@@ -48,6 +48,10 @@ EOF
 
 	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
 	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
+	if [ "${HOST_SYS}" != "${BUILD_SYS}" ]; then
+		echo "[target.${BUILD_SYS}]" >> ${CARGO_HOME}/config
+		echo "linker = '${RUST_BUILD_CCLD}'" >> ${CARGO_HOME}/config
+	fi
 }
 
 RUSTFLAGS ??= ""
