@@ -68,7 +68,6 @@ EOF
 # TODO: we do quite a bit very similar to this in rust.inc, see if it can be
 # generalized.
 export RUST_CFLAGS = "${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS} ${CFLAGS}"
-export RUST_BUILD_CFLAGS = "${BUILD_CC_ARCH} ${BUILD_CFLAGS}"
 
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
 
@@ -91,7 +90,7 @@ oe_cargo_fix_env () {
 	export TARGET_CFLAGS="${RUST_CFLAGS}"
 	export TARGET_AR="${AR}"
 	export HOST_CC="${RUST_BUILD_CC}"
-	export HOST_CFLAGS="${RUST_BUILD_CFLAGS}"
+	export HOST_CFLAGS="${BUILD_CFLAGS}"
 	export HOST_AR="${BUILD_AR}"
 }
 
