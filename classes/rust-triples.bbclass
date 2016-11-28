@@ -56,3 +56,68 @@ def rust_base_triple(d, thing):
 RUST_BUILD_SYS = "${@rust_base_triple(d, 'BUILD')}"
 RUST_HOST_SYS = "${@rust_base_triple(d, 'HOST')}"
 RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
+
+# wrappers to get around the fact that Rust needs a single
+# binary but Yocto's compiler and linker commands have
+# arguments. Technically the archiver is always one command but
+# this is necessary for builds that determine the prefix and then
+# use those commands based on the prefix.
+WRAPPER_DIR = "${WORKDIR}/wrapper"
+RUST_BUILD_CC = "${WRAPPER_DIR}/build-rust-cc"
+RUST_BUILD_CCLD = "${WRAPPER_DIR}/build-rust-ccld"
+RUST_BUILD_AR = "${WRAPPER_DIR}/build-rust-ar"
+RUST_TARGET_CC = "${WRAPPER_DIR}/target-rust-cc"
+RUST_TARGET_CCLD = "${WRAPPER_DIR}/target-rust-ccld"
+RUST_TARGET_AR = "${WRAPPER_DIR}/target-rust-ar"
+
+# compiler is used by gcc-rs
+# linker is used by rustc/cargo
+# archiver is used by the build of libstd-rs
+do_rust_create_wrappers () {
+	mkdir -p "${WRAPPER_DIR}"
+
+	# Yocto Build / Rust Host compiler
+	cat <<- EOF > "${RUST_BUILD_CC}"
+	#!/bin/sh
+	${BUILD_CC} \$@
+	EOF
+	chmod +x "${RUST_BUILD_CC}"
+
+	# Yocto Build / Rust Host linker
+	cat <<- EOF > "${RUST_BUILD_CCLD}"
+	#!/bin/sh
+	${BUILD_CCLD} ${BUILD_LDFLAGS} \$@
+	EOF
+	chmod +x "${RUST_BUILD_CCLD}"
+
+	# Yocto Build / Rust Host archiver
+	cat <<- EOF > "${RUST_BUILD_AR}"
+	#!/bin/sh
+	${BUILD_AR} \$@
+	EOF
+	chmod +x "${RUST_BUILD_AR}"
+
+	# Yocto Target / Rust Target compiler
+	cat <<- EOF > "${RUST_TARGET_CC}"
+	#!/bin/sh
+	${CC} \$@
+	EOF
+	chmod +x "${RUST_TARGET_CC}"
+
+	# Yocto Target / Rust Target linker
+	cat <<- EOF > "${RUST_TARGET_CCLD}"
+	#!/bin/sh
+	${CCLD} ${LDFLAGS} \$@
+	EOF
+	chmod +x "${RUST_TARGET_CCLD}"
+
+	# Yocto Target / Rust Target archiver
+	cat <<- EOF > "${RUST_TARGET_AR}"
+	#!/bin/sh
+	${AR} \$@
+	EOF
+	chmod +x "${RUST_TARGET_AR}"
+}
+
+addtask rust_create_wrappers before do_configure after do_patch
+do_rust_create_wrappers[dirs] += "${WRAPPER_DIR}"
