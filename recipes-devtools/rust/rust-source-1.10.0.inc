@@ -6,7 +6,7 @@
 RS_VERSION = "1.9.0"
 RS_KEY = "e8edd0fd"
 
-RUST_SNAPSHOT = "rustc-${RS_VERSION}-${RUST_HOST_SYS}"
+RUST_SNAPSHOT = "rustc-${RS_VERSION}-${RUST_BUILD_SYS}"
 
 # These are x86_64-unknown-linux-gnu hashes, how can we add more?
 SRC_URI[rust-snapshot.md5sum] = "f1cf6d2fe15e4be18a08259f1540a4ae"
