@@ -155,7 +155,7 @@ class Crate(Wget):
         bb.utils.mkdirhier(cargo_index)
 
         # path it
-        path = d.getVar('PATH', True)
+        path = d.getVar('PATH')
         if path:
             cmd = "PATH=\"%s\" %s" % (path, cmd)
         bb.note("Unpacking %s to %s/" % (thefile, cargo_index))
@@ -180,7 +180,7 @@ class Crate(Wget):
         save_cwd = os.getcwd()
         os.chdir(rootdir)
 
-        pn = d.getVar('BPN', True)
+        pn = d.getVar('BPN')
         if pn == ud.parm.get('name'):
             cmd = "tar -xz --no-same-owner -f %s" % thefile
         else:
@@ -202,7 +202,7 @@ class Crate(Wget):
             metadata['package'] = tarhash
 
         # path it
-        path = d.getVar('PATH', True)
+        path = d.getVar('PATH')
         if path:
             cmd = "PATH=\"%s\" %s" % (path, cmd)
         bb.note("Unpacking %s to %s/" % (thefile, os.getcwd()))
@@ -244,7 +244,7 @@ class Crate(Wget):
         shutil.copy(thefile, cargo_cache)
 
         # path it
-        path = d.getVar('PATH', True)
+        path = d.getVar('PATH')
         if path:
             cmd = "PATH=\"%s\" %s" % (path, cmd)
         bb.note("Unpacking %s to %s/" % (thefile, os.getcwd()))

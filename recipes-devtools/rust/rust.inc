@@ -26,7 +26,7 @@ export FORCE_CRATE_HASH="${BB_TASKHASH}"
 # don't want to use this for the host/build.
 def llvm_features_from_tune(d):
     f = []
-    feat = d.getVar('TUNE_FEATURES', True)
+    feat = d.getVar('TUNE_FEATURES')
     if not feat:
         return ""
     feat = frozenset(feat.split())
@@ -56,7 +56,7 @@ def llvm_features_from_tune(d):
     if 'dsp' in feat:
         f.append("+dsp")
 
-    if d.getVar('ARM_THUMB_OPT', True) is "thumb":
+    if d.getVar('ARM_THUMB_OPT') is "thumb":
         if not feat.isdisjoint(v7):
             f.append("+thumb2")
         f.append("+thumb-mode")
@@ -84,7 +84,7 @@ def llvm_features_from_tune(d):
 # stable (1.9.0?)
 def llvm_features_from_cc_arch(d):
     f = []
-    feat = d.getVar('TARGET_CC_ARCH', True)
+    feat = d.getVar('TARGET_CC_ARCH')
     if not feat:
         return ""
     feat = frozenset(feat.split())
@@ -144,27 +144,27 @@ TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
 
 def arch_for(d, thing):
-    return d.getVar('{}_ARCH'.format(thing), True)
+    return d.getVar('{}_ARCH'.format(thing))
 
 def sys_for(d, thing):
-    return d.getVar('{}_SYS'.format(thing), True)
+    return d.getVar('{}_SYS'.format(thing))
 
 def prefix_for(d, thing):
-    return d.getVar('{}_PREFIX'.format(thing), True)
+    return d.getVar('{}_PREFIX'.format(thing))
 
 ## Note: TOOLCHAIN_OPTIONS is set to "" by native.bbclass and cross.bbclass,
 ## which prevents us from grabbing them when building a cross compiler (native doesn't matter).
 ## We workaround this in internal-rust-cross.bbclass.
 def cflags_for(d, thing):
-    cc_arch = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
-    flags = d.getVar('{}_CFLAGS'.format(thing), True) or ""
-    tc = d.getVar('TOOLCHAIN_OPTIONS', True) or ""
+    cc_arch = d.getVar('{}_CC_ARCH'.format(thing)) or ""
+    flags = d.getVar('{}_CFLAGS'.format(thing)) or ""
+    tc = d.getVar('TOOLCHAIN_OPTIONS') or ""
     return ' '.join([cc_arch, flags, tc])
 
 def cxxflags_for(d, thing):
-    cc_arch = d.getVar('{}_CC_ARCH'.format(thing), True) or ""
-    flags = d.getVar('{}_CXXFLAGS'.format(thing), True) or ""
-    tc = d.getVar('TOOLCHAIN_OPTIONS', True) or ""
+    cc_arch = d.getVar('{}_CC_ARCH'.format(thing)) or ""
+    flags = d.getVar('{}_CXXFLAGS'.format(thing)) or ""
+    tc = d.getVar('TOOLCHAIN_OPTIONS') or ""
     return ' '.join([cc_arch, flags, tc])
 
 # Convert a normal arch (HOST_ARCH, TARGET_ARCH, BUILD_ARCH, etc) to something
@@ -177,8 +177,8 @@ def arch_to_rust_target_arch(arch):
 
 # generates our target CPU value
 def llvm_cpu(d):
-    cpu = d.getVar('TUNE_PKGARCH', True)
-    target = d.getVar('TRANSLATED_TARGET_ARCH', True)
+    cpu = d.getVar('TUNE_PKGARCH')
+    target = d.getVar('TRANSLATED_TARGET_ARCH')
 
     trans = {}
     trans['corei7-64'] = "corei7"
@@ -208,22 +208,22 @@ def rust_gen_target(d, thing, wd):
     features = ""
     cpu = "generic"
     if thing is "TARGET":
-        features = d.getVar('TARGET_LLVM_FEATURES', True) or ""
-        cpu = d.getVar('TARGET_LLVM_CPU', True)
-    features = features or d.getVarFlag('FEATURES', arch, True) or ""
+        features = d.getVar('TARGET_LLVM_FEATURES') or ""
+        cpu = d.getVar('TARGET_LLVM_CPU')
+    features = features or d.getVarFlag('FEATURES', arch) or ""
     features = features.strip()
 
     # build tspec
     tspec = {}
-    tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch, True)
-    tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch, True)
-    tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch, True)
+    tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch)
+    tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch)
+    tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch)
     tspec['target-word-size'] = tspec['target-pointer-width']
-    tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch, True)
+    tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch)
     tspec['arch'] = arch_to_rust_target_arch(arch)
     tspec['os'] = "linux"
     tspec['env'] = "gnu"
-    tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE', True), prefix)
+    tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE'), prefix)
     tspec['objcopy'] = "{}objcopy".format(prefix)
     tspec['ar'] = "{}ar".format(prefix)
     tspec['cpu'] = cpu
@@ -243,7 +243,7 @@ def rust_gen_target(d, thing, wd):
 
 
 python do_rust_gen_targets () {
-    wd = d.getVar('WORKDIR', True) + '/targets/'
+    wd = d.getVar('WORKDIR') + '/targets/'
     # It is important 'TARGET' is last here so that it overrides our less
     # informed choices for BUILD & HOST if TARGET happens to be the same as
     # either of them.
@@ -273,10 +273,10 @@ def rust_gen_mk_cfg(d, thing):
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
-    llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
-    ldflags = d.getVar('LDFLAGS', True) + d.getVar('HOST_CC_ARCH', True) + d.getVar('TOOLCHAIN_OPTIONS', True)
+    llvm_target = d.getVarFlag('LLVM_TARGET', arch)
+    ldflags = d.getVar('LDFLAGS') + d.getVar('HOST_CC_ARCH') + d.getVar('TOOLCHAIN_OPTIONS')
 
-    b = os.path.join(d.getVar('S', True), 'mk', 'cfg')
+    b = os.path.join(d.getVar('S'), 'mk', 'cfg')
     o = open(os.path.join(b, sys_for(d, thing) + '.mk'), 'w')
     i = open(os.path.join(b, rust_base_sys + '.mk'), 'r')
 

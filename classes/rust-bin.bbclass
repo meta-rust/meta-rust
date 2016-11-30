@@ -17,9 +17,9 @@ OVERLAP_LIBS = "\
     rand \
 "
 def get_overlap_deps(d):
-    deps = d.getVar("DEPENDS", True).split()
+    deps = d.getVar("DEPENDS").split()
     overlap_deps = []
-    for o in d.getVar("OVERLAP_LIBS", True).split():
+    for o in d.getVar("OVERLAP_LIBS").split():
         l = len([o for dep in deps if (o + '-rs' in dep)])
         if l > 0:
             overlap_deps.append(o)
@@ -31,7 +31,7 @@ OVERLAP_DEPS = "${@get_overlap_deps(d)}"
 RUSTC_PREFER_DYNAMIC = "-C prefer-dynamic"
 RUSTC_FLAGS += "${RUSTC_PREFER_DYNAMIC}"
 
-CRATE_NAME ?= "${@d.getVar('BPN', True).replace('-rs', '').replace('-', '_')}"
+CRATE_NAME ?= "${@d.getVar('BPN').replace('-rs', '').replace('-', '_')}"
 BINNAME ?= "${BPN}"
 LIBNAME ?= "lib${CRATE_NAME}-rs"
 CRATE_TYPE ?= "dylib"
