@@ -338,8 +338,6 @@ python do_rust_arch_fixup () {
 addtask rust_arch_fixup before do_configure after do_patch
 do_rust_arch_fixup[dirs] += "${S}/mk/cfg"
 
-llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
-
 # prevent the rust-installer scripts from calling ldconfig
 export CFG_DISABLE_LDCONFIG="notempty"
 
@@ -356,7 +354,7 @@ do_configure () {
         "--enable-optimize"                 \
         "--enable-optimize-cxx"             \
         "--disable-llvm-version-check"      \
-        "--llvm-root=${llvmdir}"            \
+        "--llvm-root=${STAGING_DIR_NATIVE}/${prefix_native}" \
         "--enable-optimize-tests"           \
         "--release-channel=stable"          \
         "--prefix=${prefix}"                \
