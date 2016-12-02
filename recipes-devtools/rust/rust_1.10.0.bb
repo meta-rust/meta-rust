@@ -2,6 +2,9 @@ inherit rust-installer
 require rust.inc
 require rust-source-${PV}.inc
 
+# overriden due to difference between 1.10.0 and 1.12.1
+DATA_LAYOUT[aarch64] = "e-m:e-i64:64-i128:128-n32:64-S128"
+
 SRC_URI += " \
         file://rust-${PV}/0001-Add-config-for-musl-based-arm-builds.patch \
         file://rust-${PV}/0002-Target-add-default-target.json-path-libdir-rust-targ.patch \
