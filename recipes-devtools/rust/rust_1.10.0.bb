@@ -11,7 +11,6 @@ SRC_URI += " \
         file://rust-${PV}/0007-mk-install-use-disable-rewrite-paths.patch \
         file://rust-${PV}/0008-Allow-overriding-crate_hash-with-C-crate_hash.patch \
         file://rust-${PV}/0009-mk-platform.mk-pass-C-crate_hash-to-builds.patch \
-        file://rust-${PV}/0010-mk-allow-changing-the-platform-configuration-source-.patch \
         file://rust-${PV}/0011-Get-rid-of-the-.note-interpretation-of-rustc-dylib-m.patch \
         file://rust-installer-${PV}/0001-add-option-to-disable-rewriting-of-install-paths.patch;patchdir=src/rust-installer \
         "

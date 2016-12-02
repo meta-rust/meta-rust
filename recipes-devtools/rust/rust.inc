@@ -266,6 +266,7 @@ def rust_gen_mk_cfg(d, thing):
     Note that the configure process also depends on the existence of #1, so we
     have to run this before do_configure
     '''
+    import os
     import subprocess
 
     rust_base_sys = rust_base_triple(d, thing)
@@ -275,9 +276,9 @@ def rust_gen_mk_cfg(d, thing):
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     ldflags = d.getVar('LDFLAGS', True) + d.getVar('HOST_CC_ARCH', True) + d.getVar('TOOLCHAIN_OPTIONS', True)
 
-    b = d.getVar('WORKDIR', True) + '/mk-cfg/'
-    o = open(b + sys_for(d, thing) + '.mk', 'w')
-    i = open(d.getVar('S', True) + '/mk/cfg/' + rust_base_sys + '.mk', 'r')
+    b = os.path.join(d.getVar('S', True), 'mk', 'cfg')
+    o = open(os.path.join(b, sys_for(d, thing) + '.mk'), 'w')
+    i = open(os.path.join(b, rust_base_sys + '.mk'), 'r')
 
     r = subprocess.call(['sed',
         # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
@@ -335,21 +336,13 @@ python do_rust_arch_fixup () {
         rust_gen_mk_cfg(d, thing)
 }
 addtask rust_arch_fixup before do_configure after do_patch
-do_rust_arch_fixup[dirs] += "${WORKDIR}/mk-cfg"
-
-llvmdir = "${STAGING_DIR_NATIVE}/${prefix_native}"
+do_rust_arch_fixup[dirs] += "${S}/mk/cfg"
 
 # prevent the rust-installer scripts from calling ldconfig
 export CFG_DISABLE_LDCONFIG="notempty"
 
 do_configure () {
     # FIXME: target_prefix vs prefix, see cross.bbclass
-
-    # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
-    # where we're reinstalling the compiler. May want to try for a real
-    # path based on bitbake vars
-    # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-    local_rust_root="$PWD/dl"
 
     # - rpath is required otherwise rustc fails to resolve symbols
     # - submodule management is done by bitbake's fetching
@@ -361,7 +354,7 @@ do_configure () {
         "--enable-optimize"                 \
         "--enable-optimize-cxx"             \
         "--disable-llvm-version-check"      \
-        "--llvm-root=${llvmdir}"            \
+        "--llvm-root=${STAGING_DIR_NATIVE}/${prefix_native}" \
         "--enable-optimize-tests"           \
         "--release-channel=stable"          \
         "--prefix=${prefix}"                \
@@ -374,7 +367,6 @@ do_configure () {
         "--infodir=${infodir}"              \
         "--mandir=${mandir}"                \
         "--libdir=${libdir}"                \
-        "--platform-cfg=${WORKDIR}/mk-cfg/" \
         "--enable-local-rust"               \
         "--local-rust-root=${WORKDIR}/${RUST_SNAPSHOT}/rustc" \
         ${EXTRA_OECONF}
@@ -400,12 +392,6 @@ do_compile () {
 
 rust_do_install () {
     rust_runmake DESTDIR="${D}" install
-
-    # Rust's install.sh doesn't mark executables as executable because
-    # we're using a custom bindir, do it ourselves.
-    chmod +x "${D}/${bindir}/rustc"
-    chmod +x "${D}/${bindir}/rustdoc"
-    chmod +x "${D}/${bindir}/rust-gdb"
 
     # Install our custom target.json files
     local td="${D}${libdir}/rustlib/"
