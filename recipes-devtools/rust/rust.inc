@@ -346,12 +346,6 @@ export CFG_DISABLE_LDCONFIG="notempty"
 do_configure () {
     # FIXME: target_prefix vs prefix, see cross.bbclass
 
-    # FIXME: this path to rustc (via `which rustc`) may not be quite right in the case
-    # where we're reinstalling the compiler. May want to try for a real
-    # path based on bitbake vars
-    # Also will be wrong when relative libdir and/or bindir aren't 'bin' and 'lib'.
-    local_rust_root="$PWD/dl"
-
     # - rpath is required otherwise rustc fails to resolve symbols
     # - submodule management is done by bitbake's fetching
     ${S}/configure                          \
