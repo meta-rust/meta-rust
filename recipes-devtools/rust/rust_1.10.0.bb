@@ -1,4 +1,3 @@
-inherit rust-installer
 require rust.inc
 require rust-source-${PV}.inc
 

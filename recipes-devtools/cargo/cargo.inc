@@ -1,6 +1,5 @@
 inherit cargo
 inherit patch
-inherit rust-installer
 
 SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
 HOMEPAGE = "http://crates.io"
@@ -103,7 +102,7 @@ do_compile () {
 }
 
 do_install () {
-	oe_runmake DESTDIR="${D}" install
+	oe_runmake prepare-image-${TARGET_SYS} IMGDIR_${TARGET_SYS}="${D}/usr"
 }
 
 BBCLASSEXTEND = "native"
