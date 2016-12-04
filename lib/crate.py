@@ -21,6 +21,8 @@ BitBake 'Fetch' implementation for crates.io
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -48,8 +50,8 @@ class Crate(Wget):
     def _cargo_cache_path(self, rootdir):
         return self._cargo_path(rootdir, "cache")
 
-    def _cargo_registry_path(self, rootdir, component=""):
-        return os.path.join(rootdir, "cargo_registry", component)
+    def _cargo_bitbake_path(self, rootdir):
+        return os.path.join(rootdir, "cargo_home", "bitbake")
 
     def supports(self, ud, d):
         """
@@ -136,17 +138,12 @@ class Crate(Wget):
             super(Crate, self).unpack(ud, rootdir, d)
 
     def _index_unpack(self, ud, rootdir, d):
-        cargo_index = self._cargo_index_path(rootdir)
-        self._index_unpack_to(ud, rootdir, d, cargo_index)
-
-        cargo_registry_index = self._cargo_registry_path(rootdir, "index")
-        self._index_unpack_to(ud, rootdir, d, cargo_registry_index)
-
-    def _index_unpack_to(self, ud, rootdir, d, cargo_index):
         """
         Unpacks the index
         """
         thefile = ud.localpath
+
+        cargo_index = self._cargo_index_path(rootdir)
 
         cmd = "tar -xz --no-same-owner --strip-components 1 -f %s -C %s" % (thefile, cargo_index)
 
@@ -176,6 +173,9 @@ class Crate(Wget):
         """
         thefile = ud.localpath
 
+        # possible metadata we need to write out
+        metadata = {}
+
         # change to the rootdir to unpack but save the old working dir
         save_cwd = os.getcwd()
         os.chdir(rootdir)
@@ -184,22 +184,22 @@ class Crate(Wget):
         if pn == ud.parm.get('name'):
             cmd = "tar -xz --no-same-owner -f %s" % thefile
         else:
-            cargo_src = self._cargo_src_path(rootdir)
-            cargo_cache = self._cargo_cache_path(rootdir)
-            cargo_registry = self._cargo_registry_path(rootdir)
+            self._crate_unpack_old_layout(ud, rootdir, d)
 
-            cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_src)
+            cargo_bitbake = self._cargo_bitbake_path(rootdir)
+
+            cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_bitbake)
 
             # ensure we've got these paths made
-            bb.utils.mkdirhier(cargo_cache)
-            bb.utils.mkdirhier(cargo_registry)
-            bb.utils.mkdirhier(cargo_src)
+            bb.utils.mkdirhier(cargo_bitbake)
 
-            bb.note("Copying %s to %s/" % (thefile, cargo_cache))
-            shutil.copy(thefile, cargo_cache)
+            # generate metadata necessary
+            with open(thefile, 'rb') as f:
+                # get the SHA256 of the original tarball
+                tarhash = hashlib.sha256(f.read()).hexdigest()
 
-            bb.note("Copying %s to %s/" % (thefile, cargo_registry))
-            shutil.copy(thefile, cargo_registry)
+            metadata['files'] = {}
+            metadata['package'] = tarhash
 
         # path it
         path = d.getVar('PATH', True)
@@ -214,3 +214,42 @@ class Crate(Wget):
         if ret != 0:
             raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)
 
+        # if we have metadata to write out..
+        if len(metadata) > 0:
+            cratepath = os.path.splitext(os.path.basename(thefile))[0]
+            bbpath = self._cargo_bitbake_path(rootdir)
+            mdfile = '.cargo-checksum.json'
+            mdpath = os.path.join(bbpath, cratepath, mdfile)
+            with open(mdpath, "w") as f:
+                json.dump(metadata, f)
+
+
+    def _crate_unpack_old_layout(self, ud, rootdir, d):
+        """
+        Unpacks a crate in the old location that tried to emulate
+        the Cargo registry layout.
+        """
+        thefile = ud.localpath
+
+        cargo_src = self._cargo_src_path(rootdir)
+        cargo_cache = self._cargo_cache_path(rootdir)
+
+        cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_src)
+
+        # ensure we've got these paths made
+        bb.utils.mkdirhier(cargo_cache)
+        bb.utils.mkdirhier(cargo_src)
+
+        bb.note("Copying %s to %s/" % (thefile, cargo_cache))
+        shutil.copy(thefile, cargo_cache)
+
+        # path it
+        path = d.getVar('PATH', True)
+        if path:
+            cmd = "PATH=\"%s\" %s" % (path, cmd)
+        bb.note("Unpacking %s to %s/" % (thefile, os.getcwd()))
+
+        ret = subprocess.call(cmd, preexec_fn=subprocess_setup, shell=True)
+
+        if ret != 0:
+            raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)

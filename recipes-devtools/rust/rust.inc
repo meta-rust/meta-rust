@@ -7,7 +7,6 @@ LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 inherit rust
 
 SRC_URI = "\
-	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
 	https://static.rust-lang.org/dist/${RUST_SNAPSHOT}.tar.gz;name=rust-snapshot \
     "
 
@@ -120,7 +119,8 @@ TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
 FEATURES[arm] = "+v6,+vfp2"
 
-DATA_LAYOUT[aarch64] = "e-m:e-i64:64-i128:128-n32:64-S128"
+## aarch64-unknown-linux-gnu
+DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"

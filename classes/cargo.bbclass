@@ -38,13 +38,14 @@ cargo_do_configure () {
 	echo "]" >> ${CARGO_HOME}/config
 
 	# Point cargo at our local mirror of the registry
-	cat >> ${CARGO_HOME}/config <<EOF
-[source.local]
-local-registry = "${WORKDIR}/cargo_registry"
-[source.crates-io]
-replace-with = "local"
-registry = "https://github.com/rust-lang/crates.io-index"
-EOF
+	cat <<- EOF >> ${CARGO_HOME}/config
+	[source.bitbake]
+	directory = "${CARGO_HOME}/bitbake"
+
+	[source.crates-io]
+	replace-with = "bitbake"
+	local-registry = "/nonexistant"
+	EOF
 
 	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
 	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
