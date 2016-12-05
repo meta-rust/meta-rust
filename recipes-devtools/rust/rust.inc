@@ -341,6 +341,9 @@ do_rust_arch_fixup[dirs] += "${S}/mk/cfg"
 # prevent the rust-installer scripts from calling ldconfig
 export CFG_DISABLE_LDCONFIG="notempty"
 
+# rust's configure doesn't recognize --disable-static, so remove it.
+DISABLE_STATIC = ""
+
 do_configure () {
     # FIXME: target_prefix vs prefix, see cross.bbclass
 
