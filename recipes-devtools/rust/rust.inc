@@ -341,6 +341,9 @@ do_rust_arch_fixup[dirs] += "${S}/mk/cfg"
 # prevent the rust-installer scripts from calling ldconfig
 export CFG_DISABLE_LDCONFIG="notempty"
 
+# rust's configure doesn't recognize --disable-static, so remove it.
+DISABLE_STATIC = ""
+
 do_configure () {
     # FIXME: target_prefix vs prefix, see cross.bbclass
 
@@ -403,6 +406,12 @@ rust_do_install () {
     # Remove any files directly installed into libdir to avoid
     # conflicts between cross and native
     rm -f ${D}${libdir}/lib*.so
+
+    # cleanup after rust-installer since we don't need these bits
+    rm ${D}/${libdir}/rustlib/install.log
+    rm ${D}/${libdir}/rustlib/rust-installer-version
+    rm ${D}/${libdir}/rustlib/uninstall.sh
+    rm ${D}/${libdir}/rustlib/components
 }
 
 do_install () {

@@ -1,5 +1,4 @@
-inherit rust-vars
-inherit rust-triples
+inherit rust-common
 
 RUSTC = "rustc"
 
@@ -37,8 +36,6 @@ HOST_LDFLAGS  ?= "${LDFLAGS}"
 HOST_CFLAGS   ?= "${CFLAGS}"
 HOST_CXXFLAGS ?= "${CXXFLAGS}"
 HOST_CPPFLAGS ?= "${CPPFLAGS}"
-
-EXTRA_OECONF_remove = "--disable-static"
 
 rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/lib"
 # Native sysroot standard library path

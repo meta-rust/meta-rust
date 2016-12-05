@@ -5,7 +5,6 @@ SRC_URI += " \
 	git://github.com/rust-lang/cargo.git;protocol=https;name=cargo \
 	file://0001-disable-cargo-snapshot-fetch.patch \
 	file://0001-Never-update-the-registry-index.patch \
-	git://github.com/rust-lang/rust-installer.git;protocol=https;name=rust-installer;destsuffix=${S}/src/rust-installer \
 	crate://crates.io/advapi32-sys/0.1.2 \
 	crate://crates.io/bufstream/0.1.1 \
 	crate://crates.io/crossbeam/0.2.8 \
@@ -59,8 +58,6 @@ SRC_URI += " \
 # Compatible with Rust 1.10.0
 # https://static.rust-lang.org/dist/channel-rust-1.10.0.toml
 SRCREV_cargo = "259324cd8f9bb6e1068a3a2b77685e90fda3e3b6"
-
-SRCREV_rust-installer = "c37d3747da75c280237dc2d6b925078e69555499"
 
 S = "${WORKDIR}/git"
 
