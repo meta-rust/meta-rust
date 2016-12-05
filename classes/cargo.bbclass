@@ -1,7 +1,6 @@
-inherit rust-vars
 # add crate fetch support
 inherit crate-fetch
-inherit rust-triples
+inherit rust-common
 
 # the binary we will use
 CARGO = "cargo"

@@ -1,5 +1,4 @@
-inherit rust-vars
-inherit rust-triples
+inherit rust-common
 
 RUSTC = "rustc"
 

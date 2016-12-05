@@ -1,3 +1,13 @@
+# Common variables used by all Rust builds
+export rustlibdir = "${libdir}/rust"
+FILES_${PN} += "${rustlibdir}/*.so"
+FILES_${PN}-dev += "${rustlibdir}/*.rlib"
+FILES_${PN}-dbg += "${rustlibdir}/.debug"
+
+RUSTLIB = "-L ${STAGING_LIBDIR}/rust"
+RUSTFLAGS += "-C rpath -C crate_hash=${BB_TASKHASH} ${RUSTLIB}"
+RUSTLIB_DEP ?= "libstd-rs"
+
 # Responseible for taking Yocto triples and converting it to Rust triples
 
 def rust_base_triple(d, thing):
