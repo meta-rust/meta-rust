@@ -3,6 +3,7 @@ inherit rust
 DEPENDS_append = " patchelf-native"
 RDEPENDS_${PN} += "${RUSTLIB_DEP}"
 
+RUSTFLAGS += "-C crate_hash=${BB_TASKHASH}"
 RUSTC_ARCHFLAGS += "-C opt-level=3 -g -L ${STAGING_DIR_HOST}/${rustlibdir}"
 EXTRA_OEMAKE += 'RUSTC_ARCHFLAGS="${RUSTC_ARCHFLAGS}"'
 
