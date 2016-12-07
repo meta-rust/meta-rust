@@ -1,7 +1,5 @@
 inherit cargo
 
-CARGO_INDEX_COMMIT = "3b3994e099281c394a6a66604d1af6c0920e4c31"
-
 SRC_URI = " \
     crate://crates.io/aho-corasick/0.5.1 \
     crate://crates.io/bitflags/0.5.0 \
@@ -25,13 +23,7 @@ SRC_URI = " \
     crate://crates.io/winapi/0.2.6 \
     crate://crates.io/winapi-build/0.1.1 \
     crate://crates.io/rustfmt/0.4.0 \
-    crate-index://crates.io/${CARGO_INDEX_COMMIT} \
 "
-SRC_URI[md5sum] = "7fc46357c9c5e72a3a1ec3630c8c7a05"
-SRC_URI[sha256sum] = "770c66dc845424a0c9a7f51b47d8de1e2605298da9b257ddde1d5be6fe01331f"
-SRC_URI[index.md5sum] = "79f10f436dbf26737cc80445746f16b4"
-SRC_URI[index.sha256sum] = "86114b93f1f51aaf0aec3af0751d214b351f4ff9839ba031315c1b19dcbb1913"
-
 # rustfmt 0.5.0
 #LIC_FILES_CHKSUM=" \
 #    file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
