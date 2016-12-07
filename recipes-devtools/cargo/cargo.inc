@@ -8,11 +8,8 @@ LICENSE = "MIT | Apache-2.0"
 
 DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
-CARGO_INDEX_COMMIT = "6127fc24b0b6fe73fe4d339817fbf000b9a798a2"
-
 SRC_URI = "\
 	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
-	crate-index://crates.io/${CARGO_INDEX_COMMIT} \
 "
 
 B = "${S}"
