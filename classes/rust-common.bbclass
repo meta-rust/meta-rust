@@ -18,11 +18,11 @@ def rust_base_triple(d, thing):
     Note that os is assumed to be some linux form
     '''
 
-    arch = d.getVar('{}_ARCH'.format(thing), True)
+    arch = d.getVar('{}_ARCH'.format(thing))
     # All the Yocto targets are Linux and are 'unknown'
     vendor = "-unknown"
-    os = d.getVar('{}_OS'.format(thing), True)
-    libc = d.getVar('TCLIBC', True)
+    os = d.getVar('{}_OS'.format(thing))
+    libc = d.getVar('TCLIBC')
 
     # Prefix with a dash and convert glibc -> gnu
     if libc == "glibc":

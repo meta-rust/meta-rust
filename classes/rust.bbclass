@@ -8,8 +8,8 @@ def rust_base_dep(d):
     # Taken from meta/classes/base.bbclass `base_dep_prepend` and modified to
     # use rust instead of gcc
     deps = ""
-    if not d.getVar('INHIBIT_DEFAULT_RUST_DEPS', True):
-        if (d.getVar('HOST_SYS', True) != d.getVar('BUILD_SYS', True)):
+    if not d.getVar('INHIBIT_DEFAULT_RUST_DEPS'):
+        if (d.getVar('HOST_SYS') != d.getVar('BUILD_SYS')):
             deps += " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
         else:
             deps += " rust-native"
