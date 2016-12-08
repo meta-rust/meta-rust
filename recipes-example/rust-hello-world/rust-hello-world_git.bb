@@ -1,4 +1,4 @@
-inherit cargo_util
+inherit cargo
 
 SRC_URI = "git://github.com/jmesmon/rust-hello-world.git;protocol=https"
 SRCREV="e0fa23f1a3cb1eb1407165bd2fc36d2f6e6ad728"

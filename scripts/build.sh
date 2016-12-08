@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Grab the MACHINE from the environment; otherwise, set it to a sane default
-export MACHINE="${MACHINE-qemux86}"
+export MACHINE="${MACHINE-qemux86-64}"
 
 # What to build
 BUILD_TARGETS="\

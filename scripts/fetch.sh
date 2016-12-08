@@ -1,16 +1,23 @@
 #!/bin/bash -x
 
+# default repo
+if [[ $# -lt 1 ]]; then
+    echo "No Yocto branch specified, defaulting to master"
+    echo "To change this pass a Yocto branch name as an argument to this script"
+fi
+branch=${1-master}
+
 # the repos we want to check out, must setup variables below
 # NOTE: poky must remain first
 REPOS="poky metaoe"
 
 POKY_URI="git://git.yoctoproject.org/poky.git"
 POKY_PATH="poky"
-POKY_REV="${POKY_REV-refs/remotes/origin/$1}"
+POKY_REV="${POKY_REV-refs/remotes/origin/${branch}}"
 
 METAOE_URI="git://git.openembedded.org/meta-openembedded.git"
 METAOE_PATH="poky/meta-openembedded"
-METAOE_REV="${METAOE_REV-refs/remotes/origin/$1}"
+METAOE_REV="${METAOE_REV-refs/remotes/origin/${branch}}"
 
 METARUST_URI="."
 METARUST_PATH="poky/meta-rust"
