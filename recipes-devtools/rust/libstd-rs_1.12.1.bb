@@ -8,11 +8,8 @@ require rust-source-${PV}.inc
 
 S = "${WORKDIR}/rustc-${PV}"
 
-CARGO_INDEX_COMMIT = "6127fc24b0b6fe73fe4d339817fbf000b9a798a2"
-
 SRC_URI += "\
 	crate://crates.io/gcc/0.3.27 \
-	crate-index://crates.io/${CARGO_INDEX_COMMIT} \
 "
 
 DEPENDS += "compiler-rt (=${PV})"
