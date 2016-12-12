@@ -21,6 +21,8 @@ BitBake 'Fetch' implementation for crates.io
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -35,7 +37,8 @@ class Crate(Wget):
 
     def _cargo_path(self, rootdir, component):
         # TODO: make this less brittle
-        repo = "github.com-88ac128001ac3a9a"
+        # This can go away entirely once we can build a cargo that supports source-replacement
+        repo = "github.com-1ecc6299db9ec823"
         return os.path.join(rootdir, "cargo_home", "registry", component, repo)
 
     def _cargo_src_path(self, rootdir):
@@ -46,6 +49,9 @@ class Crate(Wget):
 
     def _cargo_cache_path(self, rootdir):
         return self._cargo_path(rootdir, "cache")
+
+    def _cargo_bitbake_path(self, rootdir):
+        return os.path.join(rootdir, "cargo_home", "bitbake")
 
     def supports(self, ud, d):
         """
@@ -167,25 +173,33 @@ class Crate(Wget):
         """
         thefile = ud.localpath
 
+        # possible metadata we need to write out
+        metadata = {}
+
         # change to the rootdir to unpack but save the old working dir
         save_cwd = os.getcwd()
         os.chdir(rootdir)
 
-        pn = d.getVar('PN', True)
+        pn = d.getVar('BPN', True)
         if pn == ud.parm.get('name'):
             cmd = "tar -xz --no-same-owner -f %s" % thefile
         else:
-            cargo_src = self._cargo_src_path(rootdir)
-            cargo_cache = self._cargo_cache_path(rootdir)
+            self._crate_unpack_old_layout(ud, rootdir, d)
 
-            cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_src)
+            cargo_bitbake = self._cargo_bitbake_path(rootdir)
+
+            cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_bitbake)
 
             # ensure we've got these paths made
-            bb.utils.mkdirhier(cargo_cache)
-            bb.utils.mkdirhier(cargo_src)
+            bb.utils.mkdirhier(cargo_bitbake)
 
-            bb.note("Copying %s to %s/" % (thefile, cargo_cache))
-            shutil.copy(thefile, cargo_cache)
+            # generate metadata necessary
+            with open(thefile, 'rb') as f:
+                # get the SHA256 of the original tarball
+                tarhash = hashlib.sha256(f.read()).hexdigest()
+
+            metadata['files'] = {}
+            metadata['package'] = tarhash
 
         # path it
         path = d.getVar('PATH', True)
@@ -200,3 +214,42 @@ class Crate(Wget):
         if ret != 0:
             raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)
 
+        # if we have metadata to write out..
+        if len(metadata) > 0:
+            cratepath = os.path.splitext(os.path.basename(thefile))[0]
+            bbpath = self._cargo_bitbake_path(rootdir)
+            mdfile = '.cargo-checksum.json'
+            mdpath = os.path.join(bbpath, cratepath, mdfile)
+            with open(mdpath, "w") as f:
+                json.dump(metadata, f)
+
+
+    def _crate_unpack_old_layout(self, ud, rootdir, d):
+        """
+        Unpacks a crate in the old location that tried to emulate
+        the Cargo registry layout.
+        """
+        thefile = ud.localpath
+
+        cargo_src = self._cargo_src_path(rootdir)
+        cargo_cache = self._cargo_cache_path(rootdir)
+
+        cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_src)
+
+        # ensure we've got these paths made
+        bb.utils.mkdirhier(cargo_cache)
+        bb.utils.mkdirhier(cargo_src)
+
+        bb.note("Copying %s to %s/" % (thefile, cargo_cache))
+        shutil.copy(thefile, cargo_cache)
+
+        # path it
+        path = d.getVar('PATH', True)
+        if path:
+            cmd = "PATH=\"%s\" %s" % (path, cmd)
+        bb.note("Unpacking %s to %s/" % (thefile, os.getcwd()))
+
+        ret = subprocess.call(cmd, preexec_fn=subprocess_setup, shell=True)
+
+        if ret != 0:
+            raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)

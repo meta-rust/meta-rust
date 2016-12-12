@@ -1,0 +1,24 @@
+SUMMARY = "Rust compiler run-time"
+HOMEPAGE = "http://www.rust-lang.org"
+SECTION = "devel"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://src/compiler-rt/LICENSE.TXT;md5=bf24bca27049b52e9738451aa55771d4"
+
+require rust.inc
+require rust-source-${PV}.inc
+
+DEPENDS += "rust-llvm-native (=${PV})"
+
+S = "${WORKDIR}/rustc-${PV}"
+
+DISABLE_STATIC = ""
+INHIBIT_DEFAULT_RUST_DEPS = "1"
+
+do_compile () {
+	oe_runmake ${TARGET_SYS}/rt/libcompiler-rt.a
+}
+
+do_install () {
+	mkdir -p ${D}${libdir}
+	cp ${TARGET_SYS}/rt/libcompiler-rt.a ${D}${libdir}/libcompiler-rt.a
+}

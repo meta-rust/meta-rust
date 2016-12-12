@@ -16,4 +16,6 @@ EXTRA_OECMAKE = "\
 	-DBUILD_EXAMPLES=OFF \
 "
 
+CFLAGS_append .= " -fPIC"
+
 BBCLASSEXTEND = "native"

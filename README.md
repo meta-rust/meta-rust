@@ -17,6 +17,19 @@ This OpenEmbedded layer provides the rust compiler, tools for building packages
 
  - rust (built for target)
 
+## Building a rust package
+
+When building a rust package in bitbake, it's usually easiest to build with
+cargo using cargo.bbclass.  If the package already has a Cargo.toml file (most
+rust packages do), then it's especially easy.  Otherwise you should probably
+get the code building in cargo first.
+
+Once your package builds in cargo, you can use
+[cargo-bitbake](https://github.com/cardoe/cargo-bitbake) to generate a bitbake
+recipe for it.  This allows bitbake to fetch all the necessary dependent
+crates, as well as a pegged version of the crates.io index, to ensure maximum
+reproducibility.
+
 ## Common issues when packaging things using cargo
 
  You may run into errors similar to:

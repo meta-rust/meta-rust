@@ -43,7 +43,7 @@ exec docker run \
     -e BUILD_UID=${my_uid} \
     -e BUILD_GID=${my_gid} \
     -e TEMPLATECONF=meta-rust/conf \
-    -e MACHINE=${MACHINE:-qemux86} \
+    -e MACHINE=${MACHINE:-qemux86-64} \
     ${SSH_AUTH_SOCK:+-e SSH_AUTH_SOCK="/tmp/ssh-agent/${SSH_AUTH_NAME}"} \
     -v ${HOME}/.ssh:/var/build/.ssh \
     -v "${PWD}":/var/build:rw \

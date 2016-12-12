@@ -1,8 +1,5 @@
-INHIBIT_CARGO_DEP = "1"
-
 inherit cargo
 inherit patch
-inherit rust-installer
 
 SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
 HOMEPAGE = "http://crates.io"
@@ -11,24 +8,22 @@ LICENSE = "MIT | Apache-2.0"
 
 DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
+CARGO_INDEX_COMMIT = "6127fc24b0b6fe73fe4d339817fbf000b9a798a2"
+
 SRC_URI = "\
 	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
+	crate-index://crates.io/${CARGO_INDEX_COMMIT} \
 "
 
 B = "${S}"
 
-PACKAGECONFIG ??= ""
-
-# Note: this does not appear to work very well due to our use of bitbake triples
-# & rust's use of cooked triples
-PACKAGECONFIG[rust-snapshot] = "--local-rust-root=${B}/rustc"
-
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
 export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 
-do_configure () {
-	${@bb.utils.contains('PACKAGECONFIG', 'rust-snapshot', '${S}/.travis.install.deps.sh', ':', d)}
+# cargo's configure doesn't recognize --disable-static, so remove it.
+DISABLE_STATIC = ""
 
+do_configure () {
 	"${S}/configure" \
 		"--prefix=${prefix}"			\
 		"--build=${BUILD_SYS}"			\
@@ -44,8 +39,6 @@ do_configure () {
 		${EXTRA_OECONF} \
 		|| die "Could not configure cargo"
 
-	# cargo downloads a cargo snapshot to build itself using cargo, we need
-	# to override it's arch info.
 	cargo_do_configure
 }
 
@@ -54,13 +47,13 @@ do_compile () {
 
 	rm -rf target/snapshot
 	mkdir -p target
-	cp -R ${WORKDIR}/$(basename ${CARGO_SNAPSHOT} .tar.gz)/cargo target/snapshot
+	cp -R ${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/cargo target/snapshot
 
-	oe_runmake ARGS="--verbose"
+	oe_runmake VERBOSE=1
 }
 
 do_install () {
-	oe_runmake DESTDIR="${D}" install
+	oe_runmake prepare-image-${TARGET_SYS} IMGDIR_${TARGET_SYS}="${D}${prefix}"
 }
 
 BBCLASSEXTEND = "native"
