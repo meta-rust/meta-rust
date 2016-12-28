@@ -9,7 +9,6 @@ DEPENDS += "cmake-native"
 SRC_URI += " \
         file://rust-${PV}/0001-Target-add-default-target.json-path-libdir-rust-targ.patch \
         file://rust-${PV}/0002-mk-for-stage0-use-RUSTFLAGS-to-override-target-libs-.patch \
-        file://rust-${PV}/0003-mk-add-missing-CFG_LIBDIR_RELATIVE.patch \
         file://rust-${PV}/0005-std-thread_local-workaround-for-NULL-__dso_handle.patch \
         file://rust-${PV}/0006-mk-install-use-disable-rewrite-paths.patch \
         file://rust-${PV}/0007-Allow-overriding-crate_hash-with-C-crate_hash.patch \
