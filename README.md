@@ -5,17 +5,19 @@ This OpenEmbedded layer provides the rust compiler, tools for building packages
 
 ## What works:
 
- - Building rust-native, rust-cross, rust-hello-world, cargo-native
+ - Building `rust-native` and `cargo-native`
  - Building Rust based projects with Cargo for the TARGET
+   - e.g. `rustfmt` which is used by the CI system
+ - `-buildsdk` and `-crosssdk` packages
 
 ## What doesn't:
 
  - Using anything but x86_64 as the build environment
- - Probably some of the untested things
+ - rust (built for target) issue #81
 
 ## What's untested:
 
- - rust (built for target)
+ - cargo (built for target)
 
 ## Building a rust package
 
@@ -30,39 +32,24 @@ recipe for it.  This allows bitbake to fetch all the necessary dependent
 crates, as well as a pegged version of the crates.io index, to ensure maximum
 reproducibility.
 
-## Common issues when packaging things using cargo
-
- You may run into errors similar to:
-
-```
-| src/lib.rs:12:1: 12:35 error: can't find crate for `ffi`
-| src/lib.rs:12 extern crate "openssl-sys" as ffi;
-|               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-```
-
- Where a "-sys" crate (or other crate) is not found. These are typically caused
-by a crate's Cargo.toml including triplet-specific dependencies and then using
-the crate based on a feature (most often, `#[cfg(unix)]`). Until cargo and it's
-ecosystem get their act together, you'll need to supply patches to the
-misbehaving packages. See `recipies/cargo/cargo_*.bb` for an example of how to
-do this.
+NOTE: You will have to edit the generated recipe based on the comments
+contained within it
 
 ## TODO
 
- - -crosssdk and -buildsdk packages
- - Upstream local rustc patches for libdir and bindir support
-
 ## Pitfalls
 
- - TARGET_SYS _must_ be different from BUILD_SYS. This is due to the way configuration options are tracked for different targets.
+ - TARGET_SYS _must_ be different from BUILD_SYS. This is due to the way Rust configuration options are tracked for different targets. This is the reason we use the Yocto triples instead of the native Rust triples. See rust-lang/cargo#3349.
 
 ## Dependencies
 
 On the host:
-	unknown
+ - Any `-sys` packages your project might need must have RDEPENDs for
+ the native library.
 
 On the target:
-	unknown
+ - Any `-sys` packages your project might need must have RDEPENDs for
+ the native library.
 
 ## Maintainer(s) & Patch policy
 
@@ -73,6 +60,8 @@ The master branch supports the latest master of poky. When poky creates releases
 All new patches against rust, rust-llvm, and cargo must have referenced
 upstream issues or PRs opened or an explanation why the patch cannot be
 upstreamed. This cooresponds to the OpenEmbedded policy for other meta layers.
+
+More info can be seen on the wiki.
 
 ## Copyright
 
