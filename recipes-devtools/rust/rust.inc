@@ -177,7 +177,7 @@ def arch_to_rust_target_arch(arch):
 
 # generates our target CPU value
 def llvm_cpu(d):
-    cpu = d.getVar('TUNE_PKGARCH')
+    cpu = d.getVar('PACKAGE_ARCH')
     target = d.getVar('TRANSLATED_TARGET_ARCH')
 
     trans = {}
