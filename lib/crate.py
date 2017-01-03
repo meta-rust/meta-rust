@@ -35,21 +35,6 @@ class Crate(Wget):
 
     """Class to fetch crates via wget"""
 
-    def _cargo_path(self, rootdir, component):
-        # TODO: make this less brittle
-        # This can go away entirely once we can build a cargo that supports source-replacement
-        repo = "github.com-1ecc6299db9ec823"
-        return os.path.join(rootdir, "cargo_home", "registry", component, repo)
-
-    def _cargo_src_path(self, rootdir):
-        return self._cargo_path(rootdir, "src")
-
-    def _cargo_index_path(self, rootdir):
-        return self._cargo_path(rootdir, "index")
-
-    def _cargo_cache_path(self, rootdir):
-        return self._cargo_path(rootdir, "cache")
-
     def _cargo_bitbake_path(self, rootdir):
         return os.path.join(rootdir, "cargo_home", "bitbake")
 
@@ -57,7 +42,7 @@ class Crate(Wget):
         """
         Check to see if a given url is for this fetcher
         """
-        return ud.type in ['crate', 'crate-index']
+        return ud.type in ['crate']
 
     def recommends_checksum(self, urldata):
         return False
@@ -69,8 +54,6 @@ class Crate(Wget):
 
         if ud.type == 'crate':
             self._crate_urldata_init(ud, d)
-        elif ud.type == 'crate-index':
-            self._index_urldata_init(ud, d)
 
         super(Crate, self).urldata_init(ud, d)
 
@@ -102,70 +85,14 @@ class Crate(Wget):
 
         logger.debug(2, "Fetching %s to %s" % (ud.url, ud.parm['downloadfilename']))
 
-    def _index_urldata_init(self, ud, d):
-        """
-        Sets up the download for the cargo index
-        """
-
-        # URL syntax is: crate-index://REV
-        # break the URL apart by /
-        parts = ud.url.split('/')
-        if len(parts) != 4:
-            raise bb.fetch2.ParameterError("Invalid URL: Must be crate-index://HOST/REV", ud.url)
-
-        # last field is the rev
-        rev = parts[3]
-        host = parts[2]
-
-        if host == 'crates.io':
-            host = 'github.com/rust-lang/crates.io-index'
-
-        ud.url = "https://%s/archive/%s.tar.gz" % (host, rev)
-        ud.parm['downloadfilename'] = 'cargo-index-%s.tar.gz' % rev
-        ud.parm['name'] = "index"
-
-        logger.debug(2, "Fetching crate index %s" % ud.url)
-
     def unpack(self, ud, rootdir, d):
         """
         Uses the crate to build the necessary paths for cargo to utilize it
         """
-        if ud.type == 'crate-index':
-            return self._index_unpack(ud, rootdir, d)
-        elif ud.type == 'crate':
+        if ud.type == 'crate':
             return self._crate_unpack(ud, rootdir, d)
         else:
             super(Crate, self).unpack(ud, rootdir, d)
-
-    def _index_unpack(self, ud, rootdir, d):
-        """
-        Unpacks the index
-        """
-        thefile = ud.localpath
-
-        cargo_index = self._cargo_index_path(rootdir)
-
-        cmd = "tar -xz --no-same-owner --strip-components 1 -f %s -C %s" % (thefile, cargo_index)
-
-        # change to the rootdir to unpack but save the old working dir
-        save_cwd = os.getcwd()
-        os.chdir(rootdir)
-
-        # ensure we've got these paths made
-        bb.utils.mkdirhier(cargo_index)
-
-        # path it
-        path = d.getVar('PATH', True)
-        if path:
-            cmd = "PATH=\"%s\" %s" % (path, cmd)
-        bb.note("Unpacking %s to %s/" % (thefile, cargo_index))
-
-        ret = subprocess.call(cmd, preexec_fn=subprocess_setup, shell=True)
-
-        os.chdir(save_cwd)
-
-        if ret != 0:
-            raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)
 
     def _crate_unpack(self, ud, rootdir, d):
         """
@@ -184,8 +111,6 @@ class Crate(Wget):
         if pn == ud.parm.get('name'):
             cmd = "tar -xz --no-same-owner -f %s" % thefile
         else:
-            self._crate_unpack_old_layout(ud, rootdir, d)
-
             cargo_bitbake = self._cargo_bitbake_path(rootdir)
 
             cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_bitbake)
@@ -222,34 +147,3 @@ class Crate(Wget):
             mdpath = os.path.join(bbpath, cratepath, mdfile)
             with open(mdpath, "w") as f:
                 json.dump(metadata, f)
-
-
-    def _crate_unpack_old_layout(self, ud, rootdir, d):
-        """
-        Unpacks a crate in the old location that tried to emulate
-        the Cargo registry layout.
-        """
-        thefile = ud.localpath
-
-        cargo_src = self._cargo_src_path(rootdir)
-        cargo_cache = self._cargo_cache_path(rootdir)
-
-        cmd = "tar -xz --no-same-owner -f %s -C %s" % (thefile, cargo_src)
-
-        # ensure we've got these paths made
-        bb.utils.mkdirhier(cargo_cache)
-        bb.utils.mkdirhier(cargo_src)
-
-        bb.note("Copying %s to %s/" % (thefile, cargo_cache))
-        shutil.copy(thefile, cargo_cache)
-
-        # path it
-        path = d.getVar('PATH', True)
-        if path:
-            cmd = "PATH=\"%s\" %s" % (path, cmd)
-        bb.note("Unpacking %s to %s/" % (thefile, os.getcwd()))
-
-        ret = subprocess.call(cmd, preexec_fn=subprocess_setup, shell=True)
-
-        if ret != 0:
-            raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)
