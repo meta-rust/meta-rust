@@ -1,0 +1,106 @@
+From 24b71f1ce87c1247d0e573d3dcba4686f237c817 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Tue, 18 Nov 2014 01:40:21 -0500
+Subject: [PATCH 1/3] Target: add default target.json path:
+ $libdir/rust/targets
+
+---
+ src/librustc/session/config.rs  |  6 +++---
+ src/librustc/session/mod.rs     |  8 ++++++--
+ src/librustc_back/target/mod.rs | 12 ++++++++++--
+ 3 files changed, 19 insertions(+), 7 deletions(-)
+
+diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
+index 63eabd5..6d002d0 100644
+--- a/src/librustc/session/config.rs
++++ b/src/librustc/session/config.rs
+@@ -42,7 +42,7 @@ use std::fmt;
+ use std::hash::Hasher;
+ use std::collections::hash_map::DefaultHasher;
+ use std::iter::FromIterator;
+-use std::path::PathBuf;
++use std::path::{Path, PathBuf};
+ 
+ pub struct Config {
+     pub target: Target,
+@@ -1002,8 +1002,8 @@ pub fn build_configuration(sess: &Session,
+     v
+ }
+ 
+-pub fn build_target_config(opts: &Options, sp: &Handler) -> Config {
+-    let target = match Target::search(&opts.target_triple) {
++pub fn build_target_config(sysroot: &Path, opts: &Options, sp: &Handler) -> Config {
++    let target = match Target::search(sysroot, &opts.target_triple[..]) {
+         Ok(t) => t,
+         Err(e) => {
+             sp.struct_fatal(&format!("Error loading target specification: {}", e))
+diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
+index b4dadbf..72fa269 100644
+--- a/src/librustc/session/mod.rs
++++ b/src/librustc/session/mod.rs
+@@ -564,13 +564,17 @@ pub fn build_session_(sopts: config::Options,
+                       codemap: Rc<codemap::CodeMap>,
+                       cstore: Rc<for<'a> CrateStore<'a>>)
+                       -> Session {
+-    let host = match Target::search(config::host_triple()) {
++    let sysroot = match sopts.maybe_sysroot {
++        Some(ref x) => PathBuf::from(x),
++        None => filesearch::get_or_default_sysroot()
++    };
++    let host = match Target::search(&sysroot, config::host_triple()) {
+         Ok(t) => t,
+         Err(e) => {
+             panic!(span_diagnostic.fatal(&format!("Error loading host specification: {}", e)));
+     }
+     };
+-    let target_cfg = config::build_target_config(&sopts, &span_diagnostic);
++    let target_cfg = config::build_target_config(&sysroot, &sopts, &span_diagnostic);
+     let p_s = parse::ParseSess::with_span_handler(span_diagnostic, codemap);
+     let default_sysroot = match sopts.maybe_sysroot {
+         Some(_) => None,
+diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
+index 4d9315a..12aadab 100644
+--- a/src/librustc_back/target/mod.rs
++++ b/src/librustc_back/target/mod.rs
+@@ -51,6 +51,7 @@ use std::io::prelude::*;
+ use syntax::abi::{Abi, lookup as lookup_abi};
+ 
+ use PanicStrategy;
++use std::path::Path;
+ 
+ mod android_base;
+ mod apple_base;
+@@ -604,12 +605,13 @@ impl Target {
+     ///
+     /// The error string could come from any of the APIs called, including
+     /// filesystem access and JSON decoding.
+-    pub fn search(target: &str) -> Result<Target, String> {
++    pub fn search(sysroot: &Path, target: &str) -> Result<Target, String> {
+         use std::env;
+         use std::ffi::OsString;
+         use std::fs::File;
+         use std::path::{Path, PathBuf};
+         use serialize::json;
++        use std::iter::IntoIterator;
+ 
+         fn load_file(path: &Path) -> Result<Target, String> {
+             let mut f = File::open(path).map_err(|e| e.to_string())?;
+@@ -640,8 +642,14 @@ impl Target {
+                               .unwrap_or(OsString::new());
+ 
+         // FIXME 16351: add a sane default search path?
++        let mut default_path = sysroot.to_owned();
++        default_path.push(env!("CFG_LIBDIR_RELATIVE"));
++        default_path.push("rustlib");
+ 
+-        for dir in env::split_paths(&target_path) {
++        let paths = env::split_paths(&target_path)
++            .chain(Some(default_path).into_iter());
++
++        for dir in paths {
+             let p =  dir.join(&path);
+             if p.is_file() {
+                 return load_file(&p);
+-- 
+2.10.1 (Apple Git-78)
+
