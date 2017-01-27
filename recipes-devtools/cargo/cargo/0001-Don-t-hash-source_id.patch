@@ -1,0 +1,27 @@
+From a65784be8fdbc7dffa6d568bcc364cb67655ebfe Mon Sep 17 00:00:00 2001
+From: Steven Walter <stevenrwalter@gmail.com>
+Date: Fri, 27 Jan 2017 11:24:57 -0500
+Subject: [PATCH] Don't hash source_id
+
+This makes hashes reproducible when building directly in the source as
+well as from a registry. Reproducible file names are necessary for
+linking against externally built crates.
+---
+ src/cargo/core/package_id.rs | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/cargo/core/package_id.rs b/src/cargo/core/package_id.rs
+index b29b8ca..7691d38 100644
+--- a/src/cargo/core/package_id.rs
++++ b/src/cargo/core/package_id.rs
+@@ -66,7 +66,6 @@ impl Hash for PackageId {
+     fn hash<S: hash::Hasher>(&self, state: &mut S) {
+         self.inner.name.hash(state);
+         self.inner.version.hash(state);
+-        self.inner.source_id.hash(state);
+     }
+ }
+ 
+-- 
+2.7.4
+
