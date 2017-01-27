@@ -23,7 +23,10 @@ S = "${WORKDIR}/rustc-${PV}"
 do_compile_prepend () {
     cd ${S}/src/rustc/std_shim
     export CARGO_TARGET_DIR="${B}"
+    # For Rust 1.12.1 and lower
     export RUSTC_BOOTSTRAP_KEY="${RS_KEY}"
+    # For Rust 1.13.0 and newer
+    export RUSTC_BOOTSTRAP="1"
 }
 
 do_install () {
