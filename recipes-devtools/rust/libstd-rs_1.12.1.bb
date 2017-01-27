@@ -32,4 +32,5 @@ do_compile_prepend () {
 do_install () {
     mkdir -p ${D}${rustlibdir}
     cp ${B}/${TARGET_SYS}/release/deps/* ${D}${rustlibdir}
+    rm ${D}${rustlibdir}/libstd*.rlib
 }
