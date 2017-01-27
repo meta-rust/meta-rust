@@ -10,6 +10,7 @@ DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
 SRC_URI = "\
 	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
+	file://0001-Don-t-hash-source_id.patch \
 "
 
 B = "${S}"
