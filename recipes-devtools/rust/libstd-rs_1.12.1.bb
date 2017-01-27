@@ -16,6 +16,7 @@ DEPENDS += "compiler-rt (=${PV})"
 
 RUSTLIB_DEP = ""
 inherit cargo
+inherit force-crate-hash
 
 # Needed so cargo can find libbacktrace
 RUSTFLAGS += "-L ${STAGING_LIBDIR}"
