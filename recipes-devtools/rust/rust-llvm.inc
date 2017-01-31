@@ -80,6 +80,8 @@ do_compile_prepend_class-target() {
 }
 
 do_compile() {
+    oe_runmake NATIVE_LIB_LLVMTABLEGEN
+    oe_runmake NativeLLVMConfig
     oe_runmake
 }
 
