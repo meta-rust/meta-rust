@@ -3,7 +3,7 @@ LICENSE = "NCSA"
 
 S = "${WORKDIR}/rustc-${PV}/src/llvm"
 
-LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
+LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=b99eb43c934ceebecab85c6b9b1a08be"
 
 inherit cmake pythonnative
 
