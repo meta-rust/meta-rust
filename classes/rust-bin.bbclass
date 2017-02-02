@@ -3,8 +3,7 @@ inherit rust
 DEPENDS_append = " patchelf-native"
 RDEPENDS_${PN} += "${RUSTLIB_DEP}"
 
-RUSTFLAGS += "-C crate_hash=${BB_TASKHASH}"
-RUSTC_ARCHFLAGS += "-C opt-level=3 -g -L ${STAGING_DIR_HOST}/${rustlibdir}"
+RUSTC_ARCHFLAGS += "-C opt-level=3 -g -L ${STAGING_DIR_HOST}/${rustlibdir} -C link-args=--sysroot=${STAGING_DIR_HOST}"
 EXTRA_OEMAKE += 'RUSTC_ARCHFLAGS="${RUSTC_ARCHFLAGS}"'
 
 # Some libraries alias with the standard library but libstd is configured to
