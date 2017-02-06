@@ -1,9 +1,10 @@
 require rust.inc
 require rust-source-${PV}.inc
 
+EXTRA_OECONF = "--disable-rustbuild"
+
 SRC_URI += " \
         file://rust-${PV}/0001-Target-add-default-target.json-path-libdir-rust-targ.patch \
-        file://rust-${PV}/0002-mk-for-stage0-use-RUSTFLAGS-to-override-target-libs-.patch \
         file://rust-${PV}/0003-std-thread_local-workaround-for-NULL-__dso_handle.patch \
         "
 
