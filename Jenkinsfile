@@ -24,6 +24,9 @@ for (int i = 0; i < targets.size(); i++) {
                 echo "Caught: ${e}"
                 throw e
             } finally {
+                stage("push build cache $machine") {
+                    sh "./scripts/publish-build-cache.sh master"
+                }
                 stage("cleanup $machine") {
                     sh "./scripts/cleanup-env.sh"
                     deleteDir()
