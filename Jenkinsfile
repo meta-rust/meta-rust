@@ -25,7 +25,7 @@ for (int i = 0; i < targets.size(); i++) {
                 throw e
             } finally {
                 stage("push build cache $machine") {
-                    sh "./scripts/publish-build-cache.sh master"
+                    sh "./scripts/publish-build-cache.sh morty"
                 }
                 stage("cleanup $machine") {
                     sh "./scripts/cleanup-env.sh"
