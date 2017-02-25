@@ -47,6 +47,12 @@ def llvm_features_from_tune(d):
     if 'aarch64' in feat:
         f.append("+v8")
 
+    if 'mips32' in feat:
+        f.append("+mips32")
+
+    if 'mips32r2' in feat:
+        f.append("+mips32r2")
+
     v7=frozenset(['armv7a', 'armv7r', 'armv7m', 'armv7ve'])
     if not feat.isdisjoint(v7):
         f.append("+v7")
@@ -71,11 +77,6 @@ def llvm_features_from_tune(d):
         f.append("+a15")
     if 'cortexa17' in feat:
         f.append("+a17")
-
-    # Seems like it could be infered by the lack of vfp options, but we'll
-    # include it anyhow
-    if 'soft' in feat:
-        f.append("+soft-float")
 
     return ','.join(f)
 
@@ -112,6 +113,21 @@ def llvm_features_from_cc_arch(d):
 
     return ','.join(f)
 
+
+def llvm_features_from_target_fpu(d):
+    # TARGET_FPU can be hard or soft. +soft-float tell llvm to use soft float
+    # ABI. There is no option for hard.
+
+    fpu = d.getVar('TARGET_FPU', True)
+    return "+soft-float" if fpu == "soft" else ""
+
+def llvm_features(d):
+    # Filter away empty strings.
+    return ','.join(filter(bool, [llvm_features_from_tune(d),
+                                  llvm_features_from_cc_arch(d),
+                                  llvm_features_from_target_fpu(d)]))
+
+
 ## arm-unknown-linux-gnueabihf
 DATA_LAYOUT[arm] = "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
@@ -124,6 +140,13 @@ DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
+
+## mipsel-unknown-linux-gnu
+DATA_LAYOUT[mipsel] = "e-m:m-p:32:32-i8:8:32-i16:16:32-i64:64-n32-S64"
+LLVM_TARGET[mipsel] = "${RUST_TARGET_SYS}"
+TARGET_ENDIAN[mipsel] = "little"
+TARGET_POINTER_WIDTH[mipsel] = "32"
+PRE_LINK_ARGS[mipsel] = "-Wl,--as-needed"
 
 ## x86_64-unknown-linux-gnu
 DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
@@ -172,11 +195,13 @@ def cxxflags_for(d, thing):
 def arch_to_rust_target_arch(arch):
     if arch == "i586" or arch == "i686":
         return "x86"
+    elif arch == "mipsel":
+        return "mips"
     else:
         return arch
 
-# generates our target CPU value
-def llvm_cpu(d):
+# generates our target CPU value for native builds
+def llvm_native_cpu(d):
     cpu = d.getVar('PACKAGE_ARCH', True)
     target = d.getVar('TRANSLATED_TARGET_ARCH', True)
 
@@ -192,8 +217,27 @@ def llvm_cpu(d):
     except:
         return trans.get(target, "generic")
 
-TARGET_LLVM_CPU="${@llvm_cpu(d)}"
-TARGET_LLVM_FEATURES = "${@llvm_features_from_tune(d)} ${@llvm_features_from_cc_arch(d)}"
+# generates our target CPU value for cross builds
+def llvm_cross_cpu(d):
+    feat = d.getVar('TUNE_FEATURES', True)
+    if not feat:
+        return ""
+    feat = frozenset(feat.split())
+
+    # The only reliable way of finding the cpu is to look in TUNE_FEATURES
+    # which is derived from DEFAULTTUNE
+    if "mips32r2" in feat:
+        return "mips32r2"
+    elif "mips32" in feat:
+        return "mips32"
+
+    # TODO: Proper x86 targets. "generic" is a valid choice.
+    # TODO: Proper ARM cpu selection, for now "generic" is a valid cpu choice.
+    return "generic"
+
+TARGET_LLVM_CPU="${@llvm_cross_cpu(d)}"
+TARGET_LLVM_CPU_class-native="${@llvm_native_cpu(d)}"
+TARGET_LLVM_FEATURES = "${@llvm_features(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
@@ -239,7 +283,7 @@ def rust_gen_target(d, thing, wd):
 
     # write out the target spec json file
     with open(wd + sys + '.json', 'w') as f:
-        json.dump(tspec, f)
+        json.dump(tspec, f, indent=4)
 
 
 python do_rust_gen_targets () {
@@ -275,6 +319,13 @@ def rust_gen_mk_cfg(d, thing):
     prefix = prefix_for(d, thing)
     llvm_target = d.getVarFlag('LLVM_TARGET', arch, True)
     ldflags = d.getVar('LDFLAGS', True) + d.getVar('HOST_CC_ARCH', True) + d.getVar('TOOLCHAIN_OPTIONS', True)
+
+    # TODO: There has got to be a better way of doing this
+    if thing == "TARGET":
+        cpu = d.getVar('TARGET_LLVM_CPU', True)
+        is_mips32r2 = cpu == "mips32r2"
+    else:
+        is_mips32r2 = False
 
     b = os.path.join(d.getVar('S', True), 'mk', 'cfg')
     o = open(os.path.join(b, sys_for(d, thing) + '.mk'), 'w')
@@ -314,6 +365,10 @@ def rust_gen_mk_cfg(d, thing):
         '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_CXXFLAGS/ s;$; {};'.format(cxxflags_for(d, thing)),
         '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(ldflags),
+
+        # The mipsel target specify flags for the mips32. Replace them with
+        # mips32r2 if that's what we use
+        '-e', 's/mips32/mips32r2/g' if is_mips32r2 else '',
 
         # May need to add: CFG_LLC_FLAGS_{}
         ], stdout=o, stdin=i)
