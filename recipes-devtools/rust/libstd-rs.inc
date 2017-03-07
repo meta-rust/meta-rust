@@ -4,8 +4,6 @@ SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
-S = "${WORKDIR}/rustc-${PV}"
-
 SRC_URI += "\
 	crate://crates.io/gcc/0.3.27 \
 "
@@ -17,8 +15,6 @@ inherit cargo
 
 # Needed so cargo can find libbacktrace
 RUSTFLAGS += "-L ${STAGING_LIBDIR}"
-
-S = "${WORKDIR}/rustc-${PV}"
 
 do_compile_prepend () {
     cd ${S}/src/rustc/std_shim

@@ -1,7 +1,7 @@
 SUMMARY = "LLVM compiler framework (packaged with rust)"
 LICENSE = "NCSA"
 
-S = "${WORKDIR}/rustc-${PV}/src/llvm"
+S = "${RUSTSRC}/src/llvm"
 
 LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=b99eb43c934ceebecab85c6b9b1a08be"
 

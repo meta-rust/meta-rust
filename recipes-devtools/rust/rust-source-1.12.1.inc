@@ -19,3 +19,7 @@ SRC_URI += "\
 SRC_URI[rust.md5sum] = "82db5a9cb9a051bf8ece2f5174cb273b"
 SRC_URI[rust.sha256sum] = "97913ae4cb255618aaacd1a534b11f343634b040b32656250d09d8d9ec02d3dc"
 
+# later versions of rust change the directory that they unextract to
+RUSTSRC = "${WORKDIR}/rustc-${PV}"
+# set this as our default
+S = "${RUSTSRC}"
