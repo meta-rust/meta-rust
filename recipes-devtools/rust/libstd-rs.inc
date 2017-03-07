@@ -4,10 +4,6 @@ SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
 LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
-SRC_URI += "\
-	crate://crates.io/gcc/0.3.27 \
-"
-
 DEPENDS += "compiler-rt (=${PV})"
 
 RUSTLIB_DEP = ""
