@@ -12,8 +12,6 @@ DEPENDS += "rust-llvm-native (=${PV})"
 RDEPENDS_${PN}-dev = ""
 INSANE_SKIP_${PN}-dev = "staticdev"
 
-S = "${WORKDIR}/rustc-${PV}"
-
 DISABLE_STATIC = ""
 INHIBIT_DEFAULT_RUST_DEPS = "1"
 
