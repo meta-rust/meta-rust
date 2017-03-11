@@ -1,5 +1,5 @@
-require rust-llvm.inc
 require rust-source-${PV}.inc
+require rust-llvm.inc
 
 do_install_prepend () {
 	# the install does a sed on this without installing the file

@@ -10,8 +10,6 @@ SRC_URI = "\
 	https://static.rust-lang.org/dist/${RUST_SNAPSHOT}.tar.gz;name=rust-snapshot \
     "
 
-S = "${WORKDIR}/rustc-${PV}"
-
 DEPENDS += "file-native"
 
 # We generate local targets, and need to be able to locate them
