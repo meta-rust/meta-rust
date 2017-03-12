@@ -1,30 +1,29 @@
-From bb2d8649b2b344e0bb4b1cf94135378831735557 Mon Sep 17 00:00:00 2001
+From a755da8040345cc31295dd4bb32668840f2d6bb0 Mon Sep 17 00:00:00 2001
 From: Cody P Schafer <dev@codyps.com>
 Date: Tue, 18 Nov 2014 01:40:21 -0500
-Subject: [PATCH 01/10] Target: add default target.json path:
- $libdir/rust/targets
+Subject: [PATCH] Target: add default target.json path: $libdir/rust/targets
 
 ---
  src/librustc/session/config.rs  |  6 +++---
  src/librustc/session/mod.rs     |  8 ++++++--
- src/librustc_back/target/mod.rs | 13 +++++++++++--
- 3 files changed, 20 insertions(+), 7 deletions(-)
+ src/librustc_back/target/mod.rs | 12 ++++++++++--
+ 3 files changed, 19 insertions(+), 7 deletions(-)
 
 diff --git a/src/librustc/session/config.rs b/src/librustc/session/config.rs
-index e988ddc..563f3ac 100644
+index fadb184400..2bee9e8241 100644
 --- a/src/librustc/session/config.rs
 +++ b/src/librustc/session/config.rs
-@@ -42,7 +42,7 @@ use std::env;
- use std::fmt;
- use std::hash::{Hasher, SipHasher};
+@@ -43,7 +43,7 @@ use std::hash::Hasher;
+ use std::collections::hash_map::DefaultHasher;
+ use std::collections::HashSet;
  use std::iter::FromIterator;
 -use std::path::PathBuf;
 +use std::path::{Path, PathBuf};
  
  pub struct Config {
      pub target: Target,
-@@ -1011,8 +1011,8 @@ pub fn build_configuration(sess: &Session,
-     v
+@@ -1077,8 +1077,8 @@ pub fn build_configuration(sess: &Session,
+     user_cfg
  }
  
 -pub fn build_target_config(opts: &Options, sp: &Handler) -> Config {
@@ -35,12 +34,12 @@ index e988ddc..563f3ac 100644
          Err(e) => {
              sp.struct_fatal(&format!("Error loading target specification: {}", e))
 diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
-index c71253a..13b4e05 100644
+index adc9aabb8c..439d22c3fd 100644
 --- a/src/librustc/session/mod.rs
 +++ b/src/librustc/session/mod.rs
-@@ -395,13 +395,17 @@ pub fn build_session_(sopts: config::Options,
+@@ -618,13 +618,17 @@ pub fn build_session_(sopts: config::Options,
                        codemap: Rc<codemap::CodeMap>,
-                       cstore: Rc<for<'a> CrateStore<'a>>)
+                       cstore: Rc<CrateStore>)
                        -> Session {
 -    let host = match Target::search(config::host_triple()) {
 +    let sysroot = match sopts.maybe_sysroot {
@@ -59,19 +58,18 @@ index c71253a..13b4e05 100644
      let default_sysroot = match sopts.maybe_sysroot {
          Some(_) => None,
 diff --git a/src/librustc_back/target/mod.rs b/src/librustc_back/target/mod.rs
-index 18686e3..d439b59 100644
+index e60fdc386c..7d18df7e86 100644
 --- a/src/librustc_back/target/mod.rs
 +++ b/src/librustc_back/target/mod.rs
-@@ -49,6 +49,8 @@ use std::collections::BTreeMap;
- use std::default::Default;
- use std::io::prelude::*;
- use syntax::abi::Abi;
-+use std::borrow::ToOwned;
+@@ -51,6 +51,7 @@ use std::io::prelude::*;
+ use syntax::abi::{Abi, lookup as lookup_abi};
+ 
+ use {LinkerFlavor, PanicStrategy};
 +use std::path::Path;
  
  mod android_base;
  mod apple_base;
-@@ -541,12 +543,13 @@ impl Target {
+@@ -697,12 +698,13 @@ impl Target {
      ///
      /// The error string could come from any of the APIs called, including
      /// filesystem access and JSON decoding.
@@ -86,7 +84,7 @@ index 18686e3..d439b59 100644
  
          fn load_file(path: &Path) -> Result<Target, String> {
              let mut f = File::open(path).map_err(|e| e.to_string())?;
-@@ -577,8 +580,14 @@ impl Target {
+@@ -733,8 +735,14 @@ impl Target {
                                .unwrap_or(OsString::new());
  
          // FIXME 16351: add a sane default search path?
@@ -103,5 +101,5 @@ index 18686e3..d439b59 100644
              if p.is_file() {
                  return load_file(&p);
 -- 
-2.10.0
+2.11.0
 

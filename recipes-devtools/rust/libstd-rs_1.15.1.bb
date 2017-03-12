@@ -1,9 +1,9 @@
 require rust-source-${PV}.inc
 require libstd-rs.inc
 
-EXTRA_OECONF = "--disable-rustbuild"
-
-CARGO_BUILD_FLAGS += "--features 'jemalloc panic-unwind'"
+# Don't use jemalloc as it doesn't work for many targets.
+# https://github.com/rust-lang/rust/pull/37392 
+CARGO_BUILD_FLAGS += "--features 'panic-unwind'"
 
 SRC_URI += "\
 	crate://crates.io/cmake/0.1.18 \
