@@ -10,6 +10,12 @@ SRC_URI = "\
 	https://static.rust-lang.org/dist/${RUST_SNAPSHOT}.tar.gz;name=rust-snapshot \
     "
 
+# rustbuild uses cargo to build rustc.
+require recipes-devtools/cargo/cargo-snapshot.inc
+SRC_URI += "\
+	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
+"
+
 DEPENDS += "file-native"
 
 # We generate local targets, and need to be able to locate them
@@ -342,7 +348,70 @@ export CFG_DISABLE_LDCONFIG="notempty"
 # rust's configure doesn't recognize --disable-static, so remove it.
 DISABLE_STATIC = ""
 
-do_configure () {
+python do_configure() {
+    import json
+    import ConfigParser
+
+    # toml is rather similar to standard ini like format except it likes values
+    # that look more JSON like. So for our purposes simply escaping all values
+    # as JSON seem to work fine.
+
+    # TODO: Make a ConfigParser that escapes stuff and put it somewhere.
+    e = lambda s: json.dumps(s)
+
+    config = ConfigParser.RawConfigParser()
+    target_section = "target.{}".format(d.getVar('TARGET_SYS', True))
+
+    # We need to do it in reverse order.
+
+    # [target.ARCH-poky-linux}
+    config.add_section(target_section)
+
+    llvm_config = d.expand("${STAGING_DIR_NATIVE}${bindir_native}/llvm-config")
+    config.set(target_section, "llvm-config", e(llvm_config))
+
+    config.set(target_section, "cxx", e(d.expand("${CCACHE}${TARGET_PREFIX}g++")))
+    config.set(target_section, "cc", e(d.expand("${CCACHE}${TARGET_PREFIX}gcc")))
+
+    # [rust]
+    config.add_section("rust")
+    config.set("rust", "rpath", e(True))
+    config.set("rust", "channel", e("stable"))
+    config.set("rust", "use-jemalloc", e(False))
+
+    # [install]
+    config.add_section("install")
+    config.set("install", "mandir", e(d.getVar('mandir', True)))
+    config.set("install", "libdir", e(d.getVar('libdir', True)))
+    config.set("install", "prefix", e(d.getVar('prefix', True)))
+
+    # [build]
+    config.add_section("build")
+    config.set("build", "submodules", e(False))
+    config.set("build", "docs", e(False))
+
+    rustc = d.expand("${WORKDIR}/${RUST_SNAPSHOT}/rustc/bin/rustc")
+    config.set("build", "rustc", e(rustc))
+
+    cargo = d.expand("${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/cargo/bin/cargo")
+    config.set("build", "cargo", e(cargo))
+
+    targets = [d.getVar("TARGET_SYS", True)]
+    config.set("build", "target", e(targets))
+
+    hosts = [d.getVar("HOST_SYS", True)]
+    config.set("build", "host", e(targets))
+
+    config.set("build", "build", e(d.getVar("BUILD_SYS", True)))
+
+    # TODO: I don't think we need an llvm section as we use an 
+    #       externally built on... Right?
+
+    with open("config.toml", "w") as f:
+        config.write(f)
+}
+
+do_configuree () {
     # FIXME: target_prefix vs prefix, see cross.bbclass
 
     # - rpath is required otherwise rustc fails to resolve symbols
@@ -387,8 +456,44 @@ rust_runmake () {
     oe_runmake "VERBOSE=1" "$@"
 }
 
+rust_runx () {
+    echo "COMPILE ${PN}" "$@"
+
+    # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
+    # wide range of targets (not just TARGET). Yocto's settings for them will
+    # be inappropriate, avoid using.
+    unset CFLAGS
+    unset LDFLAGS
+    unset CXXFLAGS
+    unset CPPFLAGS
+
+    # TODO: We should probably set some CC, CXX for gcc-rs first.
+    python src/bootstrap/bootstrap.py "$@"
+}
+
 do_compile () {
-    rust_runmake
+    rust_runx build
+}
+
+rust_do_dist_install () {
+    rust_runx PREFIX="${D}" dist --install
+
+    # Install our custom target.json files
+    local td="${D}${libdir}/rustlib/"
+    install -d "$td"
+    for tgt in "${WORKDIR}/targets/"* ; do
+        install -m 0644 "$tgt" "$td"
+    done
+
+    # Remove any files directly installed into libdir to avoid
+    # conflicts between cross and native
+    rm -f ${D}${libdir}/lib*.so
+
+    # cleanup after rust-installer since we don't need these bits
+    rm ${D}/${libdir}/rustlib/install.log
+    rm ${D}/${libdir}/rustlib/rust-installer-version
+    rm ${D}/${libdir}/rustlib/uninstall.sh
+    rm ${D}/${libdir}/rustlib/components
 }
 
 rust_do_install () {
@@ -413,6 +518,6 @@ rust_do_install () {
 }
 
 do_install () {
-    rust_do_install
+    rust_do_dist_install
 }
 # ex: sts=4 et sw=4 ts=8
