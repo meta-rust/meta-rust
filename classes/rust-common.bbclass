@@ -5,7 +5,7 @@ FILES_${PN}-dev += "${rustlibdir}/*.rlib"
 FILES_${PN}-dbg += "${rustlibdir}/.debug"
 
 RUSTLIB = "-L ${STAGING_LIBDIR}/rust"
-RUSTFLAGS += "-C rpath ${RUSTLIB}"
+RUSTFLAGS += "${RUSTLIB}"
 RUSTLIB_DEP ?= "libstd-rs"
 
 # Responsible for taking Yocto triples and converting it to Rust triples
