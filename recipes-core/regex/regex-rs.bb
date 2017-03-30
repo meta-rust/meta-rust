@@ -8,3 +8,5 @@ DEPENDS = "\
 require regex.inc
 
 S = "${WORKDIR}/git"
+
+BBCLASSEXTEND += "native"
