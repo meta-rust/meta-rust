@@ -1,7 +1,7 @@
 require rust-source-${PV}.inc
 require rust-llvm.inc
 
-LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=43fdaa303c1c5589ad60f4ffc6a0b9ce"
+LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=b99eb43c934ceebecab85c6b9b1a08be"
 
 do_install_prepend () {
 	# the install does a sed on this without installing the file
