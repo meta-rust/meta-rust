@@ -78,6 +78,12 @@ oe_cargo_fix_env () {
 	export HOST_CC="${RUST_BUILD_CC}"
 	export HOST_CFLAGS="${BUILD_CFLAGS}"
 	export HOST_AR="${BUILD_AR}"
+        # cargo build needs to hit the internet
+        if [ ! -z "${http_proxy}" ]; then
+            export http_proxy=${http_proxy}
+            export https_proxy=${https_proxy}
+            export no_proxy=${no_proxy}
+        fi
 }
 
 EXTRA_OECARGO_PATHS ??= ""
