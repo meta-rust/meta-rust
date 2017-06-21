@@ -1,8 +1,6 @@
 require cargo-snapshot.inc
 require cargo.inc
 
-EXTRA_OECONF += "--cargo=${WORKDIR}/cargo-nightly-x86_64-unknown-linux-gnu/cargo/bin/cargo"
-
 SRC_URI += " \
     git://github.com/rust-lang/cargo.git;protocol=https;name=cargo;branch=rust-1.15.1 \
     crate://crates.io/advapi32-sys/0.2.0 \
