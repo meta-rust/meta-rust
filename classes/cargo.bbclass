@@ -64,8 +64,8 @@ CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
 	export RUST_TARGET_PATH="${RUST_TARGET_PATH}"
-	bbnote "cargo = $(which cargo)"
-	bbnote "rustc = $(which rustc)"
+	bbnote "cargo = $(which ${CARGO})"
+	bbnote "rustc = $(which ${RUSTC})"
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
 	"${CARGO}" build ${CARGO_BUILD_FLAGS} "$@"
 }
