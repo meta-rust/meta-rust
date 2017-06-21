@@ -1,0 +1,25 @@
+From bff536002eba2ed322d329d9022ccdc77da458a3 Mon Sep 17 00:00:00 2001
+From: Cody P Schafer <dev@codyps.com>
+Date: Wed, 3 Dec 2014 19:15:19 -0500
+Subject: [PATCH 3/3] std/thread_local: workaround for NULL __dso_handle
+
+---
+ src/libstd/sys/unix/fast_thread_local.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libstd/sys/unix/fast_thread_local.rs b/src/libstd/sys/unix/fast_thread_local.rs
+index 0c625e7..31e7146 100644
+--- a/src/libstd/sys/unix/fast_thread_local.rs
++++ b/src/libstd/sys/unix/fast_thread_local.rs
+@@ -110,7 +110,7 @@ unsafe fn register_dtor(t: *mut u8, dtor: unsafe extern fn(*mut u8)) {
+         #[linkage = "extern_weak"]
+         static __cxa_thread_atexit_impl: *const libc::c_void;
+     }
+-    if !__cxa_thread_atexit_impl.is_null() {
++    if !__cxa_thread_atexit_impl.is_null() && !__dso_handle.is_null() {
+         type F = unsafe extern fn(dtor: unsafe extern fn(*mut u8),
+                                   arg: *mut u8,
+                                   dso_handle: *mut u8) -> libc::c_int;
+-- 
+2.10.1 (Apple Git-78)
+
