@@ -1,15 +1,16 @@
-inherit cargo
-inherit patch
+require cargo-snapshot.inc
 
-SUMMARY = "Cargo downloads your Rust project's dependencies and builds your project"
-HOMEPAGE = "http://crates.io"
 SECTION = "devel"
-LICENSE = "MIT | Apache-2.0"
 
 DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
 
-SRC_URI = "\
+SRC_URI += "\
 	http://static-rust-lang-org.s3.amazonaws.com/cargo-dist/${CARGO_SNAPSHOT} \
+"
+
+LIC_FILES_CHKSUM += " \
+file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
+file://LICENSE-THIRD-PARTY;md5=892ea68b169e69cfe75097fc38a15b56 \
 "
 
 # Used in libgit2-sys's build.rs, needed for pkg-config to be used
