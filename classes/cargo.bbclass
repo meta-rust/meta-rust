@@ -56,12 +56,14 @@ cargo_do_configure () {
 
 RUSTFLAGS ??= ""
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
+RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/rustlib"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
 CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
+	export RUST_TARGET_PATH="${RUST_TARGET_PATH}"
 	bbnote "cargo = $(which cargo)"
 	bbnote "rustc = $(which rustc)"
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
