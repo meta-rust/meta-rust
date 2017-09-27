@@ -1,12 +1,12 @@
-# add crate fetch support
-inherit crate-fetch
-inherit rust-common
+##
+## Purpose:
+## This class is used by any recipes that are built using
+## Cargo.
+
+inherit cargo_common
 
 # the binary we will use
 CARGO = "cargo"
-
-# Where we download our registry and dependencies to
-export CARGO_HOME = "${WORKDIR}/cargo_home"
 
 # We need cargo to compile for the target
 BASEDEPENDS_append = " cargo-native"
@@ -21,38 +21,6 @@ B = "${S}"
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
 export RUST_BACKTRACE = "1"
-
-# The pkg-config-rs library used by cargo build scripts disables itself when
-# cross compiling unless this is defined. We set up pkg-config appropriately
-# for cross compilation, so tell it we know better than it.
-export PKG_CONFIG_ALLOW_CROSS = "1"
-
-cargo_do_configure () {
-	mkdir -p ${CARGO_HOME}
-	echo "paths = [" > ${CARGO_HOME}/config
-
-	for p in ${EXTRA_OECARGO_PATHS}; do
-		printf "\"%s\"\n" "$p"
-	done | sed -e 's/$/,/' >> ${CARGO_HOME}/config
-	echo "]" >> ${CARGO_HOME}/config
-
-	# Point cargo at our local mirror of the registry
-	cat <<- EOF >> ${CARGO_HOME}/config
-	[source.bitbake]
-	directory = "${CARGO_HOME}/bitbake"
-
-	[source.crates-io]
-	replace-with = "bitbake"
-	local-registry = "/nonexistant"
-	EOF
-
-	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
-	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
-	if [ "${HOST_SYS}" != "${BUILD_SYS}" ]; then
-		echo "[target.${BUILD_SYS}]" >> ${CARGO_HOME}/config
-		echo "linker = '${RUST_BUILD_CCLD}'" >> ${CARGO_HOME}/config
-	fi
-}
 
 RUSTFLAGS ??= ""
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
@@ -69,26 +37,6 @@ oe_cargo_build () {
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
 	"${CARGO}" build ${CARGO_BUILD_FLAGS} "$@"
 }
-
-oe_cargo_fix_env () {
-	export CC="${RUST_TARGET_CC}"
-	export CXX="${RUST_TARGET_CXX}"
-	export CFLAGS="${CFLAGS}"
-	export CXXFLAGS="${CXXFLAGS}"
-	export AR="${AR}"
-	export TARGET_CC="${RUST_TARGET_CC}"
-	export TARGET_CXX="${RUST_TARGET_CXX}"
-	export TARGET_CFLAGS="${CFLAGS}"
-	export TARGET_CXXFLAGS="${CXXFLAGS}"
-	export TARGET_AR="${AR}"
-	export HOST_CC="${RUST_BUILD_CC}"
-	export HOST_CXX="${RUST_BUILD_CXX}"
-	export HOST_CFLAGS="${BUILD_CFLAGS}"
-	export HOST_CXXFLAGS="${BUILD_CXXFLAGS}"
-	export HOST_AR="${BUILD_AR}"
-}
-
-EXTRA_OECARGO_PATHS ??= ""
 
 cargo_do_compile () {
 	oe_cargo_fix_env
@@ -113,4 +61,4 @@ cargo_do_install () {
 	fi
 }
 
-EXPORT_FUNCTIONS do_configure do_compile do_install
+EXPORT_FUNCTIONS do_compile do_install
