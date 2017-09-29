@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -x
 
 # Only attempt to unmount if the directory is already mounted
 if mountpoint -q `pwd`/build; then
