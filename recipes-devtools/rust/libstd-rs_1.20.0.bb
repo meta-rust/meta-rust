@@ -1,7 +1,7 @@
 require rust-source-${PV}.inc
 require libstd-rs.inc
 
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=12922f5565a22267bd82aaeb6d3548e5"
+LIC_FILES_CHKSUM = "file://../../COPYRIGHT;md5=12922f5565a22267bd82aaeb6d3548e5"
 
 # Don't use jemalloc as it doesn't work for many targets.
 # https://github.com/rust-lang/rust/pull/37392
