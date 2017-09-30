@@ -196,6 +196,7 @@ TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
     import json
+    from distutils.version import LooseVersion
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
@@ -235,8 +236,10 @@ def rust_gen_target(d, thing, wd):
 
     # Don't use jemalloc as it doesn't work for many targets.
     # https://github.com/rust-lang/rust/pull/37392
-    tspec['exe-allocation-crate'] = "alloc_system"
-    tspec['lib-allocation-crate'] = "alloc_system"
+    # From 1.20.0 and forward, system allocator is the default.
+    if LooseVersion(d.getVar("PV")) < LooseVersion("1.20.0"):
+        tspec['exe-allocation-crate'] = "alloc_system"
+        tspec['lib-allocation-crate'] = "alloc_system"
 
     # write out the target spec json file
     with open(wd + sys + '.json', 'w') as f:
