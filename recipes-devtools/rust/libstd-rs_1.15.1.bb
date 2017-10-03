@@ -1,6 +1,8 @@
 require rust-source-${PV}.inc
 require libstd-rs.inc
 
+LIC_FILES_CHKSUM = "file://../../COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
+
 # Don't use jemalloc as it doesn't work for many targets.
 # https://github.com/rust-lang/rust/pull/37392
 CARGO_BUILD_FLAGS += "--features 'panic-unwind'"
