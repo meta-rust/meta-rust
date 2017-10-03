@@ -46,15 +46,20 @@ cargo_do_compile () {
 cargo_do_install () {
 	local have_installed=false
 	for tgt in "${B}/target/${CARGO_TARGET_SUBDIR}/"*; do
-		if [[ $tgt == *.so || $tgt == *.rlib ]]; then
+		case $tgt in
+		*.so|*.rlib)
 			install -d "${D}${rustlibdir}"
 			install -m755 "$tgt" "${D}${rustlibdir}"
 			have_installed=true
-		elif [ -f "$tgt" ] && [ -x "$tgt" ]; then
-			install -d "${D}${bindir}"
-			install -m755 "$tgt" "${D}${bindir}"
-			have_installed=true
-		fi
+			;;
+		*)
+			if [ -f "$tgt" ] && [ -x "$tgt" ]; then
+				install -d "${D}${bindir}"
+				install -m755 "$tgt" "${D}${bindir}"
+				have_installed=true
+			fi
+			;;
+		esac
 	done
 	if ! $have_installed; then
 		die "Did not find anything to install"
