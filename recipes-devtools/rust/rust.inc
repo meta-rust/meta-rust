@@ -2,7 +2,6 @@ SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
 inherit rust
 inherit cargo_common
@@ -197,6 +196,7 @@ TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
     import json
+    from distutils.version import LooseVersion
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
@@ -236,8 +236,10 @@ def rust_gen_target(d, thing, wd):
 
     # Don't use jemalloc as it doesn't work for many targets.
     # https://github.com/rust-lang/rust/pull/37392
-    tspec['exe-allocation-crate'] = "alloc_system"
-    tspec['lib-allocation-crate'] = "alloc_system"
+    # From 1.20.0 and forward, system allocator is the default.
+    if LooseVersion(d.getVar("PV")) < LooseVersion("1.20.0"):
+        tspec['exe-allocation-crate'] = "alloc_system"
+        tspec['lib-allocation-crate'] = "alloc_system"
 
     # write out the target spec json file
     with open(wd + sys + '.json', 'w') as f:
