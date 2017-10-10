@@ -2,20 +2,27 @@ SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
 LICENSE = "MIT | Apache-2.0"
-LIC_FILES_CHKSUM ="file://COPYRIGHT;md5=43e1f1fb9c0ee3af66693d8c4fecafa8"
 
 inherit rust
+inherit cargo_common
 
-SRC_URI = "\
-	https://static.rust-lang.org/dist/${RUST_SNAPSHOT}.tar.gz;name=rust-snapshot \
-    "
-
-DEPENDS += "file-native"
+DEPENDS += "file-native python-native"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 export FORCE_CRATE_HASH="${BB_TASKHASH}"
+
+setup_cargo_environment () {
+    # The first step is to build bootstrap and some early stage tools,
+    # these are build for the same target as the snapshot, e.g.
+    # x86_64-unknown-linux-gnu.
+    # Later stages are build for the native target (i.e. target.x86_64-linux)
+    cargo_common_do_configure
+
+    echo "[target.${RUST_BUILD_SYS}]" >> ${CARGO_HOME}/config
+    echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
+}
 
 # Right now this is focused on arm-specific tune features.
 # We get away with this for now as one can only use x86-64 as the build host
@@ -115,6 +122,7 @@ DATA_LAYOUT[arm] = "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
+MAX_ATOMIC_WIDTH[arm] = "64"
 FEATURES[arm] = "+v6,+vfp2"
 
 ## aarch64-unknown-linux-gnu
@@ -122,24 +130,28 @@ DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
+MAX_ATOMIC_WIDTH[aarch64] = "128"
 
 ## x86_64-unknown-linux-gnu
 DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
+MAX_ATOMIC_WIDTH[x86_64] = "64"
 
 ## i686-unknown-linux-gnu
 DATA_LAYOUT[i686] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
+MAX_ATOMIC_WIDTH[i686] = "64"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
 DATA_LAYOUT[i586] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
+MAX_ATOMIC_WIDTH[i586] = "64"
 
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing))
@@ -149,21 +161,6 @@ def sys_for(d, thing):
 
 def prefix_for(d, thing):
     return d.getVar('{}_PREFIX'.format(thing))
-
-## Note: TOOLCHAIN_OPTIONS is set to "" by native.bbclass and cross.bbclass,
-## which prevents us from grabbing them when building a cross compiler (native doesn't matter).
-## We workaround this in internal-rust-cross.bbclass.
-def cflags_for(d, thing):
-    cc_arch = d.getVar('{}_CC_ARCH'.format(thing)) or ""
-    flags = d.getVar('{}_CFLAGS'.format(thing)) or ""
-    tc = d.getVar('TOOLCHAIN_OPTIONS') or ""
-    return ' '.join([cc_arch, flags, tc])
-
-def cxxflags_for(d, thing):
-    cc_arch = d.getVar('{}_CC_ARCH'.format(thing)) or ""
-    flags = d.getVar('{}_CXXFLAGS'.format(thing)) or ""
-    tc = d.getVar('TOOLCHAIN_OPTIONS') or ""
-    return ' '.join([cc_arch, flags, tc])
 
 # Convert a normal arch (HOST_ARCH, TARGET_ARCH, BUILD_ARCH, etc) to something
 # rust's internals won't choke on.
@@ -199,6 +196,7 @@ TARGET_LLVM_FEATURES_class-native = "${@llvm_features_from_cc_arch(d)}"
 
 def rust_gen_target(d, thing, wd):
     import json
+    from distutils.version import LooseVersion
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
@@ -215,29 +213,37 @@ def rust_gen_target(d, thing, wd):
     tspec = {}
     tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch)
     tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch)
+    tspec['max-atomic-width'] = d.getVarFlag('MAX_ATOMIC_WIDTH', arch)
     tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch)
-    tspec['target-word-size'] = tspec['target-pointer-width']
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch)
     tspec['arch'] = arch_to_rust_target_arch(arch)
     tspec['os'] = "linux"
     tspec['env'] = "gnu"
+    tspec['vendor'] = "unknown"
+    tspec['target-family'] = "unix"
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE'), prefix)
-    tspec['objcopy'] = "{}objcopy".format(prefix)
     tspec['ar'] = "{}ar".format(prefix)
     tspec['cpu'] = cpu
     if features is not "":
         tspec['features'] = features
     tspec['dynamic-linking'] = True
     tspec['executables'] = True
-    tspec['morestack'] = True
     tspec['linker-is-gnu'] = True
+    tspec['linker-flavor'] = "gcc"
     tspec['has-rpath'] = True
     tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
 
+    # Don't use jemalloc as it doesn't work for many targets.
+    # https://github.com/rust-lang/rust/pull/37392
+    # From 1.20.0 and forward, system allocator is the default.
+    if LooseVersion(d.getVar("PV")) < LooseVersion("1.20.0"):
+        tspec['exe-allocation-crate'] = "alloc_system"
+        tspec['lib-allocation-crate'] = "alloc_system"
+
     # write out the target spec json file
     with open(wd + sys + '.json', 'w') as f:
-        json.dump(tspec, f)
+        json.dump(tspec, f, indent=4)
 
 
 python do_rust_gen_targets () {
@@ -252,128 +258,86 @@ python do_rust_gen_targets () {
 addtask rust_gen_targets after do_patch before do_compile
 do_rust_gen_targets[dirs] += "${WORKDIR}/targets"
 
-def rust_gen_mk_cfg(d, thing):
-    ''''
-    Rust's build system adds support for new archs via 2 things:
-     1. a file in mk/cfg which defines how the runtime libraries are built
-     2. and rustc arch definition either built into the compiler or supplied as a .json file
 
-    This generates a new #1 for the given 'thing' (one of HOST, TARGET, BUILD)
-    using a "similar" config that rust already supplies as a template.
+do_rust_setup_snapshot () {
+    for installer in "${WORKDIR}/rust-snapshot-components/"*"/install.sh"; do
+        "${installer}" --prefix="${WORKDIR}/rust-snapshot" --disable-ldconfig
+    done
 
-    Note that the configure process also depends on the existence of #1, so we
-    have to run this before do_configure
-    '''
-    import os
-    import subprocess
-
-    rust_base_sys = rust_base_triple(d, thing)
-    arch = arch_for(d, thing)
-    sys = sys_for(d, thing)
-    prefix = prefix_for(d, thing)
-    llvm_target = d.getVarFlag('LLVM_TARGET', arch)
-    ldflags = d.getVar('LDFLAGS') + d.getVar('HOST_CC_ARCH') + d.getVar('TOOLCHAIN_OPTIONS')
-
-    b = os.path.join(d.getVar('S'), 'mk', 'cfg')
-    o = open(os.path.join(b, sys_for(d, thing) + '.mk'), 'w')
-    i = open(os.path.join(b, rust_base_sys + '.mk'), 'r')
-
-    r = subprocess.call(['sed',
-        # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
-        # wide range of targets (not just HOST). Yocto's settings for them will
-        # be inappropriate, avoid having random targets try to use them, we'll
-        # add as needed.
-        '-e', 's/$(CFLAGS)//',
-        '-e', 's/$(CXXFLAGS)//',
-        '-e', 's/$(CPPFLAGS)//',
-        '-e', 's/$(LDFLAGS)//',
-
-        # update all triplets to the new one
-        '-e', 's/{}/{}/g'.format(rust_base_sys, sys),
-
-        # Replace tools with our own (CROSS_PREFIX is appended to all tools
-        # by rust's build system). We delete and then insert this because not
-        # all targets define it.
-        '-e', 's/^CROSS_PREFIX_{}.*$//'.format(sys),
-        '-e', '2 a CROSS_PREFIX_{} := {}'.format(sys, prefix),
-        '-e', 's/^CFG_LLVM_TARGET_.*$//',
-        '-e', '2 a CFG_LLVM_TARGET_{} := {}'.format(sys, llvm_target),
-        '-e', 's/^CC_{}=.*$/CC_{} := gcc/'.format(sys, sys),
-        '-e', 's/^CXX_{}.*$/CXX_{} := g++/'.format(sys, sys),
-        '-e', 's/^CPP_{}.*$/CPP_{} := gcc -E/'.format(sys, sys),
-        '-e', 's/^AR_{}.*$/AR_{} := ar/'.format(sys, sys),
-
-        # Some targets don't have LINK even though it is required to build.
-        '-e', 's/^LINK_{}.*$//'.format(sys),
-        '-e', '2 a LINK_{} := gcc'.format(sys),
-
-        # Append our flags to the existing ones
-        '-e', '/^CFG_JEMALLOC_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
-        '-e', '/^CFG_GCCISH_CFLAGS/ s;$; {};'.format(cflags_for(d, thing)),
-        '-e', '/^CFG_GCCISH_CXXFLAGS/ s;$; {};'.format(cxxflags_for(d, thing)),
-        '-e', '/^CFG_GCCISH_LINK_FLAGS/ s;$; {};'.format(ldflags),
-
-        # May need to add: CFG_LLC_FLAGS_{}
-        ], stdout=o, stdin=i)
-    if r:
-        raise Exception
-    o.write("OBJCOPY_{} := {}objcopy\n".format(sys, prefix))
-    # Note: this isn't how this variable is supposed to be used, but for
-    # non-msvc platforms nothing else touches it.
-    # These are the only extra flags passed to the rustllvm (c++ code) build.
-    # These are only used for host (even though we emit them for all targets)
-    # Without this, there are link failures due to GLIBC_CXX11_ABI issues in
-    # certain setups.
-    o.write("EXTRA_RUSTLLVM_CXXFLAGS_{} := {}\n".format(sys, cxxflags_for(d, thing)))
-    o.close()
-    i.close()
-
-python do_rust_arch_fixup () {
-    for thing in ['BUILD', 'HOST', 'TARGET']:
-        bb.debug(1, "rust_gen_mk_cfg for " + thing)
-        rust_gen_mk_cfg(d, thing)
+    # Some versions of rust (e.g. 1.18.0) tries to find cargo in stage0/bin/cargo
+    # and fail without it there.
+    mkdir -p ${RUSTSRC}/build/${BUILD_SYS}
+    ln -s ${WORKDIR}/rust-snapshot/ ${RUSTSRC}/build/${BUILD_SYS}/stage0
 }
-addtask rust_arch_fixup before do_configure after do_patch
-do_rust_arch_fixup[dirs] += "${S}/mk/cfg"
+addtask rust_setup_snapshot after do_unpack before do_configure
+do_rust_setup_snapshot[dirs] += "${WORKDIR}/rust-snapshot"
 
-# prevent the rust-installer scripts from calling ldconfig
-export CFG_DISABLE_LDCONFIG="notempty"
 
-# rust's configure doesn't recognize --disable-static, so remove it.
-DISABLE_STATIC = ""
+python do_configure() {
+    import json
+    try:
+        import configparser
+    except ImportError:
+        import ConfigParser as configparser
 
-do_configure () {
-    # FIXME: target_prefix vs prefix, see cross.bbclass
+    # toml is rather similar to standard ini like format except it likes values
+    # that look more JSON like. So for our purposes simply escaping all values
+    # as JSON seem to work fine.
 
-    # - rpath is required otherwise rustc fails to resolve symbols
-    # - submodule management is done by bitbake's fetching
-    ${S}/configure                          \
-        "--enable-rpath"                    \
-        "--disable-docs"                    \
-        "--disable-manage-submodules"       \
-        "--disable-debug"                   \
-        "--enable-optimize"                 \
-        "--enable-optimize-cxx"             \
-        "--disable-llvm-version-check"      \
-        "--llvm-root=${STAGING_DIR_NATIVE}/${prefix_native}" \
-        "--enable-optimize-tests"           \
-        "--release-channel=stable"          \
-        "--prefix=${prefix}"                \
-        "--target=${TARGET_SYS}"            \
-        "--host=${HOST_SYS}"                \
-        "--build=${BUILD_SYS}"              \
-        "--localstatedir=${localstatedir}"  \
-        "--sysconfdir=${sysconfdir}"        \
-        "--datadir=${datadir}"              \
-        "--infodir=${infodir}"              \
-        "--mandir=${mandir}"                \
-        "--libdir=${libdir}"                \
-        "--enable-local-rust"               \
-        "--local-rust-root=${WORKDIR}/${RUST_SNAPSHOT}/rustc" \
-        ${EXTRA_OECONF}
+    e = lambda s: json.dumps(s)
+
+    config = configparser.RawConfigParser()
+
+    # [target.ARCH-poky-linux]
+    target_section = "target.{}".format(d.getVar('TARGET_SYS', True))
+    config.add_section(target_section)
+
+    llvm_config = d.expand("${STAGING_DIR_NATIVE}${bindir_native}/llvm-config")
+    config.set(target_section, "llvm-config", e(llvm_config))
+
+    config.set(target_section, "cxx", e(d.expand("${RUST_TARGET_CXX}")))
+    config.set(target_section, "cc", e(d.expand("${RUST_TARGET_CC}")))
+
+    # [rust]
+    config.add_section("rust")
+    config.set("rust", "rpath", e(True))
+    config.set("rust", "channel", e("stable"))
+
+    # Don't use jemalloc as it doesn't work for many targets.
+    # https://github.com/rust-lang/rust/pull/37392
+    config.set("rust", "use-jemalloc", e(False))
+
+    # Whether or not to optimize the compiler and standard library
+    config.set("rust", "optimize", e(True))
+
+    # [build]
+    config.add_section("build")
+    config.set("build", "submodules", e(False))
+    config.set("build", "docs", e(False))
+
+    rustc = d.expand("${WORKDIR}/rust-snapshot/bin/rustc")
+    config.set("build", "rustc", e(rustc))
+
+    cargo = d.expand("${WORKDIR}/rust-snapshot/bin/cargo")
+    config.set("build", "cargo", e(cargo))
+
+    targets = [d.getVar("TARGET_SYS", True)]
+    config.set("build", "target", e(targets))
+
+    hosts = [d.getVar("HOST_SYS", True)]
+    config.set("build", "host", e(targets))
+
+    config.set("build", "build", e(d.getVar("BUILD_SYS", True)))
+
+    with open("config.toml", "w") as f:
+        config.write(f)
+
+    # set up ${WORKDIR}/cargo_home
+    bb.build.exec_func("setup_cargo_environment", d)
 }
 
-rust_runmake () {
+
+rust_runx () {
     echo "COMPILE ${PN}" "$@"
 
     # CFLAGS, LDFLAGS, CXXFLAGS, CPPFLAGS are used by rust's build for a
@@ -384,15 +348,27 @@ rust_runmake () {
     unset CXXFLAGS
     unset CPPFLAGS
 
-    oe_runmake "VERBOSE=1" "$@"
+    oe_cargo_fix_env
+
+    python src/bootstrap/bootstrap.py "$@" --verbose
 }
+
 
 do_compile () {
-    rust_runmake
+    rust_runx build
 }
 
-rust_do_install () {
-    rust_runmake DESTDIR="${D}" install
+
+rust_do_dist_install () {
+    rust_runx dist
+
+    for installer in "build/tmp/dist/rustc"*"/install.sh"; do
+        "${installer}" --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
+    done
+
+    for installer in "build/tmp/dist/rust-std"*"/install.sh"; do
+        "${installer}" --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
+    done
 
     # Install our custom target.json files
     local td="${D}${libdir}/rustlib/"
@@ -401,10 +377,6 @@ rust_do_install () {
         install -m 0644 "$tgt" "$td"
     done
 
-    # Remove any files directly installed into libdir to avoid
-    # conflicts between cross and native
-    rm -f ${D}${libdir}/lib*.so
-
     # cleanup after rust-installer since we don't need these bits
     rm ${D}/${libdir}/rustlib/install.log
     rm ${D}/${libdir}/rustlib/rust-installer-version
@@ -412,7 +384,8 @@ rust_do_install () {
     rm ${D}/${libdir}/rustlib/components
 }
 
+
 do_install () {
-    rust_do_install
+    rust_do_dist_install
 }
 # ex: sts=4 et sw=4 ts=8

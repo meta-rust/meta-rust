@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # what container are we using to build this
-CONTAINER="starlabio/yocto:1.5"
+CONTAINER="cardoe/yocto:pyro"
 
 einfo() {
 	echo "$*" >&2

@@ -5,7 +5,7 @@ FILES_${PN}-dev += "${rustlibdir}/*.rlib"
 FILES_${PN}-dbg += "${rustlibdir}/.debug"
 
 RUSTLIB = "-L ${STAGING_LIBDIR}/rust"
-RUSTFLAGS += "-C rpath ${RUSTLIB}"
+RUSTFLAGS += "${RUSTLIB}"
 RUSTLIB_DEP ?= "libstd-rs"
 
 # Responsible for taking Yocto triples and converting it to Rust triples
@@ -74,9 +74,11 @@ RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 # use those commands based on the prefix.
 WRAPPER_DIR = "${WORKDIR}/wrapper"
 RUST_BUILD_CC = "${WRAPPER_DIR}/build-rust-cc"
+RUST_BUILD_CXX = "${WRAPPER_DIR}/build-rust-cxx"
 RUST_BUILD_CCLD = "${WRAPPER_DIR}/build-rust-ccld"
 RUST_BUILD_AR = "${WRAPPER_DIR}/build-rust-ar"
 RUST_TARGET_CC = "${WRAPPER_DIR}/target-rust-cc"
+RUST_TARGET_CXX = "${WRAPPER_DIR}/target-rust-cxx"
 RUST_TARGET_CCLD = "${WRAPPER_DIR}/target-rust-ccld"
 RUST_TARGET_AR = "${WRAPPER_DIR}/target-rust-ar"
 
@@ -97,15 +99,19 @@ create_wrapper () {
 do_rust_create_wrappers () {
 	mkdir -p "${WRAPPER_DIR}"
 
-	# Yocto Build / Rust Host compiler
+	# Yocto Build / Rust Host C compiler
 	create_wrapper "${RUST_BUILD_CC}" "${BUILD_CC}"
+	# Yocto Build / Rust Host C++ compiler
+	create_wrapper "${RUST_BUILD_CXX}" "${BUILD_CXX}"
 	# Yocto Build / Rust Host linker
 	create_wrapper "${RUST_BUILD_CCLD}" "${BUILD_CCLD}" "${BUILD_LDFLAGS}"
 	# Yocto Build / Rust Host archiver
 	create_wrapper "${RUST_BUILD_AR}" "${BUILD_AR}"
 
-	# Yocto Target / Rust Target compiler
+	# Yocto Target / Rust Target C compiler
 	create_wrapper "${RUST_TARGET_CC}" "${CC}"
+	# Yocto Target / Rust Target C++ compiler
+	create_wrapper "${RUST_TARGET_CXX}" "${CXX}"
 	# Yocto Target / Rust Target linker
 	create_wrapper "${RUST_TARGET_CCLD}" "${CCLD}" "${LDFLAGS}"
 	# Yocto Target / Rust Target archiver
