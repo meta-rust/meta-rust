@@ -24,7 +24,6 @@ export RUST_BACKTRACE = "1"
 
 RUSTFLAGS ??= ""
 CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
-RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/rustlib"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
