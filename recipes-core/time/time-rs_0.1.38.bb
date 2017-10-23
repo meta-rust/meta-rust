@@ -10,15 +10,12 @@ DEPENDS = "libc-rs"
 inherit rust-bin
 
 SRC_URI = "git://github.com/rust-lang/time.git;protocol=https"
-SRCREV = "32b212b877b836dbfdc97af5674d91672e70ecbd"
+SRCREV = "d265b7cf9f50db74fbd0a01f8bec90ad7d239d48"
 
 S = "${WORKDIR}/git"
 
 do_compile () {
-	rm -rf time_helpers.o libtimehelpers.a
-	${CC} ${S}/src/time_helpers.c -fPIC -c -o time_helpers.o
-	${AR} rcs libtime_helpers.a time_helpers.o
-	oe_compile_rust_lib -L native=$PWD -l static=time_helpers
+	oe_compile_rust_lib
 }
 
 do_install () {
