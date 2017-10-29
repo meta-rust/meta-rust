@@ -2,6 +2,7 @@ require rust.inc
 require rust-source-${PV}.inc
 require rust-snapshot-${PV}.inc
 
+SRC_URI += "file://rust-${PV}/0001-librustc-always-allow-unstable-options.patch"
 SRC_URI += "file://rust-${PV}/0001-Don-t-use-remapped-path-when-loading-modules-and-inc.patch"
 
 # These are extracted from rustc/src/bootstrap/Cargo.toml via cargo-bitbake
