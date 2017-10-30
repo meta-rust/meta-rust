@@ -1,0 +1,245 @@
+From a0714f06eb1df66a206e1d0fadccf175276b753b Mon Sep 17 00:00:00 2001
+From: Philip Craig <philipjcraig@gmail.com>
+Date: Sat, 30 Sep 2017 16:28:48 +1000
+Subject: [PATCH] Don't use remapped path when loading modules and include
+ files
+
+---
+ src/librustc/ich/impls_syntax.rs              |  1 +
+ src/librustc/session/mod.rs                   |  4 +---
+ src/libsyntax/codemap.rs                      | 14 +++++++++++++-
+ src/libsyntax/ext/expand.rs                   |  6 ++----
+ src/libsyntax/ext/source_util.rs              |  2 +-
+ src/libsyntax/parse/parser.rs                 |  2 +-
+ src/libsyntax_pos/lib.rs                      |  6 ++++++
+ src/test/codegen/remap_path_prefix/aux_mod.rs | 16 ++++++++++++++++
+ src/test/codegen/remap_path_prefix/main.rs    |  7 +++++++
+ 9 files changed, 48 insertions(+), 10 deletions(-)
+ create mode 100644 src/test/codegen/remap_path_prefix/aux_mod.rs
+
+diff --git a/src/librustc/ich/impls_syntax.rs b/src/librustc/ich/impls_syntax.rs
+index b827284271..489fd9b5b7 100644
+--- a/src/librustc/ich/impls_syntax.rs
++++ b/src/librustc/ich/impls_syntax.rs
+@@ -332,6 +332,7 @@ impl<'a, 'gcx, 'tcx> HashStable<StableHashingContext<'a, 'gcx, 'tcx>> for FileMa
+         let FileMap {
+             ref name,
+             name_was_remapped,
++            path: _,
+             crate_of_origin,
+             // Do not hash the source as it is not encoded
+             src: _,
+diff --git a/src/librustc/session/mod.rs b/src/librustc/session/mod.rs
+index 7ff9d202c1..619ae81506 100644
+--- a/src/librustc/session/mod.rs
++++ b/src/librustc/session/mod.rs
+@@ -72,8 +72,7 @@ pub struct Session {
+     pub derive_registrar_fn: Cell<Option<ast::NodeId>>,
+     pub default_sysroot: Option<PathBuf>,
+     // The name of the root source file of the crate, in the local file system.
+-    // The path is always expected to be absolute. `None` means that there is no
+-    // source file.
++    // `None` means that there is no source file.
+     pub local_crate_source_file: Option<String>,
+     // The directory the compiler has been executed in plus a flag indicating
+     // if the value stored here has been affected by path remapping.
+@@ -707,7 +706,6 @@ pub fn build_session_(sopts: config::Options,
+ 
+     let file_path_mapping = sopts.file_path_mapping();
+ 
+-    // Make the path absolute, if necessary
+     let local_crate_source_file = local_crate_source_file.map(|path| {
+         file_path_mapping.map_prefix(path.to_string_lossy().into_owned()).0
+     });
+diff --git a/src/libsyntax/codemap.rs b/src/libsyntax/codemap.rs
+index 30ae7df935..e8cfa51ee2 100644
+--- a/src/libsyntax/codemap.rs
++++ b/src/libsyntax/codemap.rs
+@@ -162,9 +162,16 @@ impl CodeMap {
+         let start_pos = self.next_start_pos();
+         let mut files = self.files.borrow_mut();
+ 
++        // The path is used to determine the directory for loading submodules and
++        // include files, so it must be before remapping.
++        // Note that filename may not be a valid path, eg it may be `<anon>` etc,
++        // but this is okay because the directory determined by `path.pop()` will
++        // be empty, so the working directory will be used.
++        let path = PathBuf::from(filename.clone());
++
+         let (filename, was_remapped) = self.path_mapping.map_prefix(filename);
+         let filemap =
+-            Rc::new(FileMap::new(filename, was_remapped, src, Pos::from_usize(start_pos)));
++            Rc::new(FileMap::new(filename, was_remapped, path, src, Pos::from_usize(start_pos)));
+ 
+         files.push(filemap.clone());
+ 
+@@ -216,6 +223,7 @@ impl CodeMap {
+         let filemap = Rc::new(FileMap {
+             name: filename,
+             name_was_remapped,
++            path: PathBuf::new(),
+             crate_of_origin,
+             src: None,
+             src_hash,
+@@ -351,6 +359,10 @@ impl CodeMap {
+         self.lookup_char_pos(sp.lo).file.name.to_string()
+     }
+ 
++    pub fn span_to_path(&self, sp: Span) -> PathBuf {
++        self.lookup_char_pos(sp.lo).file.path.clone()
++    }
++
+     pub fn span_to_lines(&self, sp: Span) -> FileLinesResult {
+         debug!("span_to_lines(sp={:?})", sp);
+ 
+diff --git a/src/libsyntax/ext/expand.rs b/src/libsyntax/ext/expand.rs
+index 171b0a22e9..8db8c83ef4 100644
+--- a/src/libsyntax/ext/expand.rs
++++ b/src/libsyntax/ext/expand.rs
+@@ -35,7 +35,6 @@ use visit::Visitor;
+ 
+ use std::collections::HashMap;
+ use std::mem;
+-use std::path::PathBuf;
+ use std::rc::Rc;
+ 
+ macro_rules! expansions {
+@@ -200,7 +199,7 @@ impl<'a, 'b> MacroExpander<'a, 'b> {
+         self.cx.crate_root = std_inject::injected_crate_name(&krate);
+         let mut module = ModuleData {
+             mod_path: vec![Ident::from_str(&self.cx.ecfg.crate_name)],
+-            directory: PathBuf::from(self.cx.codemap().span_to_filename(krate.span)),
++            directory: self.cx.codemap().span_to_path(krate.span),
+         };
+         module.directory.pop();
+         self.cx.current_expansion.module = Rc::new(module);
+@@ -902,8 +901,7 @@ impl<'a, 'b> Folder for InvocationCollector<'a, 'b> {
+                         module.directory.push(&*item.ident.name.as_str());
+                     }
+                 } else {
+-                    let mut path =
+-                        PathBuf::from(self.cx.parse_sess.codemap().span_to_filename(inner));
++                    let mut path = self.cx.parse_sess.codemap().span_to_path(inner);
+                     let directory_ownership = match path.file_name().unwrap().to_str() {
+                         Some("mod.rs") => DirectoryOwnership::Owned,
+                         _ => DirectoryOwnership::UnownedViaMod(false),
+diff --git a/src/libsyntax/ext/source_util.rs b/src/libsyntax/ext/source_util.rs
+index 95fe41be12..17a18256b3 100644
+--- a/src/libsyntax/ext/source_util.rs
++++ b/src/libsyntax/ext/source_util.rs
+@@ -197,7 +197,7 @@ fn res_rel_file(cx: &mut ExtCtxt, sp: syntax_pos::Span, arg: &Path) -> PathBuf {
+     // after macro expansion (that is, they are unhygienic).
+     if !arg.is_absolute() {
+         let callsite = sp.source_callsite();
+-        let mut path = PathBuf::from(&cx.codemap().span_to_filename(callsite));
++        let mut path = cx.codemap().span_to_path(callsite);
+         path.pop();
+         path.push(arg);
+         path
+diff --git a/src/libsyntax/parse/parser.rs b/src/libsyntax/parse/parser.rs
+index 90a635fdf4..8c443e8b27 100644
+--- a/src/libsyntax/parse/parser.rs
++++ b/src/libsyntax/parse/parser.rs
+@@ -519,7 +519,7 @@ impl<'a> Parser<'a> {
+         if let Some(directory) = directory {
+             parser.directory = directory;
+         } else if parser.span != syntax_pos::DUMMY_SP {
+-            parser.directory.path = PathBuf::from(sess.codemap().span_to_filename(parser.span));
++            parser.directory.path = sess.codemap().span_to_path(parser.span);
+             parser.directory.path.pop();
+         }
+ 
+diff --git a/src/libsyntax_pos/lib.rs b/src/libsyntax_pos/lib.rs
+index d34dcfa3ed..b0db4edc30 100644
+--- a/src/libsyntax_pos/lib.rs
++++ b/src/libsyntax_pos/lib.rs
+@@ -32,6 +32,7 @@ use std::cmp;
+ use std::fmt;
+ use std::hash::Hasher;
+ use std::ops::{Add, Sub};
++use std::path::PathBuf;
+ use std::rc::Rc;
+ 
+ use rustc_data_structures::stable_hasher::StableHasher;
+@@ -441,6 +442,8 @@ pub struct FileMap {
+     pub name: FileName,
+     /// True if the `name` field above has been modified by -Zremap-path-prefix
+     pub name_was_remapped: bool,
++    /// The path of the file that the source came from.
++    pub path: PathBuf,
+     /// Indicates which crate this FileMap was imported from.
+     pub crate_of_origin: u32,
+     /// The complete source code
+@@ -566,6 +569,7 @@ impl Decodable for FileMap {
+             Ok(FileMap {
+                 name,
+                 name_was_remapped,
++                path: PathBuf::new(),
+                 // `crate_of_origin` has to be set by the importer.
+                 // This value matches up with rustc::hir::def_id::INVALID_CRATE.
+                 // That constant is not available here unfortunately :(
+@@ -591,6 +595,7 @@ impl fmt::Debug for FileMap {
+ impl FileMap {
+     pub fn new(name: FileName,
+                name_was_remapped: bool,
++               path: PathBuf,
+                mut src: String,
+                start_pos: BytePos) -> FileMap {
+         remove_bom(&mut src);
+@@ -604,6 +609,7 @@ impl FileMap {
+         FileMap {
+             name,
+             name_was_remapped,
++            path,
+             crate_of_origin: 0,
+             src: Some(Rc::new(src)),
+             src_hash,
+diff --git a/src/test/codegen/remap_path_prefix/aux_mod.rs b/src/test/codegen/remap_path_prefix/aux_mod.rs
+new file mode 100644
+index 0000000000..2a7019957a
+--- /dev/null
++++ b/src/test/codegen/remap_path_prefix/aux_mod.rs
+@@ -0,0 +1,16 @@
++// Copyright 2017 The Rust Project Developers. See the COPYRIGHT
++// file at the top-level directory of this distribution and at
++// http://rust-lang.org/COPYRIGHT.
++//
++// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
++// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
++// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
++// option. This file may not be copied, modified, or distributed
++// except according to those terms.
++
++// ignore-test: this is not a test
++
++#[inline]
++pub fn some_aux_mod_function() -> i32 {
++    1234
++}
+diff --git a/src/test/codegen/remap_path_prefix/main.rs b/src/test/codegen/remap_path_prefix/main.rs
+index eb00c91ba5..c73739bb76 100644
+--- a/src/test/codegen/remap_path_prefix/main.rs
++++ b/src/test/codegen/remap_path_prefix/main.rs
+@@ -16,12 +16,19 @@
+ 
+ extern crate remap_path_prefix_aux;
+ 
++// Here we check that submodules and include files are found using the path without
++// remapping. This test requires that rustc is called with an absolute path.
++mod aux_mod;
++include!("aux_mod.rs");
++
+ // Here we check that the expansion of the file!() macro is mapped.
+ // CHECK: internal constant [34 x i8] c"/the/src/remap_path_prefix/main.rs"
+ pub static FILE_PATH: &'static str = file!();
+ 
+ fn main() {
+     remap_path_prefix_aux::some_aux_function();
++    aux_mod::some_aux_mod_function();
++    some_aux_mod_function();
+ }
+ 
+ // Here we check that local debuginfo is mapped correctly.
+-- 
+2.14.3
+
