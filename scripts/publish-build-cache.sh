@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -x
 
 if [[ $# -lt 1 ]]; then
     echo "No Yocto branch specified, defaulting to master"
