@@ -18,3 +18,5 @@ do_compile () {
 do_install () {
 	oe_install_rust_lib
 }
+
+BBCLASSEXTEND += "native"

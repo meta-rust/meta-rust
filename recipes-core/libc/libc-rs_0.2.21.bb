@@ -9,16 +9,19 @@ LIC_FILES_CHKSUM = "\
 inherit rust-bin
 
 SRC_URI = "git://github.com/rust-lang/libc.git;protocol=https"
-SRCREV = "f54b9c90ee68889181472d4d4a5dd9e43d0e5318"
+SRCREV = "05a2d197356ef253dfd985166576619ac9b6947f"
 
 S = "${WORKDIR}/git"
 
 LIB_SRC = "${S}/src/lib.rs"
 
 do_compile () {
-	oe_compile_rust_lib --cfg feature='"cargo-build"'
+	oe_compile_rust_lib --cfg feature='"cargo-build"' --cfg feature='"use_std"'
+
 }
 
 do_install () {
 	oe_install_rust_lib
 }
+
+BBCLASSEXTEND += "native"
