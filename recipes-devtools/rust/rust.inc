@@ -122,6 +122,7 @@ DATA_LAYOUT[arm] = "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64"
 LLVM_TARGET[arm] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm] = "little"
 TARGET_POINTER_WIDTH[arm] = "32"
+TARGET_C_INT_WIDTH[arm] = "32"
 MAX_ATOMIC_WIDTH[arm] = "64"
 FEATURES[arm] = "+v6,+vfp2"
 
@@ -130,6 +131,7 @@ DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
+TARGET_C_INT_WIDTH[aarch64] = "32"
 MAX_ATOMIC_WIDTH[aarch64] = "128"
 
 ## x86_64-unknown-linux-gnu
@@ -137,6 +139,7 @@ DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
+TARGET_C_INT_WIDTH[x86_64] = "32"
 MAX_ATOMIC_WIDTH[x86_64] = "64"
 
 ## i686-unknown-linux-gnu
@@ -144,6 +147,7 @@ DATA_LAYOUT[i686] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
 LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
+TARGET_C_INT_WIDTH[i686] = "32"
 MAX_ATOMIC_WIDTH[i686] = "64"
 
 ## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
@@ -151,6 +155,7 @@ DATA_LAYOUT[i586] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
 LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
+TARGET_C_INT_WIDTH[i586] = "32"
 MAX_ATOMIC_WIDTH[i586] = "64"
 
 def arch_for(d, thing):
@@ -215,6 +220,7 @@ def rust_gen_target(d, thing, wd):
     tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch)
     tspec['max-atomic-width'] = d.getVarFlag('MAX_ATOMIC_WIDTH', arch)
     tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch)
+    tspec['target-c-int-width'] = d.getVarFlag('TARGET_C_INT_WIDTH', arch)
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch)
     tspec['arch'] = arch_to_rust_target_arch(arch)
     tspec['os'] = "linux"
