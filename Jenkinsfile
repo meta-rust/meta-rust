@@ -1,4 +1,4 @@
-def targets = [ 'qemux86', 'qemux86-64', 'qemuarm', 'qemuarm64' ]
+def targets = [ 'qemux86', 'qemux86-64', 'qemuarm', 'qemuarm64', 'qemumips' ]
 
 def machine_builds = [:]
 
