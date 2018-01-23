@@ -35,10 +35,6 @@ do_compile_prepend_class-target() {
     sed -i 's:/lib\>:/${baselib}:g' ${S}/tools/llvm-config/llvm-config.cpp
 }
 
-do_compile() {
-    oe_runmake
-}
-
 do_install_append_class-target() {
     # Disable checks on the native tools, since these should came from the native recipe
     sed -i -e 's/\(.*APPEND.*_IMPORT_CHECK_FILES_FOR_.*{_IMPORT_PREFIX}\/bin\/.*\)/#\1/' ${D}/usr/share/llvm/cmake/LLVMExports-noconfig.cmake
