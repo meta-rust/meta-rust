@@ -9,6 +9,7 @@ RUST_DEBUG_REMAP = "-Zremap-path-prefix-from=${WORKDIR} -Zremap-path-prefix-to=/
 RUSTFLAGS += "${RUSTLIB} ${RUST_DEBUG_REMAP}"
 RUSTLIB_DEP ?= "libstd-rs"
 RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/rustlib"
+RUST_PANIC_STRATEGY ?= "unwind"
 
 # Responsible for taking Yocto triples and converting it to Rust triples
 

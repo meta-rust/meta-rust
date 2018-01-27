@@ -279,6 +279,7 @@ def rust_gen_target(d, thing, wd):
     tspec['has-rpath'] = True
     tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
+    tspec['panic-strategy'] = d.getVar("RUST_PANIC_STRATEGY")
 
     # Don't use jemalloc as it doesn't work for many targets.
     # https://github.com/rust-lang/rust/pull/37392
