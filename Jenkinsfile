@@ -15,7 +15,7 @@ for (int i = 0; i < targets.size(); i++) {
                     sh "./scripts/setup-env.sh"
                 }
                 stage("fetch $machine") {
-                    sh "GIT_LOCAL_REF_DIR=/srv/git-cache/ ./scripts/fetch.sh master"
+                    sh "GIT_LOCAL_REF_DIR=/srv/git-cache/ ./scripts/fetch.sh rocko"
                 }
                 stage("build $machine") {
                     sh "MACHINE=${machine} ./scripts/build.sh"
@@ -25,7 +25,7 @@ for (int i = 0; i < targets.size(); i++) {
                 throw e
             } finally {
                 stage("push build cache $machine") {
-                    sh "./scripts/publish-build-cache.sh master"
+                    sh "./scripts/publish-build-cache.sh rocko"
                 }
                 stage("cleanup $machine") {
                     sh "./scripts/cleanup-env.sh"
