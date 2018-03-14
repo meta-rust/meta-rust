@@ -41,6 +41,10 @@ do_compile () {
 do_install () {
 	mkdir -p ${D}${prefix}/${base_libdir_native}/rustlib
 	cp ${WORKDIR}/targets/${TARGET_SYS}.json ${D}${prefix}/${base_libdir_native}/rustlib
+	if [ -n "${RUST_STD_SNAPSHOT_TARGET}" ]; then
+		cp -r ${WORKDIR}/rust-snapshot/lib/rustlib/${RUST_TARGET_SYS} ${D}${prefix}/${base_libdir_native}/rustlib
+		cp    ${WORKDIR}/rust-snapshot/lib/rustlib/manifest-rust-std-${RUST_TARGET_SYS} ${D}${prefix}/${base_libdir_native}/rustlib
+	fi
 }
 
 rust_cross_sysroot_preprocess() {

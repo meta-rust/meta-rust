@@ -1,0 +1,11 @@
+--- a/src/librustc_metadata/locator.rs	2018-03-14 10:50:49.537437539 +0900
++++ b/src/librustc_metadata/locator.rs	2018-03-14 11:10:14.041437539 +0900
+@@ -673,7 +673,7 @@
+     fn crate_matches(&mut self, metadata: &MetadataBlob, libpath: &Path) -> Option<Svh> {
+         let rustc_version = rustc_version();
+         let found_version = metadata.get_rustc_version();
+-        if found_version != rustc_version {
++        if !&found_version.starts_with(&rustc_version) {
+             info!("Rejecting via version: expected {} got {}",
+                   rustc_version,
+                   found_version);
