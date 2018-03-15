@@ -2,6 +2,7 @@
 
 SRC_URI += " \
 	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
+	file://rust-${PV}/fix-crate-ver-check.patch;patchdir=${WORKDIR}/rustc-${PV}-src \
 "
 
 SRC_URI[md5sum] = "50639bf359e658fcd713787d5898628d"
