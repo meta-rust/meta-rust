@@ -1,7 +1,7 @@
-CARGO_SNAPSHOT = "cargo-0.24.0-${RUST_BUILD_SYS}"
+CARGO_SNAPSHOT = "cargo-0.26.0-${RUST_BUILD_SYS}"
 
-SRC_URI[cargo-snapshot.md5sum] = "830041cfc8627d3f7187954993449cf9"
-SRC_URI[cargo-snapshot.sha256sum] = "ff8a454104aba20426ea898ed7515ec5da7de07d11733cdda17462455beb76e8"
+SRC_URI[cargo-snapshot.md5sum] = "b0de62d86f0ba71078471d09916873c6"
+SRC_URI[cargo-snapshot.sha256sum] = "9ba227f2364f618dc9415dacf3a5dce17458e1cb9f6d4fe860416cb68db894e4"
 
 SRC_URI += "\
     https://static.rust-lang.org/dist/${CARGO_SNAPSHOT}.tar.gz;name=cargo-snapshot \

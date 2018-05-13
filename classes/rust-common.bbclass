@@ -5,7 +5,7 @@ FILES_${PN}-dev += "${rustlibdir}/*.rlib"
 FILES_${PN}-dbg += "${rustlibdir}/.debug"
 
 RUSTLIB = "-L ${STAGING_LIBDIR}/rust"
-RUST_DEBUG_REMAP = "-Zremap-path-prefix-from=${WORKDIR} -Zremap-path-prefix-to=/usr/src/debug/${PN}/${EXTENDPE}${PV}-${PR}"
+RUST_DEBUG_REMAP = "--remap-path-prefix=from=${WORKDIR} --remap-path-prefix=to=/usr/src/debug/${PN}/${EXTENDPE}${PV}-${PR}"
 RUSTFLAGS += "${RUSTLIB} ${RUST_DEBUG_REMAP}"
 RUSTLIB_DEP ?= "libstd-rs"
 RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/rustlib"
