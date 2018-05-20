@@ -21,7 +21,7 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 export PKG_CONFIG_ALLOW_CROSS = "1"
 
 cargo_common_do_configure () {
-	mkdir -p ${CARGO_HOME}
+	mkdir -p ${CARGO_HOME}/bitbake
 	echo "paths = [" > ${CARGO_HOME}/config
 
 	for p in ${EXTRA_OECARGO_PATHS}; do
@@ -33,11 +33,15 @@ cargo_common_do_configure () {
 	cat <<- EOF >> ${CARGO_HOME}/config
 	[source.bitbake]
 	directory = "${CARGO_HOME}/bitbake"
-
-	[source.crates-io]
-	replace-with = "bitbake"
-	local-registry = "/nonexistant"
 	EOF
+
+	if [ "${EXTERNALSRC}" == "" ]; then
+		cat <<- EOF >> ${CARGO_HOME}/config
+		[source.crates-io]
+		replace-with = "bitbake"
+		local-registry = "/nonexistant"
+		EOF
+	fi
 
 	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
 	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
