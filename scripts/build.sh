@@ -6,6 +6,7 @@ export MACHINE="${MACHINE-qemux86-64}"
 # What to build
 BUILD_TARGETS="\
     rustfmt \
+    rust-hello-world-noncargo \
     "
 
 die() {
