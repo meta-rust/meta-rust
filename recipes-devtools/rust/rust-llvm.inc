@@ -21,6 +21,7 @@ EXTRA_OECMAKE = " \
     -DLLVM_BUILD_TESTS=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLLVM_TARGET_ARCH=${TARGET_ARCH} \
+    -DCMAKE_INSTALL_PREFIX:PATH=${libdir}/llvm-rust \
 "
 
 # The debug symbols are huge here (>2GB) so suppress them since they

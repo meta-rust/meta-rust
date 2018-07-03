@@ -339,7 +339,7 @@ python do_configure() {
     target_section = "target.{}".format(d.getVar('TARGET_SYS', True))
     config.add_section(target_section)
 
-    llvm_config = d.expand("${STAGING_DIR_NATIVE}${bindir_native}/llvm-config")
+    llvm_config = d.expand("${STAGING_DIR_NATIVE}${libdir_native}/llvm-rust/bin/llvm-config")
     config.set(target_section, "llvm-config", e(llvm_config))
 
     config.set(target_section, "cxx", e(d.expand("${RUST_TARGET_CXX}")))
