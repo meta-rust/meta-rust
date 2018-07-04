@@ -13,6 +13,9 @@ export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 export FORCE_CRATE_HASH="${BB_TASKHASH}"
 
+# We can't use RUST_BUILD_SYS here because that may be "musl" if
+# TCLIBC="musl". Snapshots are always -unknown-linux-gnu
+SNAPSHOT_BUILD_SYS = "${BUILD_ARCH}-unknown-linux-gnu"
 setup_cargo_environment () {
     # The first step is to build bootstrap and some early stage tools,
     # these are build for the same target as the snapshot, e.g.
@@ -20,8 +23,8 @@ setup_cargo_environment () {
     # Later stages are build for the native target (i.e. target.x86_64-linux)
     cargo_common_do_configure
 
-    echo "[target.${RUST_BUILD_SYS}]" >> ${CARGO_HOME}/config
-    echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
+    printf '[target.%s]\n' "${SNAPSHOT_BUILD_SYS}" >> ${CARGO_HOME}/config
+    printf "linker = '%s'\n" "${RUST_BUILD_CCLD}" >> ${CARGO_HOME}/config
 }
 
 # Right now this is focused on arm-specific tune features.
