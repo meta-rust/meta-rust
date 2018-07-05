@@ -11,8 +11,27 @@ RUSTLIB_DEP ?= "libstd-rs"
 RUST_TARGET_PATH = "${STAGING_LIBDIR_NATIVE}/rustlib"
 RUST_PANIC_STRATEGY ?= "unwind"
 
-# Responsible for taking Yocto triples and converting it to Rust triples
+# Native builds are not effected by TCLIBC. Without this, rust-native
+# thinks it's "target" (i.e. x86_64-linux) is a musl target.
+RUST_LIBC = "${TCLIBC}"
+RUST_LIBC_class-native = "glibc"
 
+def determine_libc(d, thing):
+    '''Determine which libc something should target'''
+
+    # BUILD is never musl, TARGET may be musl or glibc,
+    # HOST could be musl, but only if a compiler is built to be run on
+    # target in which case HOST_SYS != BUILD_SYS.
+    if thing == 'TARGET':
+        libc = d.getVar('RUST_LIBC')
+    elif thing == 'BUILD' and (d.getVar('HOST_SYS') != d.getVar('BUILD_SYS')):
+        libc = d.getVar('RUST_LIBC')
+    else:
+        libc = d.getVar('RUST_LIBC_class-native')
+
+    return libc
+
+# Responsible for taking Yocto triples and converting it to Rust triples
 def rust_base_triple(d, thing):
     '''
     Mangle bitbake's *_SYS into something that rust might support (see
@@ -25,7 +44,7 @@ def rust_base_triple(d, thing):
     # All the Yocto targets are Linux and are 'unknown'
     vendor = "-unknown"
     os = d.getVar('{}_OS'.format(thing))
-    libc = d.getVar('TCLIBC')
+    libc = determine_libc(d, thing)
 
     # Prefix with a dash and convert glibc -> gnu
     if libc == "glibc":
