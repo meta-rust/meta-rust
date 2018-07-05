@@ -147,7 +147,7 @@ DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
 LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
-TARGET_C_INT_WIDTH[aarch64] = "64"
+TARGET_C_INT_WIDTH[aarch64] = "32"
 MAX_ATOMIC_WIDTH[aarch64] = "128"
 
 ## x86_64-unknown-linux-gnu
@@ -155,7 +155,7 @@ DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
-TARGET_C_INT_WIDTH[x86_64] = "64"
+TARGET_C_INT_WIDTH[x86_64] = "32"
 MAX_ATOMIC_WIDTH[x86_64] = "64"
 
 ## i686-unknown-linux-gnu
