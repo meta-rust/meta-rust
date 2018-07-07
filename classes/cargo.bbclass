@@ -23,11 +23,13 @@ B = "${S}"
 export RUST_BACKTRACE = "1"
 
 RUSTFLAGS ??= ""
-CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} --release"
+BUILD_MODE = "${@['--release', ''][d.getVar('DEBUG_BUILD') == '1']}"
+CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} ${BUILD_MODE}"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
-CARGO_TARGET_SUBDIR="${HOST_SYS}/release"
+BUILD_DIR = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+CARGO_TARGET_SUBDIR="${HOST_SYS}/${BUILD_DIR}"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
 	export RUST_TARGET_PATH="${RUST_TARGET_PATH}"

@@ -13,6 +13,9 @@ export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 export FORCE_CRATE_HASH="${BB_TASKHASH}"
 
+# We can't use RUST_BUILD_SYS here because that may be "musl" if
+# TCLIBC="musl". Snapshots are always -unknown-linux-gnu
+SNAPSHOT_BUILD_SYS = "${BUILD_ARCH}-unknown-linux-gnu"
 setup_cargo_environment () {
     # The first step is to build bootstrap and some early stage tools,
     # these are build for the same target as the snapshot, e.g.
@@ -20,8 +23,8 @@ setup_cargo_environment () {
     # Later stages are build for the native target (i.e. target.x86_64-linux)
     cargo_common_do_configure
 
-    echo "[target.${RUST_BUILD_SYS}]" >> ${CARGO_HOME}/config
-    echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
+    printf '[target.%s]\n' "${SNAPSHOT_BUILD_SYS}" >> ${CARGO_HOME}/config
+    printf "linker = '%s'\n" "${RUST_BUILD_CCLD}" >> ${CARGO_HOME}/config
 }
 
 # Right now this is focused on arm-specific tune features.
@@ -139,39 +142,39 @@ TARGET_C_INT_WIDTH[arm] = "32"
 MAX_ATOMIC_WIDTH[arm] = "64"
 FEATURES[arm] = "+v6,+vfp2"
 
-## aarch64-unknown-linux-gnu
+## aarch64-unknown-linux-{gnu, musl}
 DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
-LLVM_TARGET[aarch64] = "aarch64-unknown-linux-gnu"
+LLVM_TARGET[aarch64] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
-TARGET_C_INT_WIDTH[aarch64] = "64"
+TARGET_C_INT_WIDTH[aarch64] = "32"
 MAX_ATOMIC_WIDTH[aarch64] = "128"
 
-## x86_64-unknown-linux-gnu
+## x86_64-unknown-linux-{gnu, musl}
 DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
-LLVM_TARGET[x86_64] = "x86_64-unknown-linux-gnu"
+LLVM_TARGET[x86_64] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
-TARGET_C_INT_WIDTH[x86_64] = "64"
+TARGET_C_INT_WIDTH[x86_64] = "32"
 MAX_ATOMIC_WIDTH[x86_64] = "64"
 
-## i686-unknown-linux-gnu
+## i686-unknown-linux-{gnu, musl}
 DATA_LAYOUT[i686] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
-LLVM_TARGET[i686] = "i686-unknown-linux-gnu"
+LLVM_TARGET[i686] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[i686] = "little"
 TARGET_POINTER_WIDTH[i686] = "32"
 TARGET_C_INT_WIDTH[i686] = "32"
 MAX_ATOMIC_WIDTH[i686] = "64"
 
-## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-gnu above
+## XXX: a bit of a hack so qemux86 builds, clone of i686-unknown-linux-{gnu, musl} above
 DATA_LAYOUT[i586] = "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128"
-LLVM_TARGET[i586] = "i586-unknown-linux-gnu"
+LLVM_TARGET[i586] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[i586] = "little"
 TARGET_POINTER_WIDTH[i586] = "32"
 TARGET_C_INT_WIDTH[i586] = "32"
 MAX_ATOMIC_WIDTH[i586] = "64"
 
-## mips-unknown-linux-gnu
+## mips-unknown-linux-{gnu, musl}
 DATA_LAYOUT[mips] = "E-m:m-p:32:32-i8:8:32-i16:16:32-i64:64-n32-S64"
 LLVM_TARGET[mips] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[mips] = "big"
@@ -179,7 +182,7 @@ TARGET_POINTER_WIDTH[mips] = "32"
 TARGET_C_INT_WIDTH[mips] = "32"
 MAX_ATOMIC_WIDTH[mips] = "32"
 
-## mipsel-unknown-linux-gnu
+## mipsel-unknown-linux-{gnu, musl}
 DATA_LAYOUT[mipsel] = "e-m:m-p:32:32-i8:8:32-i16:16:32-i64:64-n32-S64"
 LLVM_TARGET[mipsel] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[mipsel] = "little"
@@ -264,7 +267,10 @@ def rust_gen_target(d, thing, wd):
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch)
     tspec['arch'] = arch_to_rust_target_arch(arch)
     tspec['os'] = "linux"
-    tspec['env'] = "gnu"
+    if "musl" in tspec['llvm-target']:
+        tspec['env'] = "musl"
+    else:
+        tspec['env'] = "gnu"
     tspec['vendor'] = "unknown"
     tspec['target-family'] = "unix"
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE'), prefix)
@@ -339,7 +345,7 @@ python do_configure() {
     target_section = "target.{}".format(d.getVar('TARGET_SYS', True))
     config.add_section(target_section)
 
-    llvm_config = d.expand("${STAGING_DIR_NATIVE}${bindir_native}/llvm-config")
+    llvm_config = d.expand("${STAGING_DIR_NATIVE}${libdir_native}/llvm-rust/bin/llvm-config")
     config.set(target_section, "llvm-config", e(llvm_config))
 
     config.set(target_section, "cxx", e(d.expand("${RUST_TARGET_CXX}")))
