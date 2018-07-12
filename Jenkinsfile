@@ -17,8 +17,11 @@ for (int i = 0; i < targets.size(); i++) {
                 stage("fetch $machine") {
                     sh "GIT_LOCAL_REF_DIR=/srv/git-cache/ ./scripts/fetch.sh master"
                 }
-                stage("build $machine") {
-                    sh "MACHINE=${machine} ./scripts/build.sh"
+                stage("build glibc $machine") {
+                    sh "MACHINE=${machine} TCLIBC=glibc ./scripts/build.sh"
+                }
+                stage("build musl $machine") {
+                    sh "MACHINE=${machine} TCLIBC=musl ./scripts/build.sh"
                 }
             } catch (e) {
                 echo "Caught: ${e}"
