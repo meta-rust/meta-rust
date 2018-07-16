@@ -11,6 +11,8 @@ RUSTFLAGS += "-L ${STAGING_LIBDIR} -C link-arg=-Wl,-soname,libstd.so"
 
 S = "${RUSTSRC}/src/libstd"
 
+CARGO_BUILD_FLAGS += "--features '${CARGO_FEATURES}'"
+
 do_compile_prepend () {
     export CARGO_TARGET_DIR="${B}"
     # For Rust 1.13.0 and newer

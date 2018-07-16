@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://../../COPYRIGHT;md5=99c369ad81a36cd5b27f6c6968d01055"
 
 # Don't use jemalloc as it doesn't work for many targets.
 # https://github.com/rust-lang/rust/pull/37392
-CARGO_BUILD_FLAGS += "--features 'panic-unwind'"
+CARGO_FEATURES ?= "panic-unwind"
 
 # These are taken from src/libstd/Cargo.toml via cargo-bitbake
 SRC_URI += " \
