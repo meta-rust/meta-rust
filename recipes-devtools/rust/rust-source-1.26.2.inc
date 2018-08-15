@@ -2,6 +2,7 @@
 
 SRC_URI += " \
 	https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust \
+	file://skip-crate-build-id-check.patch;patchdir=${WORKDIR}/rustc-${PV}-src \
 "
 
 SRC_URI[md5sum] = "581bc81b4695cff0d9b7c57a144d01cc"

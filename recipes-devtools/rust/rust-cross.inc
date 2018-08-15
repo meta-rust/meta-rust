@@ -32,6 +32,12 @@ BUILD_POST_LINK_ARGS_append = " -Wl,-rpath=../../lib"
 # We need the same thing for the calls to the compiler when building the runtime crap
 TARGET_CC_ARCH_append = " --sysroot=${STAGING_DIR_TARGET}"
 
+RUST_STD_SNAPSHOT_TARGET = "rust-std-${PV}-${RUST_TARGET_SYS}"
+
+SRC_URI += " \
+        https://static.rust-lang.org/dist/${RUST_STD_SNAPSHOT_TARGET}.tar.gz;name=rust-std-snapshot-target-${RUST_TARGET_SYS};subdir=rust-snapshot-components \
+"
+
 do_configure () {
 }
 
@@ -41,6 +47,10 @@ do_compile () {
 do_install () {
 	mkdir -p ${D}${prefix}/${base_libdir_native}/rustlib
 	cp ${WORKDIR}/targets/${TARGET_SYS}.json ${D}${prefix}/${base_libdir_native}/rustlib
+        if [ -n "${RUST_STD_SNAPSHOT_TARGET}" ]; then
+                cp -r ${WORKDIR}/rust-snapshot/lib/rustlib/${RUST_TARGET_SYS} ${D}${prefix}/${base_libdir_native}/rustlib
+                cp    ${WORKDIR}/rust-snapshot/lib/rustlib/manifest-rust-std-${RUST_TARGET_SYS} ${D}${prefix}/${base_libdir_native}/rustlib
+        fi
 }
 
 rust_cross_sysroot_preprocess() {
