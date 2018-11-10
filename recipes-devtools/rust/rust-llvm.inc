@@ -14,6 +14,9 @@ DEPENDS += "ninja-native rust-llvm-native"
 ARM_INSTRUCTION_SET_armv5 = "arm"
 ARM_INSTRUCTION_SET_armv4t = "arm"
 
+LLVM_RELEASE = "6.0"
+LLVM_DIR = "llvm${LLVM_RELEASE}"
+
 EXTRA_OECMAKE = " \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64;PowerPC;Mips' \
@@ -40,21 +43,6 @@ EXTRA_OECMAKE_append_class-target = "\
 # The debug symbols are huge here (>2GB) so suppress them since they
 # provide almost no value. If you really need them then override this
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
-
-do_compile_prepend_class-target() {
-    # Fix paths in llvm-config
-    sed -i "s|sys::path::parent_path(CurrentPath))\.str()|sys::path::parent_path(sys::path::parent_path(CurrentPath))).str()|g" ${S}/tools/llvm-config/llvm-config.cpp
-
-    # Fix the hardcoded libdir in llvm-config
-    sed -i 's:/lib\>:/${baselib}:g' ${S}/tools/llvm-config/llvm-config.cpp
-}
-do_compile_class-native() {
-    ninja -v ${PARALLEL_MAKE} llvm-config llvm-tblgen
-}
-do_install_class-native() {
-    install -D -m 0755 ${B}/bin/llvm-tblgen ${D}${libdir}/llvm-rust/bin/llvm-tblgen
-    install -D -m 0755 ${B}/bin/llvm-config ${D}${libdir}/llvm-rust/bin/llvm-config
-}
 
 do_install_append_class-target() {
     # Disable checks on the native tools, since these should came from the native recipe
