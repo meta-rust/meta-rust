@@ -60,7 +60,7 @@ oe_cargo_fix_env () {
 	export TARGET_CC="${RUST_TARGET_CC}"
 	export TARGET_CXX="${RUST_TARGET_CXX}"
 	export TARGET_CFLAGS="${CFLAGS}"
-	export TARGET_CFLAGS="${CXXFLAGS}"
+	export TARGET_CXXFLAGS="${CXXFLAGS}"
 	export TARGET_AR="${AR}"
 	export HOST_CC="${RUST_BUILD_CC}"
 	export HOST_CXX="${RUST_BUILD_CXX}"
