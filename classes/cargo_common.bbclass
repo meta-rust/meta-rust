@@ -35,7 +35,7 @@ cargo_common_do_configure () {
 	directory = "${CARGO_HOME}/bitbake"
 	EOF
 
-	if [ "${EXTERNALSRC}" == "" ]; then
+	if [ -z "${EXTERNALSRC}" ]; then
 		cat <<- EOF >> ${CARGO_HOME}/config
 		[source.crates-io]
 		replace-with = "bitbake"
