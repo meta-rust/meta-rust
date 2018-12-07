@@ -97,6 +97,13 @@ cargo_common_do_configure () {
 		target-dir = "${B}/target"
 		EOF
 	fi
+
+	cat <<- EOF >> ${CARGO_HOME}/config
+
+	[term]
+	progress.when = 'always'
+	progress.width = 80
+	EOF
 }
 
 oe_cargo_fix_env () {
