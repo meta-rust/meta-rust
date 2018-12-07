@@ -7,11 +7,15 @@ inherit rust
 inherit cargo_common
 
 DEPENDS += "file-native python-native"
+DEPENDS_append_class-native = " rust-llvm-native"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
 export FORCE_CRATE_HASH="${BB_TASKHASH}"
+
+export YOCTO_ALTERNATE_EXE_PATH = "${STAGING_LIBDIR}/llvm-rust/bin/llvm-config"
+export YOCTO_ALTERNATE_MULTILIB_NAME = "/${BASELIB}"
 
 # We can't use RUST_BUILD_SYS here because that may be "musl" if
 # TCLIBC="musl". Snapshots are always -unknown-linux-gnu
@@ -345,7 +349,7 @@ python do_configure() {
     target_section = "target.{}".format(d.getVar('TARGET_SYS', True))
     config.add_section(target_section)
 
-    llvm_config = d.expand("${STAGING_DIR_NATIVE}${libdir_native}/llvm-rust/bin/llvm-config")
+    llvm_config = d.expand("${YOCTO_ALTERNATE_EXE_PATH}")
     config.set(target_section, "llvm-config", e(llvm_config))
 
     config.set(target_section, "cxx", e(d.expand("${RUST_TARGET_CXX}")))
