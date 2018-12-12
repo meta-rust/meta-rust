@@ -23,9 +23,9 @@ Index: llvm/tools/llvm-config/llvm-config.cpp
 ===================================================================
 --- llvm.orig/tools/llvm-config/llvm-config.cpp
 +++ llvm/tools/llvm-config/llvm-config.cpp
-@@ -225,6 +225,13 @@ Typical components:\n\
+@@ -226,6 +226,13 @@
  
- /// \brief Compute the path to the main executable.
+ /// Compute the path to the main executable.
  std::string GetExecutablePath(const char *Argv0) {
 +  // Hack for Yocto: we need to override the root path when we are using
 +  // llvm-config from within a target sysroot.
@@ -37,7 +37,7 @@ Index: llvm/tools/llvm-config/llvm-config.cpp
    // This just needs to be some symbol in the binary; C++ doesn't
    // allow taking the address of ::main however.
    void *P = (void *)(intptr_t)GetExecutablePath;
-@@ -306,12 +313,21 @@ int main(int argc, char **argv) {
+@@ -307,12 +314,21 @@
    std::string ActivePrefix, ActiveBinDir, ActiveIncludeDir, ActiveLibDir,
                ActiveCMakeDir;
    std::string ActiveIncludeOption;
@@ -59,7 +59,7 @@ Index: llvm/tools/llvm-config/llvm-config.cpp
      switch (DevelopmentTreeLayout) {
      case CMakeStyle:
        ActiveBinDir = ActiveObjRoot + "/bin";
-@@ -336,7 +352,7 @@ int main(int argc, char **argv) {
+@@ -337,7 +353,7 @@
      SmallString<256> path(StringRef(LLVM_TOOLS_INSTALL_DIR));
      sys::fs::make_absolute(ActivePrefix, path);
      ActiveBinDir = path.str();
