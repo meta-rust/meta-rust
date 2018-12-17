@@ -6,6 +6,7 @@ LICENSE = "MIT | Apache-2.0"
 RUSTLIB_DEP = ""
 inherit cargo
 
+DEPENDS_append_libc-musl = " libunwind"
 # Needed so cargo can find libbacktrace
 RUSTFLAGS += "-L ${STAGING_LIBDIR} -C link-arg=-Wl,-soname,libstd.so"
 
