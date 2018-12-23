@@ -194,6 +194,14 @@ TARGET_POINTER_WIDTH[mipsel] = "32"
 TARGET_C_INT_WIDTH[mipsel] = "32"
 MAX_ATOMIC_WIDTH[mipsel] = "32"
 
+## powerpc-unknown-linux-{gnu, musl}
+DATA_LAYOUT[powerpc] = "E-m:e-p:32:32-i64:64-n32"
+LLVM_TARGET[powerpc] = "${RUST_TARGET_SYS}"
+TARGET_ENDIAN[powerpc] = "big"
+TARGET_POINTER_WIDTH[powerpc] = "32"
+TARGET_C_INT_WIDTH[powerpc] = "32"
+MAX_ATOMIC_WIDTH[powerpc] = "32"
+
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing))
 
@@ -224,6 +232,7 @@ def llvm_cpu(d):
     trans['x86-64'] = "x86-64"
     trans['i686'] = "i686"
     trans['i586'] = "i586"
+    trans['powerpc'] = "powerpc"
 
     if target in ["mips", "mipsel"]:
         feat = frozenset(d.getVar('TUNE_FEATURES').split())
