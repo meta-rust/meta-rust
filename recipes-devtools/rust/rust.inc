@@ -218,6 +218,14 @@ TARGET_POINTER_WIDTH[powerpc] = "32"
 TARGET_C_INT_WIDTH[powerpc] = "32"
 MAX_ATOMIC_WIDTH[powerpc] = "32"
 
+## riscv64-unknown-linux-{gnu, musl}
+DATA_LAYOUT[riscv64] = "e-m:e-p:64:64-i64:64-i128:128-n64-S128"
+LLVM_TARGET[riscv64] = "${RUST_TARGET_SYS}"
+TARGET_ENDIAN[riscv64] = "little"
+TARGET_POINTER_WIDTH[riscv64] = "64"
+TARGET_C_INT_WIDTH[riscv64] = "64"
+MAX_ATOMIC_WIDTH[riscv64] = "64"
+
 def arch_for(d, thing):
     return d.getVar('{}_ARCH'.format(thing))
 
