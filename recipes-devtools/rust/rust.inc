@@ -194,6 +194,22 @@ TARGET_POINTER_WIDTH[mipsel] = "32"
 TARGET_C_INT_WIDTH[mipsel] = "32"
 MAX_ATOMIC_WIDTH[mipsel] = "32"
 
+## mips64-unknown-linux-{gnu, musl}
+DATA_LAYOUT[mips64] = "E-m:e-i8:8:32-i16:16:32-i64:64-n32:64-S128"
+LLVM_TARGET[mips64] = "${RUST_TARGET_SYS}"
+TARGET_ENDIAN[mips64] = "big"
+TARGET_POINTER_WIDTH[mips64] = "64"
+TARGET_C_INT_WIDTH[mips64] = "64"
+MAX_ATOMIC_WIDTH[mips64] = "64"
+
+## mips64el-unknown-linux-{gnu, musl}
+DATA_LAYOUT[mips64el] = "e-m:e-i8:8:32-i16:16:32-i64:64-n32:64-S128"
+LLVM_TARGET[mips64el] = "${RUST_TARGET_SYS}"
+TARGET_ENDIAN[mips64el] = "little"
+TARGET_POINTER_WIDTH[mips64el] = "64"
+TARGET_C_INT_WIDTH[mips64el] = "64"
+MAX_ATOMIC_WIDTH[mips64el] = "64"
+
 ## powerpc-unknown-linux-{gnu, musl}
 DATA_LAYOUT[powerpc] = "E-m:e-p:32:32-i64:64-n32"
 LLVM_TARGET[powerpc] = "${RUST_TARGET_SYS}"
@@ -218,6 +234,8 @@ def arch_to_rust_target_arch(arch):
         return "x86"
     elif arch == "mipsel":
         return "mips"
+    elif arch == "mip64sel":
+        return "mips64"
     else:
         return arch
 
@@ -233,6 +251,8 @@ def llvm_cpu(d):
     trans['i686'] = "i686"
     trans['i586'] = "i586"
     trans['powerpc'] = "powerpc"
+    trans['mips64'] = "mips64"
+    trans['mips64el'] = "mips64"
 
     if target in ["mips", "mipsel"]:
         feat = frozenset(d.getVar('TUNE_FEATURES').split())
