@@ -17,6 +17,10 @@ export FORCE_CRATE_HASH="${BB_TASKHASH}"
 export YOCTO_ALTERNATE_EXE_PATH = "${STAGING_LIBDIR}/llvm-rust/bin/llvm-config"
 export YOCTO_ALTERNATE_MULTILIB_NAME = "/${BASELIB}"
 
+# We don't want to use bitbakes vendoring because the rust sources do their
+# own vendoring.
+CARGO_DISABLE_BITBAKE_VENDORING = "1"
+
 # We can't use RUST_BUILD_SYS here because that may be "musl" if
 # TCLIBC="musl". Snapshots are always -unknown-linux-gnu
 SNAPSHOT_BUILD_SYS = "${BUILD_ARCH}-unknown-linux-gnu"
@@ -392,6 +396,16 @@ python do_configure() {
     config.set(target_section, "cxx", e(d.expand("${RUST_TARGET_CXX}")))
     config.set(target_section, "cc", e(d.expand("${RUST_TARGET_CC}")))
 
+    # If we don't do this rust-native will compile it's own llvm for BUILD.
+    # [target.${BUILD_ARCH}-unknown-linux-gnu]
+    target_section = "target.{}".format(d.getVar('SNAPSHOT_BUILD_SYS', True))
+    config.add_section(target_section)
+
+    config.set(target_section, "llvm-config", e(llvm_config))
+
+    config.set(target_section, "cxx", e(d.expand("${RUST_BUILD_CXX}")))
+    config.set(target_section, "cc", e(d.expand("${RUST_BUILD_CC}")))
+
     # [rust]
     config.add_section("rust")
     config.set("rust", "rpath", e(True))
@@ -415,13 +429,17 @@ python do_configure() {
     cargo = d.expand("${WORKDIR}/rust-snapshot/bin/cargo")
     config.set("build", "cargo", e(cargo))
 
+    config.set("build", "vendor", e(True))
+
     targets = [d.getVar("TARGET_SYS", True)]
     config.set("build", "target", e(targets))
 
     hosts = [d.getVar("HOST_SYS", True)]
     config.set("build", "host", e(targets))
 
-    config.set("build", "build", e(d.getVar("BUILD_SYS", True)))
+    # We can't use BUILD_SYS since that is something the rust snapshot knows
+    # nothing about when trying to build some stage0 tools (like fabricate)
+    config.set("build", "build", e(d.getVar("SNAPSHOT_BUILD_SYS", True)))
 
     with open("config.toml", "w") as f:
         config.write(f)
@@ -447,22 +465,19 @@ rust_runx () {
     python src/bootstrap/bootstrap.py "$@" --verbose
 }
 
-
 do_compile () {
     rust_runx build
+    rust_runx dist
 }
 
+rust_do_install () {
+    # Only install compiler generated for the HOST_SYS. There will be
+    # one for SNAPSHOT_BUILD_SYS as well.
+    local installer=build/tmp/dist/rustc-${PV}-${HOST_SYS}/install.sh
+    ${installer} --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
 
-rust_do_dist_install () {
-    rust_runx dist
-
-    for installer in "build/tmp/dist/rustc"*"/install.sh"; do
-        "${installer}" --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
-    done
-
-    for installer in "build/tmp/dist/rust-std"*"/install.sh"; do
-        "${installer}" --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
-    done
+    installer=build/tmp/dist/rust-std-${PV}-${HOST_SYS}/install.sh
+    ${installer} --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
 
     # Install our custom target.json files
     local td="${D}${libdir}/rustlib/"
@@ -480,6 +495,6 @@ rust_do_dist_install () {
 
 
 do_install () {
-    rust_do_dist_install
+    rust_do_install
 }
 # ex: sts=4 et sw=4 ts=8

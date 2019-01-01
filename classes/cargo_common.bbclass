@@ -20,6 +20,14 @@ export CARGO_HOME = "${WORKDIR}/cargo_home"
 # for cross compilation, so tell it we know better than it.
 export PKG_CONFIG_ALLOW_CROSS = "1"
 
+# Don't instruct cargo to use crates downloaded by bitbake. Some rust packages,
+# for example the rust compiler itself, come with their own vendored sources.
+# Specifying two [source.crates-io] will not work.
+CARGO_DISABLE_BITBAKE_VENDORING ?= "0"
+
+# Used by libstd-rs to point to the vendor dir included in rustc src
+CARGO_VENDORING_DIRECTORY ?= "${CARGO_HOME}/bitbake"
+
 cargo_common_do_configure () {
 	mkdir -p ${CARGO_HOME}/bitbake
 	echo "paths = [" > ${CARGO_HOME}/config
@@ -32,10 +40,10 @@ cargo_common_do_configure () {
 	# Point cargo at our local mirror of the registry
 	cat <<- EOF >> ${CARGO_HOME}/config
 	[source.bitbake]
-	directory = "${CARGO_HOME}/bitbake"
+	directory = "${CARGO_VENDORING_DIRECTORY}"
 	EOF
 
-	if [ -z "${EXTERNALSRC}" ]; then
+	if [ -z "${EXTERNALSRC}" ] && [ ${CARGO_DISABLE_BITBAKE_VENDORING} = "0" ]; then
 		cat <<- EOF >> ${CARGO_HOME}/config
 		[source.crates-io]
 		replace-with = "bitbake"

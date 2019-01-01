@@ -32,6 +32,9 @@ BUILD_POST_LINK_ARGS_append = " -Wl,-rpath=../../lib"
 # We need the same thing for the calls to the compiler when building the runtime crap
 TARGET_CC_ARCH_append = " --sysroot=${STAGING_DIR_TARGET}"
 
+do_rust_setup_snapshot () {
+}
+
 do_configure () {
 }
 
