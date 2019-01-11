@@ -51,6 +51,20 @@ cargo_common_do_configure () {
 		EOF
 	fi
 
+	if [ -n "${http_proxy}" ]; then
+		cat <<- EOF >> ${CARGO_HOME}/config
+		[http]
+		proxy = "${http_proxy}"
+		EOF
+	fi
+
+	if [ -n "${https_proxy}" ]; then
+		cat <<- EOF >> ${CARGO_HOME}/config
+		[https]
+		proxy = "${https_proxy}"
+		EOF
+	fi
+
 	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
 	echo "linker = '${RUST_TARGET_CCLD}'" >> ${CARGO_HOME}/config
 	if [ "${HOST_SYS}" != "${BUILD_SYS}" ]; then
