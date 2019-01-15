@@ -33,6 +33,11 @@ CARGO_TARGET_SUBDIR="${HOST_SYS}/${BUILD_DIR}"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
 	export RUST_TARGET_PATH="${RUST_TARGET_PATH}"
+	case "${RUSTC_BUILD_CHANNEL}" in
+	"nightly"|"beta")
+	   export CFG_RELEASE_CHANNEL="${RUSTC_BUILD_CHANNEL}"
+	   ;;
+	esac
 	bbnote "cargo = $(which ${CARGO})"
 	bbnote "rustc = $(which ${RUSTC})"
 	bbnote "${CARGO} build ${CARGO_BUILD_FLAGS} $@"
