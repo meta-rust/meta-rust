@@ -344,6 +344,28 @@ def rust_gen_target(d, thing, wd):
         json.dump(tspec, f, indent=4)
 
 
+def rustc_channel(d):
+    channel = d.getVar("RUSTC_BUILD_CHANNEL")
+    if channel is None:
+       channel = "stable"
+
+    return channel
+
+
+def rustc_version(d):
+    channel = d.getVar("RUSTC_BUILD_CHANNEL")
+    if channel == "nightly":
+        return "nightly"
+    elif channel == "beta":
+        return "beta"
+    elif channel == "stable" or channel is None:
+        return d.expand("${PV}")
+
+
+TARGET_RUSTC_CHANNEL = "${@rustc_channel(d)}"
+TARGET_RUSTC_VERSION = "${@rustc_version(d)}"
+
+
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR') + '/targets/'
     # It is important 'TARGET' is last here so that it overrides our less
@@ -407,9 +429,10 @@ python do_configure() {
     config.set(target_section, "cc", e(d.expand("${RUST_BUILD_CC}")))
 
     # [rust]
+    channel = d.getVar("TARGET_RUSTC_CHANNEL")
     config.add_section("rust")
     config.set("rust", "rpath", e(True))
-    config.set("rust", "channel", e("stable"))
+    config.set("rust", "channel", e(channel))
 
     # Don't use jemalloc as it doesn't work for many targets.
     # https://github.com/rust-lang/rust/pull/37392
@@ -473,10 +496,10 @@ do_compile () {
 rust_do_install () {
     # Only install compiler generated for the HOST_SYS. There will be
     # one for SNAPSHOT_BUILD_SYS as well.
-    local installer=build/tmp/dist/rustc-${PV}-${HOST_SYS}/install.sh
+    local installer=build/tmp/dist/rustc-${TARGET_RUSTC_VERSION}-${HOST_SYS}/install.sh
     ${installer} --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
 
-    installer=build/tmp/dist/rust-std-${PV}-${HOST_SYS}/install.sh
+    installer=build/tmp/dist/rust-std-${TARGET_RUSTC_VERSION}-${HOST_SYS}/install.sh
     ${installer} --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
 
     # Install our custom target.json files
