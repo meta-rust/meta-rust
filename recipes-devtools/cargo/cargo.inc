@@ -12,7 +12,7 @@ LIC_FILES_CHKSUM = " \
 "
 
 S = "${RUSTSRC}/src/tools/cargo"
-CARGO_VENDORING_DIRECTORY = "${RUSTSRC}/src/vendor"
+CARGO_VENDORING_DIRECTORY = "${RUSTSRC}/vendor"
 
 inherit cargo
 
@@ -29,7 +29,7 @@ do_compile_prepend () {
 
 do_install () {
 	install -d "${D}${bindir}"
-	install -m 755 "${RUSTSRC}/src/target/${CARGO_TARGET_SUBDIR}/cargo" "${D}${bindir}"
+	install -m 755 "${RUSTSRC}/target/${CARGO_TARGET_SUBDIR}/cargo" "${D}${bindir}"
 }
 
 # Needed for pkg-config to be used

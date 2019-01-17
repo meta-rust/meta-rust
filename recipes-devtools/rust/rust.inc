@@ -374,6 +374,7 @@ do_rust_setup_snapshot[dirs] += "${WORKDIR}/rust-snapshot"
 
 python do_configure() {
     import json
+    from distutils.version import LooseVersion
     try:
         import configparser
     except ImportError:
@@ -412,9 +413,8 @@ python do_configure() {
     config.set("rust", "rpath", e(True))
     config.set("rust", "channel", e("stable"))
 
-    # Don't use jemalloc as it doesn't work for many targets.
-    # https://github.com/rust-lang/rust/pull/37392
-    config.set("rust", "use-jemalloc", e(False))
+    if LooseVersion(d.getVar("PV")) < LooseVersion("1.32.0"):
+        config.set("rust", "use-jemalloc", e(False))
 
     # Whether or not to optimize the compiler and standard library
     config.set("rust", "optimize", e(True))
