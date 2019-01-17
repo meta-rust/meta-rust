@@ -12,7 +12,11 @@ RUSTFLAGS += "-L ${STAGING_LIBDIR} -C link-arg=-Wl,-soname,libstd.so"
 
 S = "${RUSTSRC}/src/libstd"
 
-CARGO_BUILD_FLAGS += "--features '${CARGO_FEATURES}'"
+python __anonymous() {
+    cargo_features = d.getVar("CARGO_FEATURES", True)
+    if cargo_features is not None and cargo_features != "":
+        d.appendVar("CARGO_BUILD_FLAGS", " --features '{}'".format(cargo_features))
+}
 
 do_compile_prepend () {
     export CARGO_TARGET_DIR="${B}"
@@ -26,6 +30,6 @@ do_install () {
     # With the incremental build support added in 1.24, the libstd deps directory also includes dependency
     # files that get installed. Those are really only needed to incrementally rebuild the libstd library
     # itself and don't need to be installed.
-    rm ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/*.d
+    rm -f ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/*.d
     cp ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/* ${D}${rustlibdir}
 }
