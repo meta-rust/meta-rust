@@ -26,6 +26,6 @@ do_install () {
     # With the incremental build support added in 1.24, the libstd deps directory also includes dependency
     # files that get installed. Those are really only needed to incrementally rebuild the libstd library
     # itself and don't need to be installed.
-    rm ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/*.d
+    rm -f ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/*.d
     cp ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/* ${D}${rustlibdir}
 }

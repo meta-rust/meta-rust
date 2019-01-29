@@ -1,0 +1,30 @@
+From a66e33d612d2207154de20e24701b0c30056fe7a Mon Sep 17 00:00:00 2001
+From: Johan Anderholm <johan.anderholm@gmail.com>
+Date: Sun, 27 Jan 2019 10:19:00 +0100
+Subject: [PATCH] Disable http2
+
+http2 requires that curl is build with nghttp2 which in turn depends on
+many dependencies and ultimately a dependency loop in the case of
+curl-native. As long as multiplexing is disabled in cargo this should
+be fine.
+
+Upstream-Status: Inappropriate
+---
+ Cargo.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index d2d48ff7..d5dff47d 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -22,7 +22,7 @@ bytesize = "1.0"
+ crates-io = { path = "src/crates-io", version = "0.21" }
+ crossbeam-utils = "0.6"
+ crypto-hash = "0.3.1"
+-curl = { version = "0.4.19", features = ['http2'] }
++curl = { version = "0.4.19" }
+ curl-sys = "0.4.15"
+ env_logger = "0.6.0"
+ pretty_env_logger = { version = "0.2", optional = true }
+-- 
+2.17.1
