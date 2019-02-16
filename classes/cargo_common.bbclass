@@ -51,18 +51,15 @@ cargo_common_do_configure () {
 		EOF
 	fi
 
-	if [ -n "${http_proxy}" ]; then
-		cat <<- EOF >> ${CARGO_HOME}/config
+        # Disable multiplexing in order to keep cargo from using http2, which we
+        # can't currently enable because of dependency loops
+        cat <<- EOF >> ${CARGO_HOME}/config
 		[http]
-		proxy = "${http_proxy}"
-		EOF
-	fi
+		multiplexing = false
+	EOF
 
-	if [ -n "${https_proxy}" ]; then
-		cat <<- EOF >> ${CARGO_HOME}/config
-		[https]
-		proxy = "${https_proxy}"
-		EOF
+	if [ -n "${http_proxy}" ]; then
+		echo "proxy = \"{http_proxy}\"" >> ${CARGO_HOME}/config
 	fi
 
 	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
