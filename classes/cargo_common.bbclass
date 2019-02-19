@@ -59,7 +59,7 @@ cargo_common_do_configure () {
 	EOF
 
 	if [ -n "${http_proxy}" ]; then
-		echo "proxy = \"{http_proxy}\"" >> ${CARGO_HOME}/config
+		echo "proxy = \"${http_proxy}\"" >> ${CARGO_HOME}/config
 	fi
 
 	echo "[target.${HOST_SYS}]" >> ${CARGO_HOME}/config
