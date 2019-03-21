@@ -19,7 +19,7 @@ LLVM_DIR = "llvm${LLVM_RELEASE}"
 
 EXTRA_OECMAKE = " \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64;PowerPC;Mips' \
+    -DLLVM_TARGETS_TO_BUILD='X86;ARM' \
     -DLLVM_BUILD_DOCS=OFF \
     -DLLVM_ENABLE_TERMINFO=OFF \
     -DLLVM_ENABLE_ZLIB=OFF \
@@ -36,6 +36,12 @@ EXTRA_OECMAKE = " \
 EXTRA_OECMAKE_append_class-target = "\
     -DCMAKE_CROSSCOMPILING:BOOL=ON \
     -DLLVM_BUILD_TOOLS=OFF \
+    -DLLVM_TABLEGEN=${STAGING_LIBDIR_NATIVE}/llvm-rust/bin/llvm-tblgen \
+    -DLLVM_CONFIG_PATH=${STAGING_LIBDIR_NATIVE}/llvm-rust/bin/llvm-config \
+"
+
+EXTRA_OECMAKE_append_class-nativesdk = "\
+    -DCMAKE_CROSSCOMPILING:BOOL=ON \
     -DLLVM_TABLEGEN=${STAGING_LIBDIR_NATIVE}/llvm-rust/bin/llvm-tblgen \
     -DLLVM_CONFIG_PATH=${STAGING_LIBDIR_NATIVE}/llvm-rust/bin/llvm-config \
 "
@@ -59,4 +65,7 @@ FILES_${PN}-staticdev =+ "${libdir}/llvm-rust/*/*.a"
 FILES_${PN} += "${libdir}/libLLVM*.so.* ${libdir}/llvm-rust/lib/*.so.* ${libdir}/llvm-rust/bin"
 FILES_${PN}-dev += "${datadir}/llvm ${libdir}/llvm-rust/lib/*.so ${libdir}/llvm-rust/include ${libdir}/llvm-rust/share ${libdir}/llvm-rust/lib/cmake"
 
-BBCLASSEXTEND = "native"
+FILES_${PN}_append_class-nativesdk = " /usr/share"
+#FILES_nativesdk-${PN}_append_class-nativesdk = " /usr/share ${libdir}"
+
+BBCLASSEXTEND = "native nativesdk"

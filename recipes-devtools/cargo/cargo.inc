@@ -38,7 +38,7 @@ do_install () {
 export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 export LIBSSH2_SYS_USE_PKG_CONFIG = "1"
 
-BBCLASSEXTEND = "native"
+BBCLASSEXTEND = "native nativesdk"
 
 # When building cargo-native we don't have a built cargo to use so we must use
 # the snapshot to bootstrap the build of cargo
