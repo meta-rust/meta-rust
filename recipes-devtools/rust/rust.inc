@@ -47,6 +47,9 @@ def llvm_features_from_tune(d):
         return []
     feat = frozenset(feat.split())
 
+    mach_overrides = d.getVar('MACHINEOVERRIDES')
+    mach_overrides = frozenset(mach_overrides.split(':'))
+
     if 'vfpv4' in feat:
         f.append("+vfp4")
     if 'vfpv3' in feat:
@@ -70,9 +73,9 @@ def llvm_features_from_tune(d):
         f.append("+mips32r2")
 
     v7=frozenset(['armv7a', 'armv7r', 'armv7m', 'armv7ve'])
-    if not feat.isdisjoint(v7):
+    if (not mach_overrides.isdisjoint(v7)) or (not feat.isdisjoint(v7)):
         f.append("+v7")
-    if 'armv6' in feat:
+    if ('armv6' in mach_overrides) or ('armv6' in feat):
         f.append("+v6")
 
     if 'dsp' in feat:
@@ -80,7 +83,7 @@ def llvm_features_from_tune(d):
 
     if 'thumb' in feat:
         if d.getVar('ARM_THUMB_OPT') is "thumb":
-            if not feat.isdisjoint(v7):
+            if (not mach_overrides.isdisjoint(v7)) or (not feat.isdisjoint(v7)):
                 f.append("+thumb2")
             f.append("+thumb-mode")
 
