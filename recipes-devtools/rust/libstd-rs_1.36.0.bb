@@ -1,7 +1,7 @@
 require rust-source-${PV}.inc
 require libstd-rs.inc
 
-LIC_FILES_CHKSUM = "file://../../COPYRIGHT;md5=27e0aaa5e5cbd279af456711d3bdc066"
+LIC_FILES_CHKSUM = "file://../../COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"
 
 CARGO_FEATURES ?= "panic-unwind backtrace"
 
