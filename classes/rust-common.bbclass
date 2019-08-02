@@ -1,7 +1,7 @@
 # Common variables used by all Rust builds
 export rustlibdir = "${libdir}/rust"
 FILES_${PN} += "${rustlibdir}/*.so"
-FILES_${PN}-dev += "${rustlibdir}/*.rlib"
+FILES_${PN}-dev += "${rustlibdir}/*.rlib ${rustlibdir}/*.rmeta"
 FILES_${PN}-dbg += "${rustlibdir}/.debug"
 
 RUSTLIB = "-L ${STAGING_LIBDIR}/rust"
