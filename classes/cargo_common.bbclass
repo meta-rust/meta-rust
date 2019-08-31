@@ -58,6 +58,11 @@ cargo_common_do_configure () {
 		multiplexing = false
 	EOF
 
+	# When a sstate-cache is used sometimes the certificates are not available
+	# at the compile time path anymore. Set it explicitly instead.
+	echo "cainfo = \"${STAGING_ETCDIR_NATIVE}/ssl/certs/ca-certificates.crt\"" \
+		>> ${CARGO_HOME}/config
+
 	if [ -n "${http_proxy}" ]; then
 		echo "proxy = \"${http_proxy}\"" >> ${CARGO_HOME}/config
 	fi
