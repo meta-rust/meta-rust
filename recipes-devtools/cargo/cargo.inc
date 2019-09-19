@@ -29,7 +29,7 @@ do_compile_prepend () {
 
 do_install () {
 	install -d "${D}${bindir}"
-	install -m 755 "${RUSTSRC}/target/${CARGO_TARGET_SUBDIR}/cargo" "${D}${bindir}"
+	install -m 755 "${B}/target/${CARGO_TARGET_SUBDIR}/cargo" "${D}${bindir}"
 }
 
 # Disabled due to incompatibility with libgit2 0.28.x (https://github.com/rust-lang/git2-rs/issues/458, https://bugs.gentoo.org/707746#c1)
