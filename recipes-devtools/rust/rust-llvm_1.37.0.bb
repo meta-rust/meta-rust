@@ -1,5 +1,5 @@
 require rust-source-${PV}.inc
-require rust-llvm.inc
+require rust-llvm-ncsa.inc
 
 LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=c6b766a4e85dd28301eeed54a6684648"
 
