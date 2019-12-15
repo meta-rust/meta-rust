@@ -1,11 +1,11 @@
 SUMMARY = "LLVM compiler framework (packaged with rust)"
-LICENSE = "NCSA"
+LICENSE ?= "Apache-2.0-with-LLVM-exception"
 
 SRC_URI += "file://0002-llvm-allow-env-override-of-exe-path.patch"
 
 S = "${RUSTSRC}/src/llvm-project/llvm"
 
-LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
+LIC_FILES_CHKSUM ?= "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
 
 inherit cmake pythonnative
 
