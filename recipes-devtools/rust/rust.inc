@@ -6,7 +6,7 @@ LICENSE = "MIT | Apache-2.0"
 inherit rust
 inherit cargo_common
 
-DEPENDS += "file-native python-native"
+DEPENDS += "file-native python3-native"
 DEPENDS_append_class-native = " rust-llvm-native"
 
 # We generate local targets, and need to be able to locate them
@@ -474,7 +474,7 @@ rust_runx () {
 
     oe_cargo_fix_env
 
-    python src/bootstrap/bootstrap.py "$@" --verbose
+    python3 src/bootstrap/bootstrap.py "$@" --verbose
 }
 
 do_compile () {
