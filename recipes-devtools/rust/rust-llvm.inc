@@ -7,7 +7,7 @@ S = "${RUSTSRC}/src/llvm-project/llvm"
 
 LIC_FILES_CHKSUM ?= "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
 
-inherit cmake pythonnative
+inherit cmake python3native
 
 DEPENDS += "ninja-native rust-llvm-native"
 
