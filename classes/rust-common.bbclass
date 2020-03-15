@@ -110,7 +110,7 @@ create_wrapper () {
 
 	cat <<- EOF > "${file}"
 	#!/bin/sh
-	$@ "\$@"
+	exec $@ "\$@"
 	EOF
 	chmod +x "${file}"
 }
