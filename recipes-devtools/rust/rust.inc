@@ -299,18 +299,13 @@ TARGET_LLVM_FEATURES = "${@llvm_features(d)}"
 # (original) target.
 TARGET_LLVM_FEATURES_class-native = "${@','.join(llvm_features_from_cc_arch(d))}"
 
-def rust_gen_target(d, thing, wd):
+def rust_gen_target(d, thing, wd, features, cpu):
     import json
     from distutils.version import LooseVersion
     arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
 
-    features = ""
-    cpu = "generic"
-    if thing is "TARGET":
-        features = d.getVar('TARGET_LLVM_FEATURES') or ""
-        cpu = d.getVar('TARGET_LLVM_CPU')
     features = features or d.getVarFlag('FEATURES', arch) or ""
     features = features.strip()
 
@@ -355,19 +350,13 @@ def rust_gen_target(d, thing, wd):
     with open(wd + sys + '.json', 'w') as f:
         json.dump(tspec, f, indent=4)
 
-
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR') + '/targets/'
-    # It is important 'TARGET' is last here so that it overrides our less
-    # informed choices for BUILD & HOST if TARGET happens to be the same as
-    # either of them.
-    for thing in ['BUILD', 'HOST', 'TARGET']:
-        bb.debug(1, "rust_gen_target for " + thing)
-        rust_gen_target(d, thing, wd)
+    rust_gen_target(d, 'BUILD', wd, "", "generic")
 }
+
 addtask rust_gen_targets after do_patch before do_compile
 do_rust_gen_targets[dirs] += "${WORKDIR}/targets"
-
 
 do_rust_setup_snapshot () {
     for installer in "${WORKDIR}/rust-snapshot-components/"*"/install.sh"; do
