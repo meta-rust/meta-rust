@@ -1,6 +1,21 @@
 require rust.inc
 inherit cross
 
+python do_rust_gen_targets () {
+    wd = d.getVar('WORKDIR') + '/targets/'
+    # It is important 'TARGET' is last here so that it overrides our less
+    # informed choices for BUILD & HOST if TARGET happens to be the same as
+    # either of them.
+    for thing in ['BUILD', 'HOST', 'TARGET']:
+        bb.debug(1, "rust_gen_target for " + thing)
+        features = ""
+        cpu = "generic"
+        if thing is "TARGET":
+            features = d.getVar('TARGET_LLVM_FEATURES') or ""
+            cpu = d.getVar('TARGET_LLVM_CPU')
+        rust_gen_target(d, thing, wd, features, cpu)
+}
+
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS = "1"
 
