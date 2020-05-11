@@ -313,7 +313,7 @@ def rust_gen_target(d, thing, wd, features, cpu):
     tspec = {}
     tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch)
     tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch)
-    tspec['max-atomic-width'] = d.getVarFlag('MAX_ATOMIC_WIDTH', arch)
+    tspec['max-atomic-width'] = int(d.getVarFlag('MAX_ATOMIC_WIDTH', arch))
     tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch)
     tspec['target-c-int-width'] = d.getVarFlag('TARGET_C_INT_WIDTH', arch)
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch)
