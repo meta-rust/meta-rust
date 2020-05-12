@@ -468,17 +468,14 @@ rust_runx () {
 
 do_compile () {
     rust_runx build
-    rust_runx dist
 }
 
 rust_do_install () {
-    # Only install compiler generated for the HOST_SYS. There will be
-    # one for SNAPSHOT_BUILD_SYS as well.
-    local installer=build/tmp/dist/rustc-${PV}-${HOST_SYS}/install.sh
-    ${installer} --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
+    mkdir -p ${D}${bindir}
+    cp build/${HOST_SYS}/stage2/bin/* ${D}${bindir}
 
-    installer=build/tmp/dist/rust-std-${PV}-${HOST_SYS}/install.sh
-    ${installer} --destdir="${D}" --prefix="${prefix}" --disable-ldconfig
+    mkdir -p ${D}${libdir}/rustlib
+    cp -pRd build/${HOST_SYS}/stage2/lib/* ${D}${libdir}
 
     # Install our custom target.json files
     local td="${D}${libdir}/rustlib/"
@@ -486,12 +483,6 @@ rust_do_install () {
     for tgt in "${WORKDIR}/targets/"* ; do
         install -m 0644 "$tgt" "$td"
     done
-
-    # cleanup after rust-installer since we don't need these bits
-    rm ${D}/${libdir}/rustlib/install.log
-    rm ${D}/${libdir}/rustlib/rust-installer-version
-    rm ${D}/${libdir}/rustlib/uninstall.sh
-    rm ${D}/${libdir}/rustlib/components
 }
 
 
