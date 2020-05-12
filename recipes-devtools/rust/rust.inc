@@ -463,7 +463,7 @@ rust_runx () {
 
     oe_cargo_fix_env
 
-    python3 src/bootstrap/bootstrap.py "$@" --verbose
+    python3 src/bootstrap/bootstrap.py -j ${BB_NUMBER_THREADS} "$@" --verbose
 }
 
 do_compile () {
