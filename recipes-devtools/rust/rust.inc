@@ -465,6 +465,7 @@ rust_runx () {
 
     python3 src/bootstrap/bootstrap.py -j ${BB_NUMBER_THREADS} "$@" --verbose
 }
+rust_runx[vardepsexclude] += "BB_NUMBER_THREADS"
 
 do_compile () {
     rust_runx build
