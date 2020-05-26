@@ -463,9 +463,9 @@ rust_runx () {
 
     oe_cargo_fix_env
 
-    python3 src/bootstrap/bootstrap.py -j ${BB_NUMBER_THREADS} "$@" --verbose
+    python3 src/bootstrap/bootstrap.py ${@oe.utils.parallel_make_argument(d, '-j %d')} "$@" --verbose
 }
-rust_runx[vardepsexclude] += "BB_NUMBER_THREADS"
+rust_runx[vardepsexclude] += "PARALLEL_MAKE"
 
 do_compile () {
     rust_runx build
