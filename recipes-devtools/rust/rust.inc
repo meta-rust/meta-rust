@@ -477,6 +477,8 @@ rust_do_install () {
 
     mkdir -p ${D}${libdir}/rustlib
     cp -pRd build/${HOST_SYS}/stage2/lib/* ${D}${libdir}
+    # Remove absolute symlink so bitbake doesn't complain
+    rm -f ${D}${libdir}/rustlib/src/rust
 
     # Install our custom target.json files
     local td="${D}${libdir}/rustlib/"
