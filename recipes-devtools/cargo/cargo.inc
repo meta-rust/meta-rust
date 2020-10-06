@@ -3,7 +3,7 @@ HOMEPAGE = "https://crates.io"
 LICENSE = "MIT | Apache-2.0"
 SECTION = "devel"
 
-DEPENDS = "openssl zlib libgit2 curl ca-certificates libssh2"
+DEPENDS = "openssl zlib curl ca-certificates libssh2"
 
 LIC_FILES_CHKSUM = " \
     file://LICENSE-MIT;md5=b377b220f43d747efdec40d69fcaa69d \
@@ -32,8 +32,13 @@ do_install () {
 	install -m 755 "${RUSTSRC}/target/${CARGO_TARGET_SUBDIR}/cargo" "${D}${bindir}"
 }
 
+# Disabled due to incompatibility with libgit2 0.28.x (https://github.com/rust-lang/git2-rs/issues/458, https://bugs.gentoo.org/707746#c1)
+# as shipped by Yocto Dunfell.
+# According to https://github.com/rust-lang/git2-rs/issues/458#issuecomment-522567539, there are no compatibility guarantees between
+# libgit2-sys and arbitrary system libgit2 versions, so better keep this turned off.
+#export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
+
 # Needed for pkg-config to be used
-export LIBGIT2_SYS_USE_PKG_CONFIG = "1"
 export LIBSSH2_SYS_USE_PKG_CONFIG = "1"
 
 BBCLASSEXTEND = "native"
