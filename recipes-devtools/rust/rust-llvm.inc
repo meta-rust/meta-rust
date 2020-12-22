@@ -5,7 +5,7 @@ SRC_URI += "file://0002-llvm-allow-env-override-of-exe-path.patch"
 
 S = "${RUSTSRC}/src/llvm-project/llvm"
 
-LIC_FILES_CHKSUM ?= "file://LICENSE.TXT;md5=4c0bc17c954e99fd547528d938832bfa"
+LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=8a15a0759ef07f2682d2ba4b893c9afe"
 
 inherit cmake python3native
 
@@ -46,9 +46,9 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 export YOCTO_ALTERNATE_EXE_PATH = "${STAGING_LIBDIR}/llvm-rust/bin/llvm-config"
 
-do_install_append_class-target() {
-    # Disable checks on the native tools, since these should came from the native recipe
-    sed -i -e 's/\(.*APPEND.*_IMPORT_CHECK_FILES_FOR_.*{_IMPORT_PREFIX}\/bin\/.*\)/#\1/' ${D}/usr/share/llvm/cmake/LLVMExports-noconfig.cmake
+do_install_append () {
+    # we don't need any of this stuff to build Rust
+    rm -rf "${D}/usr/lib/cmake"
 }
 
 PACKAGES =+ "${PN}-bugpointpasses ${PN}-llvmhello ${PN}-liblto"
