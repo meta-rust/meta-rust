@@ -31,6 +31,24 @@ def determine_libc(d, thing):
 
     return libc
 
+def target_is_armv7(d):
+    '''Determine if target is armv7'''
+    # TUNE_FEATURES may include arm* even if the target is not arm
+    # in the case of *-native packages
+    if d.getVar('TARGET_ARCH') != 'arm':
+        return False
+
+    feat = d.getVar('TUNE_FEATURES')
+    feat = frozenset(feat.split())
+    mach_overrides = d.getVar('MACHINEOVERRIDES')
+    mach_overrides = frozenset(mach_overrides.split(':'))
+
+    v7=frozenset(['armv7a', 'armv7r', 'armv7m', 'armv7ve'])
+    if mach_overrides.isdisjoint(v7) and feat.isdisjoint(v7):
+        return False
+    else:
+        return True
+
 # Responsible for taking Yocto triples and converting it to Rust triples
 def rust_base_triple(d, thing):
     '''
@@ -40,7 +58,12 @@ def rust_base_triple(d, thing):
     Note that os is assumed to be some linux form
     '''
 
-    arch = d.getVar('{}_ARCH'.format(thing))
+    # The llvm-target for armv7 is armv7-unknown-linux-gnueabihf
+    if thing == "TARGET" and target_is_armv7(d):
+        arch = "armv7"
+    else:
+        arch = d.getVar('{}_ARCH'.format(thing))
+
     # All the Yocto targets are Linux and are 'unknown'
     vendor = "-unknown"
     os = d.getVar('{}_OS'.format(thing))
