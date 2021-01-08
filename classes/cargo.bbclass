@@ -15,16 +15,19 @@ BASEDEPENDS_append = " cargo-native"
 DEPENDS_append_class-target = " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
 DEPENDS_append_class-native = " rust-native"
 
-# Cargo only supports in-tree builds at the moment
-B = "${S}"
+# Enable build separation
+B = "${WORKDIR}/build"
 
 # In case something fails in the build process, give a bit more feedback on
 # where the issue occured
 export RUST_BACKTRACE = "1"
 
+# Assume there's a Cargo.toml directly in the source directory
+MANIFEST_PATH ??= "${S}/Cargo.toml"
+
 RUSTFLAGS ??= ""
 BUILD_MODE = "${@['--release', ''][d.getVar('DEBUG_BUILD') == '1']}"
-CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} ${BUILD_MODE}"
+CARGO_BUILD_FLAGS = "-v --target ${HOST_SYS} ${BUILD_MODE} --manifest-path=${MANIFEST_PATH}"
 
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
