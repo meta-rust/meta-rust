@@ -8,6 +8,10 @@ RUSTLIB_DEP = ""
 inherit cargo
 
 DEPENDS_append_libc-musl = " libunwind"
+# rv32 does not have libunwind ported yet
+DEPENDS_remove_riscv32 = "libunwind"
+DEPENDS_remove_riscv64 = "libunwind"
+
 # Needed so cargo can find libbacktrace
 RUSTFLAGS += "-L ${STAGING_LIBDIR} -C link-arg=-Wl,-soname,libstd.so"
 
