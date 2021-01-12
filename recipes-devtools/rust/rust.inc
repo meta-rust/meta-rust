@@ -97,7 +97,8 @@ def llvm_features_from_tune(d):
         f.append("+a15")
     if 'cortexa17' in feat:
         f.append("+a17")
-
+    if ('riscv64' in feat) or ('riscv32' in feat):
+        f.append("+a,+c,+d,+f,+m")
     return f
 
 # TARGET_CC_ARCH changes from build/cross/target so it'll do the right thing
@@ -291,6 +292,8 @@ def llvm_cpu(d):
     trans['powerpc'] = "powerpc"
     trans['mips64'] = "mips64"
     trans['mips64el'] = "mips64"
+    trans['riscv64'] = "generic-rv64"
+    trans['riscv32'] = "generic-rv32"
 
     if target in ["mips", "mipsel"]:
         feat = frozenset(d.getVar('TUNE_FEATURES').split())
@@ -337,6 +340,10 @@ def rust_gen_target(d, thing, wd, features, cpu):
         tspec['env'] = "musl"
     else:
         tspec['env'] = "gnu"
+    if "riscv64" in tspec['llvm-target']:
+        tspec['llvm-abiname'] = "lp64d"
+    if "riscv32" in tspec['llvm-target']:
+        tspec['llvm-abiname'] = "ilp32d"
     tspec['vendor'] = "unknown"
     tspec['target-family'] = "unix"
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE'), prefix)
