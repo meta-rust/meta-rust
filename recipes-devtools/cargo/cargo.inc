@@ -46,3 +46,4 @@ BBCLASSEXTEND = "native"
 # When building cargo-native we don't have a built cargo to use so we must use
 # the snapshot to bootstrap the build of cargo
 CARGO_class-native = "${WORKDIR}/${CARGO_SNAPSHOT}/bin/cargo"
+DEPENDS_remove_class-native = "cargo-native"
