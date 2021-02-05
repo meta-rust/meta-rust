@@ -12,6 +12,8 @@ DEPENDS_append_libc-musl = " libunwind"
 DEPENDS_remove_riscv32 = "libunwind"
 DEPENDS_remove_riscv64 = "libunwind"
 
+# Embed bitcode in order to allow compiling both with and without LTO
+RUSTFLAGS += "-Cembed-bitcode=yes"
 # Needed so cargo can find libbacktrace
 RUSTFLAGS += "-L ${STAGING_LIBDIR} -C link-arg=-Wl,-soname,libstd.so"
 
