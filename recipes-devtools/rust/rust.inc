@@ -463,7 +463,18 @@ python do_configure() {
     # nothing about when trying to build some stage0 tools (like fabricate)
     config.set("build", "build", e(d.getVar("SNAPSHOT_BUILD_SYS", True)))
 
+    # [install]
+    config.add_section("install")
+    # ./x.py install doesn't have any notion of "destdir"
+    # but we can prepend ${D} to all the directories instead
+    config.set("install", "prefix",  e(d.getVar("D", True) + d.getVar("prefix", True)))
+    config.set("install", "bindir",  e(d.getVar("D", True) + d.getVar("bindir", True)))
+    config.set("install", "libdir",  e(d.getVar("D", True) + d.getVar("libdir", True)))
+    config.set("install", "datadir", e(d.getVar("D", True) + d.getVar("datadir", True)))
+    config.set("install", "mandir",  e(d.getVar("D", True) + d.getVar("mandir", True)))
+
     with open("config.toml", "w") as f:
+        f.write('changelog-seen = 2\n\n')
         config.write(f)
 
     # set up ${WORKDIR}/cargo_home
@@ -500,7 +511,9 @@ rust_do_install () {
     cp -pRd build/${HOST_SYS}/stage2/lib/* ${D}${libdir}
     # Remove absolute symlink so bitbake doesn't complain
     rm -f ${D}${libdir}/rustlib/src/rust
+}
 
+rust_install_targets() {
     # Install our custom target.json files
     local td="${D}${libdir}/rustlib/"
     install -d "$td"
@@ -512,5 +525,6 @@ rust_do_install () {
 
 do_install () {
     rust_do_install
+    rust_install_targets
 }
 # ex: sts=4 et sw=4 ts=8
