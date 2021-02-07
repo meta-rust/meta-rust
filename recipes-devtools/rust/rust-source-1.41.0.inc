@@ -7,5 +7,3 @@ SRC_URI[rust.sha256sum] = "38d6742e5c4c98a835de5d6e12a209e442fb3078a03b2c01bab6e
 RUSTSRC = "${WORKDIR}/rustc-${PV}-src"
 # set this as our default
 S = "${RUSTSRC}"
-
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"

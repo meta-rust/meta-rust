@@ -7,6 +7,8 @@ DEPENDS = "openssl zlib curl ca-certificates libssh2"
 
 LIC_FILES_CHKSUM = " \
     file://LICENSE-MIT;md5=b377b220f43d747efdec40d69fcaa69d \
+    file://LICENSE-APACHE;md5=71b224ca933f0676e26d5c2e2271331c \
+    file://LICENSE-THIRD-PARTY;md5=f257ad009884cb88a3a87d6920e7180a \
 "
 
 SRC_URI += "file://0001-Disable-http2.patch"
