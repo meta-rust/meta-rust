@@ -8,4 +8,7 @@ RUSTSRC = "${WORKDIR}/rustc-${PV}-src"
 # set this as our default
 S = "${RUSTSRC}"
 
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"
+LLVM_LICENSE = "Apache-2.0-with-LLVM-exception"
+LLVM_LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=8a15a0759ef07f2682d2ba4b893c9afe"
+
+LIC_FILES_CHKSUM ?= "file://COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"
