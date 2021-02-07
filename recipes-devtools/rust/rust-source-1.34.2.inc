@@ -1,9 +1,4 @@
-SRC_URI += "https://static.rust-lang.org/dist/rustc-${PV}-src.tar.gz;name=rust"
+require rust-source.inc
 
-SRC_URI[rust.md5sum] = "7c85e6a60dda740295f7e004a1fb15e1"
-SRC_URI[rust.sha256sum] = "c69a4a85a1c464368597df8878cb9e1121aae93e215616d45ad7d23af3052f56"
-
-# later versions of rust change the directory that they unextract to
-RUSTSRC = "${WORKDIR}/rustc-${PV}-src"
-# set this as our default
-S = "${RUSTSRC}"
+SRC_URI[rust.md5sum] = "2f3b962aba2eefd105e7df074ef9e99e"
+SRC_URI[rust.sha256sum] = "2b3b3a5462aa31d07f39721af73ef394803ceae3472e2470f28b7ee0b12e38ef"
