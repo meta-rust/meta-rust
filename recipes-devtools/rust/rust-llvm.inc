@@ -5,7 +5,7 @@ SRC_URI += "file://0002-llvm-allow-env-override-of-exe-path.patch"
 
 S = "${RUSTSRC}/src/llvm-project/llvm"
 
-LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=8a15a0759ef07f2682d2ba4b893c9afe"
+LIC_FILES_CHKSUM ?= "file://LICENSE.TXT;md5=8a15a0759ef07f2682d2ba4b893c9afe"
 
 inherit cmake python3native
 
