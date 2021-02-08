@@ -67,7 +67,7 @@ def llvm_features_from_tune(d):
         f.append("+neon")
 
     if 'aarch64' in feat:
-        f.append("+v8")
+        f.append("+v8.1a")
 
     if 'mips32' in feat:
         f.append("+mips32")
