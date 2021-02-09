@@ -13,7 +13,7 @@ This OpenEmbedded layer provides the rust compiler, tools for building packages
 ## What doesn't:
 
  - Using anything but x86_64 as the build environment
- - rust (built for target) issue #81
+ - rust (built for target) [issue #81](https://github.com/meta-rust/meta-rust/issues/81)
 
 ## What's untested:
 
@@ -27,7 +27,7 @@ rust packages do), then it's especially easy.  Otherwise you should probably
 get the code building in cargo first.
 
 Once your package builds in cargo, you can use
-[cargo-bitbake](https://github.com/cardoe/cargo-bitbake) to generate a bitbake
+[cargo-bitbake](https://github.com/meta-rust/cargo-bitbake) to generate a bitbake
 recipe for it.  This allows bitbake to fetch all the necessary dependent
 crates, as well as a pegged version of the crates.io index, to ensure maximum
 reproducibility.
@@ -39,7 +39,7 @@ contained within it
 
 ## Pitfalls
 
- - TARGET_SYS _must_ be different from BUILD_SYS. This is due to the way Rust configuration options are tracked for different targets. This is the reason we use the Yocto triples instead of the native Rust triples. See rust-lang/cargo#3349.
+ - TARGET_SYS _must_ be different from BUILD_SYS. This is due to the way Rust configuration options are tracked for different targets. This is the reason we use the Yocto triples instead of the native Rust triples. See [rust-lang/cargo#3349](https://github.com/rust-lang/cargo/issues/3349).
 
 ## Dependencies
 
