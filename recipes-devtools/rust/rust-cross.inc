@@ -10,10 +10,14 @@ python do_rust_gen_targets () {
         bb.debug(1, "rust_gen_target for " + thing)
         features = ""
         cpu = "generic"
+        arch = d.getVar('{}_ARCH'.format(thing))
         if thing is "TARGET":
+            # arm and armv7 have different targets in llvm
+            if arch == "arm" and target_is_armv7(d):
+                arch = 'armv7'
             features = d.getVar('TARGET_LLVM_FEATURES') or ""
             cpu = d.getVar('TARGET_LLVM_CPU')
-        rust_gen_target(d, thing, wd, features, cpu)
+        rust_gen_target(d, thing, wd, features, cpu, arch)
 }
 
 # Otherwise we'll depend on what we provide
