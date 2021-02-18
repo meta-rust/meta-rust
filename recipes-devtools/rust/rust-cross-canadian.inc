@@ -216,7 +216,6 @@ PKG_SYS_BINDIR = "${SDKPATHNATIVE}/usr/bin"
 PKG_RUSTLIB_DIR = "${PKG_SYS_LIBDIR}/${TARGET_SYS}/rustlib"
 FILES_${PN} = "${PKG_SYS_LIBDIR}/*.so ${PKG_SYS_BINDIR} ${base_prefix}/environment-setup.d"
 FILES_${RUSTLIB_TARGET_PN} = "${PKG_RUSTLIB_DIR}/${TARGET_SYS} ${PKG_RUSTLIB_DIR}/${TARGET_SYS}.json"
-# Check more regarding the rustlib symlink, it might not work everywhere.
 FILES_${RUSTLIB_HOST_PN} = "${PKG_RUSTLIB_DIR}/${BUILD_ARCH}-unknown-linux-gnu"
 
 SUMMARY_${RUSTLIB_TARGET_PN} = "Rust cross canadian libaries for ${TARGET_SYS}"
