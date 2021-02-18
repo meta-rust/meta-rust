@@ -252,12 +252,6 @@ TARGET_POINTER_WIDTH[riscv64] = "64"
 TARGET_C_INT_WIDTH[riscv64] = "64"
 MAX_ATOMIC_WIDTH[riscv64] = "64"
 
-def arch_for(d, thing):
-    if thing == 'TARGET' and target_is_armv7(d):
-        return "armv7"
-    else:
-        return d.getVar('{}_ARCH'.format(thing))
-
 def sys_for(d, thing):
     return d.getVar('{}_SYS'.format(thing))
 
@@ -316,10 +310,9 @@ TARGET_LLVM_FEATURES = "${@llvm_features(d)}"
 # (original) target.
 TARGET_LLVM_FEATURES_class-native = "${@','.join(llvm_features_from_cc_arch(d))}"
 
-def rust_gen_target(d, thing, wd, features, cpu):
+def rust_gen_target(d, thing, wd, features, cpu, arch):
     import json
     from distutils.version import LooseVersion
-    arch = arch_for(d, thing)
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
 
@@ -373,7 +366,8 @@ def rust_gen_target(d, thing, wd, features, cpu):
 
 python do_rust_gen_targets () {
     wd = d.getVar('WORKDIR') + '/targets/'
-    rust_gen_target(d, 'BUILD', wd, "", "generic")
+    build_arch = d.getVar('BUILD_ARCH')
+    rust_gen_target(d, 'BUILD', wd, "", "generic", build_arch)
 }
 
 addtask rust_gen_targets after do_patch before do_compile
