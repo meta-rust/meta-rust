@@ -236,6 +236,14 @@ TARGET_POINTER_WIDTH[powerpc] = "32"
 TARGET_C_INT_WIDTH[powerpc] = "32"
 MAX_ATOMIC_WIDTH[powerpc] = "32"
 
+## powerpc64le-unknown-linux-{gnu, musl}
+DATA_LAYOUT[powerpc64le] = "e-m:e-i64:64-n32:64-v256:256:256-v512:512:512"
+LLVM_TARGET[powerpc64le] = "${RUST_TARGET_SYS}"
+TARGET_ENDIAN[powerpc64le] = "little"
+TARGET_POINTER_WIDTH[powerpc64le] = "64"
+TARGET_C_INT_WIDTH[powerpc64le] = "64"
+MAX_ATOMIC_WIDTH[powerpc64le] = "64"
+
 ## riscv32-unknown-linux-{gnu, musl}
 DATA_LAYOUT[riscv32] = "e-m:e-p:32:32-i64:64-n32-S128"
 LLVM_TARGET[riscv32] = "${RUST_TARGET_SYS}"
