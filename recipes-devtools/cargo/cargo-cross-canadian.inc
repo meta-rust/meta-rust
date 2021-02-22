@@ -21,7 +21,7 @@ DEPENDS += "rust-native \
             rust-cross-canadian-${TRANSLATED_TARGET_ARCH} \
             virtual/nativesdk-${HOST_PREFIX}compilerlibs \
             nativesdk-openssl nativesdk-zlib \
-	    virtual/nativesdk-libc \
+            virtual/nativesdk-libc \
 "
 
 inherit cross-canadian

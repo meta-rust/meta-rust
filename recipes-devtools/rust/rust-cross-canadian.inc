@@ -6,12 +6,12 @@ require rust-target.inc
 inherit cross-canadian
 
 DEPENDS += "  \
-           virtual/${HOST_PREFIX}gcc-crosssdk \
-	   virtual/nativesdk-libc rust-llvm-native \
-	   virtual/${TARGET_PREFIX}compilerlibs \
-           virtual/nativesdk-${HOST_PREFIX}compilerlibs \
-	   gcc-cross-${TARGET_ARCH} \
-		"
+            virtual/${HOST_PREFIX}gcc-crosssdk \
+            virtual/nativesdk-libc rust-llvm-native \
+            virtual/${TARGET_PREFIX}compilerlibs \
+            virtual/nativesdk-${HOST_PREFIX}compilerlibs \
+            gcc-cross-${TARGET_ARCH} \
+           "
 RUSTLIB_TARGET_PN = "rust-cross-canadian-rustlib-target-${TRANSLATED_TARGET_ARCH}"
 RUSTLIB_HOST_PN = "rust-cross-canadian-rustlib-host-${TRANSLATED_TARGET_ARCH}"
 RUSTLIB_PKGS = "${RUSTLIB_TARGET_PN} ${RUSTLIB_HOST_PN}"
