@@ -312,7 +312,6 @@ TARGET_LLVM_FEATURES_class-native = "${@','.join(llvm_features_from_cc_arch(d))}
 
 def rust_gen_target(d, thing, wd, features, cpu, arch):
     import json
-    from distutils.version import LooseVersion
     sys = sys_for(d, thing)
     prefix = prefix_for(d, thing)
 
@@ -353,13 +352,6 @@ def rust_gen_target(d, thing, wd, features, cpu, arch):
     tspec['position-independent-executables'] = True
     tspec['panic-strategy'] = d.getVar("RUST_PANIC_STRATEGY")
 
-    # Don't use jemalloc as it doesn't work for many targets.
-    # https://github.com/rust-lang/rust/pull/37392
-    # From 1.20.0 and forward, system allocator is the default.
-    if LooseVersion(d.getVar("PV")) < LooseVersion("1.20.0"):
-        tspec['exe-allocation-crate'] = "alloc_system"
-        tspec['lib-allocation-crate'] = "alloc_system"
-
     # write out the target spec json file
     with open(wd + sys + '.json', 'w') as f:
         json.dump(tspec, f, indent=4)
@@ -389,7 +381,6 @@ do_rust_setup_snapshot[dirs] += "${WORKDIR}/rust-snapshot"
 
 python do_configure() {
     import json
-    from distutils.version import LooseVersion
     try:
         import configparser
     except ImportError:
@@ -427,9 +418,6 @@ python do_configure() {
     config.add_section("rust")
     config.set("rust", "rpath", e(True))
     config.set("rust", "channel", e("stable"))
-
-    if LooseVersion(d.getVar("PV")) < LooseVersion("1.32.0"):
-        config.set("rust", "use-jemalloc", e(False))
 
     # Whether or not to optimize the compiler and standard library
     config.set("rust", "optimize", e(True))
