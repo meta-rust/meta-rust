@@ -60,6 +60,17 @@ cargo_do_install () {
 			install -m755 "$tgt" "${D}${rustlibdir}"
 			have_installed=true
 			;;
+		*examples)
+			if [ -d "$tgt" ]; then
+				for example in "$tgt/"*; do
+					if [ -f "$example" ] && [ -x "$example" ]; then
+						install -d "${D}${bindir}"
+						install -m755 "$example" "${D}${bindir}"
+						have_installed=true
+					fi
+				done
+			fi
+			;;
 		*)
 			if [ -f "$tgt" ] && [ -x "$tgt" ]; then
 				install -d "${D}${bindir}"
