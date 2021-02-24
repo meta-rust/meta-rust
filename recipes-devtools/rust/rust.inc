@@ -296,8 +296,6 @@ def llvm_cpu(d):
     trans = {}
     trans['i586'] = "i586"
     trans['i686'] = "i686"
-    trans['mips'] = "mips32"
-    trans['mipsel'] = "mips32"
     trans['mips64'] = "mips64"
     trans['mips64el'] = "mips64"
     trans['powerpc'] = "ppc"
