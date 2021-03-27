@@ -1,0 +1,23 @@
+on: [pull_request]
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: 'meta-rust'
+      - name: Fetch poky
+        run: |
+          mv poky/build/sstate-cache . || true
+          rm -rf poky meta-openembedded
+          git clone -b gatesgarth --single-branch git://git.yoctoproject.org/poky
+          git clone -b gatesgarth --single-branch git://git.openembedded.org/meta-openembedded
+      - name: Run bitbake
+        run: |
+          cd poky
+          . oe-init-build-env
+          mv ../../sstate-cache . || true
+          sed -i -e "\$i$(readlink -f ../../meta-openembedded/meta-oe) \\\\" conf/bblayers.conf
+          sed -i -e "\$i$(readlink -f ../../meta-rust) \\\\" conf/bblayers.conf
+          echo 'PARALLEL_MAKE_pn-rust-llvm-native = "-j2"' >> conf/local.conf
+          bitbake rust-hello-world
