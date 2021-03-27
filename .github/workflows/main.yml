@@ -1,0 +1,5 @@
+build:
+  runs-on: self-hosted
+  on: [push, pull_request]
+  steps:
+    - run: ls
