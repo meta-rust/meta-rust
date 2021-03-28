@@ -17,7 +17,7 @@ jobs:
           cd poky
           . oe-init-build-env
           mv ../../sstate-cache . || true
-          sed -i -e "\$i$(readlink -f ../../meta-openembedded/meta-oe) \\\\" conf/bblayers.conf
-          sed -i -e "\$i$(readlink -f ../../meta-rust) \\\\" conf/bblayers.conf
+          bitbake-layers add-layer ../../meta-openembedded/meta-oe
+          bitbake-layers add-layer ../../meta-rust
           echo 'PARALLEL_MAKE_pn-rust-llvm-native = "-j2"' >> conf/local.conf
           bitbake rust-hello-world
