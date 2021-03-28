@@ -451,6 +451,10 @@ python do_configure() {
     rustc = d.expand("${WORKDIR}/rust-snapshot/bin/rustc")
     config.set("build", "rustc", e(rustc))
 
+    # Support for the profiler runtime to generate e.g. coverage report,
+    # PGO etc.
+    config.set("build", "profiler", e(True))
+
     cargo = d.expand("${WORKDIR}/rust-snapshot/bin/cargo")
     config.set("build", "cargo", e(cargo))
 
