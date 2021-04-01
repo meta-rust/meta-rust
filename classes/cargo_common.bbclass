@@ -28,6 +28,7 @@ CARGO_DISABLE_BITBAKE_VENDORING ?= "0"
 # Used by libstd-rs to point to the vendor dir included in rustc src
 CARGO_VENDORING_DIRECTORY ?= "${CARGO_HOME}/bitbake"
 
+CARGO_RUST_TARGET_CCLD ?= "${RUST_TARGET_CCLD}"
 cargo_common_do_configure () {
 	mkdir -p ${CARGO_HOME}/bitbake
 
@@ -74,7 +75,7 @@ cargo_common_do_configure () {
 
 	# HOST_SYS
 	[target.${HOST_SYS}]
-	linker = "${RUST_TARGET_CCLD}"
+	linker = "${CARGO_RUST_TARGET_CCLD}"
 	EOF
 
 	if [ "${HOST_SYS}" != "${BUILD_SYS}" ]; then

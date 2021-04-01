@@ -1,4 +1,4 @@
-SUMMARY = "Cargo, a package manager for Rust."
+SUMMARY ?= "Cargo, a package manager for Rust."
 HOMEPAGE = "https://crates.io"
 LICENSE = "MIT | Apache-2.0"
 SECTION = "devel"
@@ -43,7 +43,7 @@ do_install () {
 # Needed for pkg-config to be used
 export LIBSSH2_SYS_USE_PKG_CONFIG = "1"
 
-BBCLASSEXTEND = "native"
+BBCLASSEXTEND = "native nativesdk"
 
 # When building cargo-native we don't have cargo-native to use and depend on,
 # so we must use the locally set up snapshot to bootstrap the build.
