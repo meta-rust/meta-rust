@@ -16,7 +16,6 @@ DEPENDS += "ninja-native rust-llvm-native"
 ARM_INSTRUCTION_SET_armv5 = "arm"
 ARM_INSTRUCTION_SET_armv4t = "arm"
 
-LLVM_RELEASE = "6.0"
 LLVM_DIR = "llvm${LLVM_RELEASE}"
 
 EXTRA_OECMAKE = " \
