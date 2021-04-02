@@ -46,6 +46,7 @@ oe_cargo_build () {
 	"${CARGO}" build ${CARGO_BUILD_FLAGS} "$@"
 }
 
+do_compile[progress] = "outof:\s+(\d+)/(\d+)"
 cargo_do_compile () {
 	oe_cargo_fix_env
 	oe_cargo_build
