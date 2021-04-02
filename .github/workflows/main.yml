@@ -32,6 +32,7 @@ jobs:
           ./$(find ./tmp/deploy/sdk/ -name '*.sh') -d $SDK_DIR -y
           . $(find $SDK_DIR -name 'environment-setup-*')
           PROG=hello
+          rm -rf $PROG
           cargo new $PROG
           cd $PROG
           cargo build
