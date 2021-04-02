@@ -21,3 +21,18 @@ jobs:
           bitbake-layers add-layer ../../meta-rust
           echo 'PARALLEL_MAKE_pn-rust-llvm-native = "-j2"' >> conf/local.conf
           bitbake rust-hello-world
+      - name: Test SDK
+        run: |
+          cd poky
+          . oe-init-build-env
+          echo 'TOOLCHAIN_HOST_TASK_append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
+          echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
+          bitbake core-image-minimal -c populate_sdk
+          SDK_DIR=/tmp/sdk-deploy
+          ./$(find ./tmp/deploy/sdk/ -name '*.sh') -d $SDK_DIR -y
+          . $(find $SDK_DIR -name 'environment-setup-*')
+          PROG=hello
+          cargo new $PROG
+          cd $PROG
+          cargo build
+          file $(find ./target -name $PROG)
