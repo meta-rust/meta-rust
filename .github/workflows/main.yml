@@ -23,6 +23,7 @@ jobs:
           bitbake rust-hello-world
       - name: Test SDK
         run: |
+          SDK_DIR=$PWD/sdk-test
           cd poky
           . oe-init-build-env
           echo 'TOOLCHAIN_HOST_TASK_append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
@@ -30,7 +31,7 @@ jobs:
           echo 'DISTRO_FEATURES_remove = "acl alsa argp bluetooth ext2 ipv4 ipv6 largefile pcmcia usbgadget usbhost wifi xattr nfs zeroconf pci 3g nfc x11 vfat largefile opengl ptest multiarch wayland vulkan pulseaudio gobject-introspection-data ldconfig"' >> conf/local.conf
           echo 'VIRTUAL-RUNTIME_dev_manager = ""' >> conf/local.conf
           bitbake core-image-minimal -c populate_sdk
-          SDK_DIR=/tmp/sdk-deploy
+          rm -rf $SDK_DIR
           ./$(find ./tmp/deploy/sdk/ -name '*.sh') -d $SDK_DIR -y
           . $(find $SDK_DIR -name 'environment-setup-*')
           PROG=hello
