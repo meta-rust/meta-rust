@@ -25,6 +25,7 @@ jobs:
           echo 'PARALLEL_MAKE_pn-rust-llvm-native = "-j2"' >> conf/local.conf
           echo 'TOOLCHAIN_HOST_TASK_append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
           echo "SSTATE_MIRRORS = \"file://.* http://sstate.yoctoproject.org/$YOCTO_VERSION/PATH;downloadfilename=PATH \\n\"" >> conf/local.conf
+          echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
       - name: Run bitbake
         run: |
           cd poky
