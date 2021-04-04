@@ -25,13 +25,6 @@ jobs:
           echo 'PARALLEL_MAKE_pn-rust-llvm-native = "-j2"' >> conf/local.conf
           echo 'TOOLCHAIN_HOST_TASK_append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
           echo "SSTATE_MIRRORS = \"file://.* http://sstate.yoctoproject.org/$YOCTO_VERSION/PATH;downloadfilename=PATH \\n\"" >> conf/local.conf
-          # Reduce build time/size.
-          echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
-          echo 'VIRTUAL-RUNTIME_dev_manager = ""' >> conf/local.conf
-          echo 'VIRTUAL-RUNTIME_init_manager = ""' >> conf/local.conf
-          echo 'DISTRO_FEATURES_remove = "acl alsa argp bluetooth ext2 ipv4 ipv6 largefile pcmcia usbgadget usbhost wifi xattr nfs zeroconf pci 3g nfc x11 vfat largefile opengl ptest multiarch wayland vulkan pulseaudio gobject-introspection-data ldconfig sysvinit"' >> conf/local.conf
-          echo 'IMAGE_INSTALL_remove = "packagegroup-core-boot"' >> conf/local.conf
-          echo 'NO_RECOMMENDATIONS = "1"' >> conf/local.conf
       - name: Run bitbake
         run: |
           cd poky
