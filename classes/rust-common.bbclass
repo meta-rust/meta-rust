@@ -138,6 +138,26 @@ create_wrapper () {
 	chmod +x "${file}"
 }
 
+create_build_wrapper () {
+	file="$1"
+	shift
+
+	cat <<- EOF > "${file}"
+	#!/usr/bin/env bash
+
+	args=("\$@")
+	for ((i=0; i<"\${#args[@]}"; ++i)); do
+		if [[ "\${args[i]}" = "-L" && \${args[i+1]} =~ /recipe-sysroot/ ]]; then
+			unset args[i]
+			unset args[i+1]
+		fi
+	done
+
+	exec $@ "\${args[@]}"
+	EOF
+	chmod +x "${file}"
+}
+
 # compiler is used by gcc-rs
 # linker is used by rustc/cargo
 # archiver is used by the build of libstd-rs
@@ -149,7 +169,7 @@ do_rust_create_wrappers () {
 	# Yocto Build / Rust Host C++ compiler
 	create_wrapper "${RUST_BUILD_CXX}" "${BUILD_CXX}"
 	# Yocto Build / Rust Host linker
-	create_wrapper "${RUST_BUILD_CCLD}" "${BUILD_CCLD}" "${BUILD_LDFLAGS}"
+	create_build_wrapper "${RUST_BUILD_CCLD}" "${BUILD_CCLD}" "${BUILD_LDFLAGS}"
 	# Yocto Build / Rust Host archiver
 	create_wrapper "${RUST_BUILD_AR}" "${BUILD_AR}"
 
