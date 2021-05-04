@@ -14,7 +14,8 @@ DEPENDS += "  \
            "
 RUSTLIB_TARGET_PN = "rust-cross-canadian-rustlib-target-${TRANSLATED_TARGET_ARCH}"
 RUSTLIB_HOST_PN = "rust-cross-canadian-rustlib-host-${TRANSLATED_TARGET_ARCH}"
-RUSTLIB_PKGS = "${RUSTLIB_TARGET_PN} ${RUSTLIB_HOST_PN}"
+RUSTLIB_SRC_PN = "rust-cross-canadian-src"
+RUSTLIB_PKGS = "${RUSTLIB_SRC_PN} ${RUSTLIB_TARGET_PN} ${RUSTLIB_HOST_PN}"
 PN = "rust-cross-canadian-${TRANSLATED_TARGET_ARCH}"
 
 PACKAGES = "${RUSTLIB_PKGS} ${PN}"
@@ -190,7 +191,13 @@ do_install () {
 
     install -m 0644 "${WORKDIR}/targets/${TARGET_SYS}.json" "${RUSTLIB_DIR}"
 
-    # TODO package the sources.
+    SRC_DIR=${RUSTLIB_DIR}/src/rust
+    install -d ${SRC_DIR}/src/llvm-project
+    cp -pRd build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/src/llvm-project/libunwind ${SRC_DIR}/src/llvm-project
+    cp -pRd build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/library ${SRC_DIR}
+    cp -pRd build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/Cargo.lock ${SRC_DIR}
+    # Remove executable bit from any files so then Yocto doesn't try to relocate.
+    chmod -R -x+X ${SRC_DIR}
 
     ENV_SETUP_DIR=${D}${base_prefix}/environment-setup.d
     mkdir "${ENV_SETUP_DIR}"
@@ -217,8 +224,10 @@ PKG_RUSTLIB_DIR = "${PKG_SYS_LIBDIR}/${TARGET_SYS}/rustlib"
 FILES_${PN} = "${PKG_SYS_LIBDIR}/*.so ${PKG_SYS_BINDIR} ${base_prefix}/environment-setup.d"
 FILES_${RUSTLIB_TARGET_PN} = "${PKG_RUSTLIB_DIR}/${TARGET_SYS} ${PKG_RUSTLIB_DIR}/${TARGET_SYS}.json"
 FILES_${RUSTLIB_HOST_PN} = "${PKG_RUSTLIB_DIR}/${BUILD_ARCH}-unknown-linux-gnu"
+FILES_${RUSTLIB_SRC_PN} = "${PKG_RUSTLIB_DIR}/src"
 
 SUMMARY_${RUSTLIB_TARGET_PN} = "Rust cross canadian libaries for ${TARGET_SYS}"
 SUMMARY_${RUSTLIB_HOST_PN} = "Rust cross canadian libaries for ${HOST_SYS}"
+SUMMARY_${RUSTLIB_SRC_PN} = "Rust standard library sources for cross canadian toolchain"
 SUMMARY_${PN} = "Rust crost canadian compiler"
 
