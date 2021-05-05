@@ -193,10 +193,10 @@ do_install () {
 
     SRC_DIR=${RUSTLIB_DIR}/src/rust
     install -d ${SRC_DIR}/src/llvm-project
-    cp -pRd build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/src/llvm-project/libunwind ${SRC_DIR}/src/llvm-project
-    cp -pRd build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/library ${SRC_DIR}
-    cp -pRd build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/Cargo.lock ${SRC_DIR}
-    # Remove executable bit from any files so then Yocto doesn't try to relocate.
+    cp -R --no-dereference build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/src/llvm-project/libunwind ${SRC_DIR}/src/llvm-project
+    cp -R --no-dereference build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/library ${SRC_DIR}
+    cp --no-dereference build/${SNAPSHOT_BUILD_SYS}/stage2/lib/rustlib/src/rust/Cargo.lock ${SRC_DIR}
+    # Remove executable bit from any files so then SDK doesn't try to relocate.
     chmod -R -x+X ${SRC_DIR}
 
     ENV_SETUP_DIR=${D}${base_prefix}/environment-setup.d
