@@ -11,5 +11,6 @@ CARGO="cargo-cross-canadian-${TRANSLATED_TARGET_ARCH}"
 RDEPENDS_${PN} = " \
     ${@all_multilib_tune_values(d, 'RUST')} \
     ${@all_multilib_tune_values(d, 'CARGO')} \
+    rust-cross-canadian-src \
 "
 
