@@ -39,94 +39,9 @@ export WRAPPER_TARGET_CCLD = "${TARGET_PREFIX}gcc --sysroot=${STAGING_DIR_TARGET
 export WRAPPER_TARGET_LDFLAGS = "${TARGET_LDFLAGS}"
 export WRAPPER_TARGET_AR = "${TARGET_PREFIX}ar"
 
-python do_configure() {
-    import json
-    from distutils.version import LooseVersion
-    try:
-        import configparser
-    except ImportError:
-        import ConfigParser as configparser
-
-    # toml is rather similar to standard ini like format except it likes values
-    # that look more JSON like. So for our purposes simply escaping all values
-    # as JSON seem to work fine.
-
-    e = lambda s: json.dumps(s)
-
-    config = configparser.RawConfigParser()
-
-    # [target.ARCH-poky-linux]
-    target_section = "target.{}".format(d.getVar('TARGET_SYS', True))
-    config.add_section(target_section)
-
-    llvm_config = d.expand("${YOCTO_ALTERNATE_EXE_PATH}")
-    config.set(target_section, "llvm-config", e(llvm_config))
-
-    config.set(target_section, "cxx", e(d.expand("${RUST_TARGET_CXX}")))
-    config.set(target_section, "cc", e(d.expand("${RUST_TARGET_CC}")))
-    config.set(target_section, "ar", e(d.expand("${RUST_TARGET_AR}")))
-
-    # If we don't do this rust-native will compile it's own llvm for BUILD.
-    # [target.${BUILD_ARCH}-unknown-linux-gnu]
-    target_section = "target.{}".format(d.getVar('SNAPSHOT_BUILD_SYS', True))
-    config.add_section(target_section)
-
-    config.set(target_section, "llvm-config", e(llvm_config))
-
-    config.set(target_section, "cxx", e(d.expand("${RUST_BUILD_CXX}")))
-    config.set(target_section, "cc", e(d.expand("${RUST_BUILD_CC}")))
-    config.set(target_section, "ar", e(d.expand("${RUST_BUILD_AR}")))
-
-    # [rust]
-    config.add_section("rust")
-    config.set("rust", "rpath", e(True))
-    config.set("rust", "channel", e("stable"))
-
-    if LooseVersion(d.getVar("PV")) < LooseVersion("1.32.0"):
-        config.set("rust", "use-jemalloc", e(False))
-
-    # Whether or not to optimize the compiler and standard library
-    config.set("rust", "optimize", e(True))
-
-    # [build]
-    config.add_section("build")
-    config.set("build", "submodules", e(False))
-    config.set("build", "docs", e(False))
-
-    rustc = d.expand("${WORKDIR}/rust-snapshot/bin/rustc")
-    config.set("build", "rustc", e(rustc))
-
-    cargo = d.expand("${WORKDIR}/rust-snapshot/bin/cargo")
-    config.set("build", "cargo", e(cargo))
-
-    config.set("build", "vendor", e(True))
-
+python do_configure_prepend() {
     targets = [d.getVar("TARGET_SYS", True), "{}-unknown-linux-gnu".format(d.getVar("HOST_ARCH", True))]
-    config.set("build", "target", e(targets))
-
     hosts = ["{}-unknown-linux-gnu".format(d.getVar("HOST_ARCH", True))]
-    config.set("build", "host", e(hosts))
-
-    # We can't use BUILD_SYS since that is something the rust snapshot knows
-    # nothing about when trying to build some stage0 tools (like fabricate)
-    config.set("build", "build", e(d.getVar("SNAPSHOT_BUILD_SYS", True)))
-
-    # [install]
-    config.add_section("install")
-    # ./x.py install doesn't have any notion of "destdir"
-    # but we can prepend ${D} to all the directories instead
-    config.set("install", "prefix",  e(d.getVar("D", True) + d.getVar("prefix", True)))
-    config.set("install", "bindir",  e(d.getVar("D", True) + d.getVar("bindir", True)))
-    config.set("install", "libdir",  e(d.getVar("D", True) + d.getVar("libdir", True)))
-    config.set("install", "datadir", e(d.getVar("D", True) + d.getVar("datadir", True)))
-    config.set("install", "mandir",  e(d.getVar("D", True) + d.getVar("mandir", True)))
-
-    with open("config.toml", "w") as f:
-        f.write('changelog-seen = 2\n\n')
-        config.write(f)
-
-    # set up ${WORKDIR}/cargo_home
-    bb.build.exec_func("setup_cargo_environment", d)
 }
 
 INSANE_SKIP_${RUSTLIB_TARGET_PN} = "file-rdeps arch ldflags"
