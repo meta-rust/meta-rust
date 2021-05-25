@@ -33,32 +33,11 @@ python do_rust_gen_targets () {
 
 INHIBIT_DEFAULT_RUST_DEPS = "1"
 
-export TARGET_CC = "${CCACHE}${TARGET_PREFIX}gcc --sysroot=${STAGING_DIR_TARGET} ${TARGET_CC_ARCH} ${SECURITY_NOPIE_CFLAGS}"
-export TARGET_CXX = "${CCACHE}${TARGET_PREFIX}g++ --sysroot=${STAGING_DIR_TARGET} ${TARGET_CC_ARCH} ${SECURITY_NOPIE_CFLAGS}"
-export TARGET_CCLD = "${TARGET_PREFIX}gcc --sysroot=${STAGING_DIR_TARGET} ${TARGET_CC_ARCH} ${SECURITY_NOPIE_CFLAGS}"
-export TARGET_AR = "${TARGET_PREFIX}ar"
-
-do_rust_create_wrappers () {
-	mkdir -p "${WRAPPER_DIR}"
-
-	# Yocto Build / Rust Host C compiler
-	create_wrapper "${RUST_BUILD_CC}" "${BUILD_CC}"
-	# Yocto Build / Rust Host C++ compiler
-	create_wrapper "${RUST_BUILD_CXX}" "${BUILD_CXX}"
-	# Yocto Build / Rust Host linker
-	create_wrapper "${RUST_BUILD_CCLD}" "${BUILD_CCLD}" "${BUILD_LDFLAGS}"
-	# Yocto Build / Rust Host archiver
-	create_wrapper "${RUST_BUILD_AR}" "${BUILD_AR}"
-
-	# Yocto Target / Rust Target C compiler
-	create_wrapper "${RUST_TARGET_CC}" "${TARGET_CC}"
-	# Yocto Target / Rust Target C++ compiler
-	create_wrapper "${RUST_TARGET_CXX}" "${TARGET_CXX}"
-	# Yocto Target / Rust Target linker
-	create_wrapper "${RUST_TARGET_CCLD}" "${TARGET_CCLD}" "${TARGET_LDFLAGS}"
-	# Yocto Target / Rust Target archiver
-	create_wrapper "${RUST_TARGET_AR}" "${TARGET_AR}"
-}
+export WRAPPER_TARGET_CC = "${CCACHE}${TARGET_PREFIX}gcc --sysroot=${STAGING_DIR_TARGET} ${TARGET_CC_ARCH} ${SECURITY_NOPIE_CFLAGS}"
+export WRAPPER_TARGET_CXX = "${CCACHE}${TARGET_PREFIX}g++ --sysroot=${STAGING_DIR_TARGET} ${TARGET_CC_ARCH} ${SECURITY_NOPIE_CFLAGS}"
+export WRAPPER_TARGET_CCLD = "${TARGET_PREFIX}gcc --sysroot=${STAGING_DIR_TARGET} ${TARGET_CC_ARCH} ${SECURITY_NOPIE_CFLAGS}"
+export WRAPPER_TARGET_LDFLAGS = "${TARGET_LDFLAGS}"
+export WRAPPER_TARGET_AR = "${TARGET_PREFIX}ar"
 
 python do_configure() {
     import json
