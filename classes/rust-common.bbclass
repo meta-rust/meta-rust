@@ -138,6 +138,12 @@ create_wrapper () {
 	chmod +x "${file}"
 }
 
+export WRAPPER_TARGET_CC = "${CC}"
+export WRAPPER_TARGET_CXX = "${CXX}"
+export WRAPPER_TARGET_CCLD = "${CCLD}"
+export WRAPPER_TARGET_LDFLAGS = "${LDFLAGS}"
+export WRAPPER_TARGET_AR = "${AR}"
+
 # compiler is used by gcc-rs
 # linker is used by rustc/cargo
 # archiver is used by the build of libstd-rs
@@ -154,13 +160,14 @@ do_rust_create_wrappers () {
 	create_wrapper "${RUST_BUILD_AR}" "${BUILD_AR}"
 
 	# Yocto Target / Rust Target C compiler
-	create_wrapper "${RUST_TARGET_CC}" "${CC}"
+	create_wrapper "${RUST_TARGET_CC}" "${WRAPPER_TARGET_CC}"
 	# Yocto Target / Rust Target C++ compiler
-	create_wrapper "${RUST_TARGET_CXX}" "${CXX}"
+	create_wrapper "${RUST_TARGET_CXX}" "${WRAPPER_TARGET_CXX}"
 	# Yocto Target / Rust Target linker
-	create_wrapper "${RUST_TARGET_CCLD}" "${CCLD}" "${LDFLAGS}"
+	create_wrapper "${RUST_TARGET_CCLD}" "${WRAPPER_TARGET_CCLD}" "${WRAPPER_TARGET_LDFLAGS}"
 	# Yocto Target / Rust Target archiver
-	create_wrapper "${RUST_TARGET_AR}" "${AR}"
+	create_wrapper "${RUST_TARGET_AR}" "${WRAPPER_TARGET_AR}"
+
 }
 
 addtask rust_create_wrappers before do_configure after do_patch
