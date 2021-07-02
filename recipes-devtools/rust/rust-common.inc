@@ -52,7 +52,7 @@ def llvm_features_from_tune(d):
         f.append("+dsp")
 
     if 'thumb' in feat:
-        if d.getVar('ARM_THUMB_OPT') is "thumb":
+        if d.getVar('ARM_THUMB_OPT') == "thumb":
             if target_is_armv7(d):
                 f.append('+thumb2')
             f.append("+thumb-mode")
@@ -320,7 +320,7 @@ def rust_gen_target(d, thing, wd, features, cpu, arch):
     tspec['linker'] = "{}{}gcc".format(d.getVar('CCACHE'), prefix)
     tspec['ar'] = "{}ar".format(prefix)
     tspec['cpu'] = cpu
-    if features is not "":
+    if features != "":
         tspec['features'] = features
     tspec['dynamic-linking'] = True
     tspec['executables'] = True
