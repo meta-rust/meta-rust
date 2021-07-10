@@ -19,6 +19,7 @@ This OpenEmbedded layer provides the rust compiler, tools for building packages
 
  - cargo (built for target)
 
+
 ## Building a rust package
 
 When building a rust package in bitbake, it's usually easiest to build with
