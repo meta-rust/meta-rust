@@ -13,7 +13,7 @@ python do_rust_gen_targets () {
         arch = d.getVar('{}_ARCH'.format(thing))
         if thing is "TARGET":
             # arm and armv7 have different targets in llvm
-            if arch == "arm" and target_is_armv7(d):
+            if arch == "arm" and target_is:armv7(d):
                 arch = 'armv7'
             features = d.getVar('TARGET_LLVM_FEATURES') or ""
             cpu = d.getVar('TARGET_LLVM_CPU')
@@ -45,11 +45,11 @@ PN = "rust-cross-${TARGET_ARCH}"
 # FIXME: this should really be fixed in rust itself.
 # FIXME: using hard-coded relative paths is wrong, we should ask bitbake for
 #        the relative path between 2 of it's vars.
-HOST_POST_LINK_ARGS_append = " -Wl,-rpath=../../lib"
-BUILD_POST_LINK_ARGS_append = " -Wl,-rpath=../../lib"
+HOST_POST_LINK_ARGS:append = " -Wl,-rpath=../../lib"
+BUILD_POST_LINK_ARGS:append = " -Wl,-rpath=../../lib"
 
 # We need the same thing for the calls to the compiler when building the runtime crap
-TARGET_CC_ARCH_append = " --sysroot=${STAGING_DIR_TARGET}"
+TARGET_CC_ARCH:append = " --sysroot=${STAGING_DIR_TARGET}"
 
 do_rust_setup_snapshot () {
 }

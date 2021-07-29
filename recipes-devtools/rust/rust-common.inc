@@ -33,7 +33,7 @@ def llvm_features_from_tune(d):
     if 'mips32r2' in feat:
         f.append("+mips32r2")
 
-    if target_is_armv7(d):
+    if target_is:armv7(d):
         f.append('+v7')
 
     if ('armv6' in mach_overrides) or ('armv6' in feat):
@@ -53,7 +53,7 @@ def llvm_features_from_tune(d):
 
     if 'thumb' in feat:
         if d.getVar('ARM_THUMB_OPT') == "thumb":
-            if target_is_armv7(d):
+            if target_is:armv7(d):
                 f.append('+thumb2')
             f.append("+thumb-mode")
 
@@ -287,7 +287,7 @@ TARGET_LLVM_FEATURES = "${@llvm_features(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
-TARGET_LLVM_FEATURES_class-native = "${@','.join(llvm_features_from_cc_arch(d))}"
+TARGET_LLVM_FEATURES:class-native = "${@','.join(llvm_features_from_cc_arch(d))}"
 
 def rust_gen_target(d, thing, wd, features, cpu, arch):
     import json
