@@ -31,7 +31,7 @@ def determine_libc(d, thing):
 
     return libc
 
-def target_is:armv7(d):
+def target_is_armv7(d):
     '''Determine if target is armv7'''
     # TUNE_FEATURES may include arm* even if the target is not arm
     # in the case of *-native packages
@@ -59,7 +59,7 @@ def rust_base_triple(d, thing):
     '''
 
     # The llvm-target for armv7 is armv7-unknown-linux-gnueabihf
-    if thing == "TARGET" and target_is:armv7(d):
+    if thing == "TARGET" and target_is_armv7(d):
         arch = "armv7"
     else:
         arch = d.getVar('{}_ARCH'.format(thing))

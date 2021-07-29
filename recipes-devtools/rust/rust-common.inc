@@ -33,7 +33,7 @@ def llvm_features_from_tune(d):
     if 'mips32r2' in feat:
         f.append("+mips32r2")
 
-    if target_is:armv7(d):
+    if target_is_armv7(d):
         f.append('+v7')
 
     if ('armv6' in mach_overrides) or ('armv6' in feat):
@@ -53,7 +53,7 @@ def llvm_features_from_tune(d):
 
     if 'thumb' in feat:
         if d.getVar('ARM_THUMB_OPT') == "thumb":
-            if target_is:armv7(d):
+            if target_is_armv7(d):
                 f.append('+thumb2')
             f.append("+thumb-mode")
 
