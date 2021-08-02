@@ -13,7 +13,7 @@ jobs:
         run: |
           mv poky/build/sstate-cache . || true
           rm -rf poky meta-openembedded
-          git clone -b yocto-$YOCTO_VERSION --single-branch git://git.yoctoproject.org/poky
+          git clone -b $YOCTO_BRANCH --single-branch git://git.yoctoproject.org/poky
           git clone -b $YOCTO_BRANCH --single-branch git://git.openembedded.org/meta-openembedded
       - name: Configure build
         run: |
