@@ -2,5 +2,5 @@ require rust-cross-canadian.inc
 require rust-source-${PV}.inc
 require rust-snapshot-${PV}.inc
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/rust:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/rust:"
 

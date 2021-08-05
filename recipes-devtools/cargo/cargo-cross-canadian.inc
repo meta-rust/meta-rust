@@ -9,7 +9,7 @@ require recipes-devtools/rust/rust-common.inc
 require cargo.inc
 
 CARGO = "${WORKDIR}/${CARGO_SNAPSHOT}/bin/cargo"
-BASEDEPENDS_remove = "cargo-native"
+BASEDEPENDS:remove = "cargo-native"
 
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
 
@@ -37,7 +37,7 @@ python do_rust_gen_targets () {
     rust_gen_target(d, 'HOST', wd, "", "generic", d.getVar('HOST_ARCH'))
 }
 
-do_compile_prepend () {
+do_compile:prepend () {
 	PKG_CONFIG_PATH="${RECIPE_SYSROOT_NATIVE}/usr/lib/pkgconfig:${PKG_CONFIG_PATH}"
 }
 
@@ -70,5 +70,5 @@ do_install () {
 }
 
 PKG_SYS_BINDIR = "${SDKPATHNATIVE}/usr/bin"
-FILES_${PN} += "${base_prefix}/environment-setup.d ${PKG_SYS_BINDIR}"
+FILES:${PN} += "${base_prefix}/environment-setup.d ${PKG_SYS_BINDIR}"
 
