@@ -11,7 +11,6 @@ LIC_FILES_CHKSUM = " \
     file://LICENSE-THIRD-PARTY;md5=f257ad009884cb88a3a87d6920e7180a \
 "
 
-SRC_URI += "file://0001-Disable-http2.patch"
 
 S = "${RUSTSRC}/src/tools/cargo"
 CARGO_VENDORING_DIRECTORY = "${RUSTSRC}/vendor"

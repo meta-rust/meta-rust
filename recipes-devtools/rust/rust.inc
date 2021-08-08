@@ -7,9 +7,6 @@ LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"
 inherit rust
 inherit cargo_common
 
-SRC_URI += "file://riscv-march.patch"
-SRC_URI += "file://rv64gc.patch"
-
 DEPENDS += "file-native python3-native"
 DEPENDS:append:class-native = " rust-llvm-native"
 
