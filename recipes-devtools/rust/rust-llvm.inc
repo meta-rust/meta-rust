@@ -1,9 +1,7 @@
 SUMMARY = "LLVM compiler framework (packaged with rust)"
 LICENSE ?= "Apache-2.0-with-LLVM-exception"
 
-SRC_URI += "file://0001-nfc-Fix-missing-include.patch;striplevel=2 \
-            file://0002-llvm-allow-env-override-of-exe-path.patch;striplevel=2 \
-            "
+SRC_URI += "file://0002-llvm-allow-env-override-of-exe-path.patch;striplevel=2"
 
 S = "${RUSTSRC}/src/llvm-project/llvm"
 
