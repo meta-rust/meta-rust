@@ -1,4 +1,4 @@
-require rust-snapshot.inc
+require recipes-devtools/rust/rust-snapshot.inc
 
 ## This is information on the rust-snapshot (binary) used to build our current release.
 ## snapshot info is taken from rust/src/stage0.txt

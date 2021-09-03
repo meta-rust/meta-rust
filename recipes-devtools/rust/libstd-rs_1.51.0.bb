@@ -1,5 +1,5 @@
-require rust-source-${PV}.inc
-require libstd-rs.inc
+require recipes-devtools/rust/rust-source-${PV}.inc
+require recipes-devtools/rust/libstd-rs.inc
 
 SRC_URI += "file://riscv-march.patch;patchdir=../../ \
     file://rv64gc.patch;patchdir=../../ \
