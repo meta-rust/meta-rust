@@ -287,7 +287,7 @@ TARGET_LLVM_FEATURES = "${@llvm_features(d)}"
 
 # class-native implies TARGET=HOST, and TUNE_FEATURES only describes the real
 # (original) target.
-TARGET_LLVM_FEATURES:class-native = "${@','.join(llvm_features_from_cc_arch(d))}"
+TARGET_LLVM_FEATURES_class-native = "${@','.join(llvm_features_from_cc_arch(d))}"
 
 def rust_gen_target(d, thing, wd, features, cpu, arch):
     import json

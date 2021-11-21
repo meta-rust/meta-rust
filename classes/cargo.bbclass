@@ -9,11 +9,11 @@ inherit cargo_common
 CARGO = "cargo"
 
 # We need cargo to compile for the target
-BASEDEPENDS:append = " cargo-native"
+BASEDEPENDS_append = " cargo-native"
 
 # Ensure we get the right rust variant
-DEPENDS:append:class-target = " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
-DEPENDS:append:class-native = " rust-native"
+DEPENDS_append_class-target = " virtual/${TARGET_PREFIX}rust ${RUSTLIB_DEP}"
+DEPENDS_append_class-native = " rust-native"
 
 # Enable build separation
 B = "${WORKDIR}/build"

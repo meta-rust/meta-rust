@@ -39,13 +39,13 @@ export WRAPPER_TARGET_CCLD = "${TARGET_PREFIX}gcc --sysroot=${STAGING_DIR_TARGET
 export WRAPPER_TARGET_LDFLAGS = "${TARGET_LDFLAGS}"
 export WRAPPER_TARGET_AR = "${TARGET_PREFIX}ar"
 
-python do_configure:prepend() {
+python do_configure_prepend() {
     targets = [d.getVar("TARGET_SYS", True), "{}-unknown-linux-gnu".format(d.getVar("HOST_ARCH", True))]
     hosts = ["{}-unknown-linux-gnu".format(d.getVar("HOST_ARCH", True))]
 }
 
-INSANE_SKIP:${RUSTLIB_TARGET_PN} = "file-rdeps arch ldflags"
-SKIP_FILEDEPS:${RUSTLIB_TARGET_PN} = "1"
+INSANE_SKIP_${RUSTLIB_TARGET_PN} = "file-rdeps arch ldflags"
+SKIP_FILEDEPS_${RUSTLIB_TARGET_PN} = "1"
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 INHIBIT_PACKAGE_STRIP = "1"

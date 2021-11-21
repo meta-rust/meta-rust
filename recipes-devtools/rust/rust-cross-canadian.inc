@@ -8,7 +8,7 @@ RUSTLIB_PKGS = "${RUSTLIB_SRC_PN} ${RUSTLIB_TARGET_PN} ${RUSTLIB_HOST_PN}"
 PN = "rust-cross-canadian-${TRANSLATED_TARGET_ARCH}"
 
 PACKAGES = "${RUSTLIB_PKGS} ${PN}"
-RDEPENDS:${PN} += "${RUSTLIB_PKGS}"
+RDEPENDS_${PN} += "${RUSTLIB_PKGS}"
 
 # The default behaviour of x.py changed in 1.47+ so now we need to
 # explicitly ask for the stage 2 compiler to be assembled.
@@ -66,13 +66,13 @@ do_install () {
 PKG_SYS_LIBDIR = "${SDKPATHNATIVE}/usr/lib"
 PKG_SYS_BINDIR = "${SDKPATHNATIVE}/usr/bin"
 PKG_RUSTLIB_DIR = "${PKG_SYS_LIBDIR}/${TARGET_SYS}/rustlib"
-FILES:${PN} = "${PKG_SYS_LIBDIR}/*.so ${PKG_SYS_BINDIR} ${base_prefix}/environment-setup.d"
-FILES:${RUSTLIB_TARGET_PN} = "${PKG_RUSTLIB_DIR}/${TARGET_SYS} ${PKG_RUSTLIB_DIR}/${TARGET_SYS}.json"
-FILES:${RUSTLIB_HOST_PN} = "${PKG_RUSTLIB_DIR}/${BUILD_ARCH}-unknown-linux-gnu"
-FILES:${RUSTLIB_SRC_PN} = "${PKG_RUSTLIB_DIR}/src"
+FILES_${PN} = "${PKG_SYS_LIBDIR}/*.so ${PKG_SYS_BINDIR} ${base_prefix}/environment-setup.d"
+FILES_${RUSTLIB_TARGET_PN} = "${PKG_RUSTLIB_DIR}/${TARGET_SYS} ${PKG_RUSTLIB_DIR}/${TARGET_SYS}.json"
+FILES_${RUSTLIB_HOST_PN} = "${PKG_RUSTLIB_DIR}/${BUILD_ARCH}-unknown-linux-gnu"
+FILES_${RUSTLIB_SRC_PN} = "${PKG_RUSTLIB_DIR}/src"
 
-SUMMARY:${RUSTLIB_TARGET_PN} = "Rust cross canadian libaries for ${TARGET_SYS}"
-SUMMARY:${RUSTLIB_HOST_PN} = "Rust cross canadian libaries for ${HOST_SYS}"
-SUMMARY:${RUSTLIB_SRC_PN} = "Rust standard library sources for cross canadian toolchain"
-SUMMARY:${PN} = "Rust crost canadian compiler"
+SUMMARY_${RUSTLIB_TARGET_PN} = "Rust cross canadian libaries for ${TARGET_SYS}"
+SUMMARY_${RUSTLIB_HOST_PN} = "Rust cross canadian libaries for ${HOST_SYS}"
+SUMMARY_${RUSTLIB_SRC_PN} = "Rust standard library sources for cross canadian toolchain"
+SUMMARY_${PN} = "Rust crost canadian compiler"
 

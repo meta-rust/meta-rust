@@ -2,8 +2,8 @@ on: [pull_request]
 jobs:
   build:
     env:
-      YOCTO_VERSION: 3.3.2
-      YOCTO_BRANCH: hardknott
+      YOCTO_VERSION: 3.2.3
+      YOCTO_BRANCH: gatesgarth
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
@@ -13,7 +13,7 @@ jobs:
         run: |
           mv poky/build/sstate-cache . || true
           rm -rf poky meta-openembedded
-          git clone -b $YOCTO_BRANCH --single-branch git://git.yoctoproject.org/poky
+          git clone -b yocto-$YOCTO_VERSION --single-branch git://git.yoctoproject.org/poky
           git clone -b $YOCTO_BRANCH --single-branch git://git.openembedded.org/meta-openembedded
       - name: Configure build
         run: |
@@ -22,8 +22,8 @@ jobs:
           mv ../../sstate-cache . || true
           bitbake-layers add-layer ../../meta-openembedded/meta-oe
           bitbake-layers add-layer ../../meta-rust
-          echo 'PARALLEL_MAKE:pn-rust-llvm-native = "-j2"' >> conf/local.conf
-          echo 'TOOLCHAIN_HOST_TASK:append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
+          echo 'PARALLEL_MAKE_pn-rust-llvm-native = "-j2"' >> conf/local.conf
+          echo 'TOOLCHAIN_HOST_TASK_append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
           echo "SSTATE_MIRRORS = \"file://.* http://sstate.yoctoproject.org/$YOCTO_VERSION/PATH;downloadfilename=PATH \\n\"" >> conf/local.conf
           echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
       - name: Run bitbake

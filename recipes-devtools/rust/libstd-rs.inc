@@ -7,10 +7,10 @@ LIC_FILES_CHKSUM = "file://../../COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"
 RUSTLIB_DEP = ""
 inherit cargo
 
-DEPENDS:append:libc-musl = " libunwind"
+DEPENDS_append_libc-musl = " libunwind"
 # rv32 does not have libunwind ported yet
-DEPENDS:remove:riscv32 = "libunwind"
-DEPENDS:remove:riscv64 = "libunwind"
+DEPENDS_remove_riscv32 = "libunwind"
+DEPENDS_remove_riscv64 = "libunwind"
 
 # Embed bitcode in order to allow compiling both with and without LTO
 RUSTFLAGS += "-Cembed-bitcode=yes"
@@ -23,7 +23,7 @@ CARGO_FEATURES ?= "panic-unwind backtrace"
 CARGO_BUILD_FLAGS += "--features '${CARGO_FEATURES}'"
 CARGO_VENDORING_DIRECTORY = "${RUSTSRC}/vendor"
 
-do_compile:prepend () {
+do_compile_prepend () {
     export CARGO_TARGET_DIR="${B}"
     # For Rust 1.13.0 and newer
     export RUSTC_BOOTSTRAP="1"

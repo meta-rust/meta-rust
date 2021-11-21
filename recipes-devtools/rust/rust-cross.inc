@@ -45,11 +45,11 @@ PN = "rust-cross-${TARGET_ARCH}"
 # FIXME: this should really be fixed in rust itself.
 # FIXME: using hard-coded relative paths is wrong, we should ask bitbake for
 #        the relative path between 2 of it's vars.
-HOST_POST_LINK_ARGS:append = " -Wl,-rpath=../../lib"
-BUILD_POST_LINK_ARGS:append = " -Wl,-rpath=../../lib"
+HOST_POST_LINK_ARGS_append = " -Wl,-rpath=../../lib"
+BUILD_POST_LINK_ARGS_append = " -Wl,-rpath=../../lib"
 
 # We need the same thing for the calls to the compiler when building the runtime crap
-TARGET_CC_ARCH:append = " --sysroot=${STAGING_DIR_TARGET}"
+TARGET_CC_ARCH_append = " --sysroot=${STAGING_DIR_TARGET}"
 
 do_rust_setup_snapshot () {
 }
