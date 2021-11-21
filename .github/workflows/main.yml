@@ -2,8 +2,8 @@ on: [pull_request]
 jobs:
   build:
     env:
-      YOCTO_VERSION: 3.2.3
-      YOCTO_BRANCH: gatesgarth
+      YOCTO_VERSION: 3.0.4
+      YOCTO_BRANCH: zeus
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
