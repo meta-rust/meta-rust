@@ -15,7 +15,7 @@ def rust_base_dep(d):
             deps += " rust-native"
     return deps
 
-DEPENDS:append = " ${@rust_base_dep(d)}"
+DEPENDS_append = " ${@rust_base_dep(d)}"
 
 # BUILD_LDFLAGS
 # 	${STAGING_LIBDIR_NATIVE}
@@ -42,4 +42,4 @@ rustlib_suffix="${TUNE_ARCH}${TARGET_VENDOR}-${TARGET_OS}/rustlib/${HOST_SYS}/li
 rustlib_src="${prefix}/lib/${rustlib_suffix}"
 # Host sysroot standard library path
 rustlib="${libdir}/${rustlib_suffix}"
-rustlib:class-native="${libdir}/rustlib/${BUILD_SYS}/lib"
+rustlib_class-native="${libdir}/rustlib/${BUILD_SYS}/lib"

@@ -11,7 +11,7 @@ SRC_URI += "file://riscv-march.patch"
 SRC_URI += "file://rv64gc.patch"
 
 DEPENDS += "file-native python3-native"
-DEPENDS:append:class-native = " rust-llvm-native"
+DEPENDS_append_class-native = " rust-llvm-native"
 
 S = "${RUSTSRC}"
 

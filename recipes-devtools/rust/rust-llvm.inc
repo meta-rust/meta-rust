@@ -13,8 +13,8 @@ inherit cmake python3native
 
 DEPENDS += "ninja-native rust-llvm-native"
 
-ARM_INSTRUCTION_SET:armv5 = "arm"
-ARM_INSTRUCTION_SET:armv4t = "arm"
+ARM_INSTRUCTION_SET_armv5 = "arm"
+ARM_INSTRUCTION_SET_armv4t = "arm"
 
 LLVM_DIR = "llvm${LLVM_RELEASE}"
 
@@ -34,7 +34,7 @@ EXTRA_OECMAKE = " \
     -DLLVM_TARGET_ARCH=${TARGET_ARCH} \
     -DCMAKE_INSTALL_PREFIX:PATH=${libdir}/llvm-rust \
 "
-EXTRA_OECMAKE:append:class-target = "\
+EXTRA_OECMAKE_append_class-target = "\
     -DCMAKE_CROSSCOMPILING:BOOL=ON \
     -DLLVM_BUILD_TOOLS=OFF \
     -DLLVM_TABLEGEN=${STAGING_LIBDIR_NATIVE}/llvm-rust/bin/llvm-tblgen \
@@ -47,7 +47,7 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 export YOCTO_ALTERNATE_EXE_PATH = "${STAGING_LIBDIR}/llvm-rust/bin/llvm-config"
 
-do_install:append () {
+do_install_append () {
     # we don't need any of this stuff to build Rust
     rm -rf "${D}/usr/lib/cmake"
 }
@@ -55,11 +55,11 @@ do_install:append () {
 PACKAGES =+ "${PN}-bugpointpasses ${PN}-llvmhello ${PN}-liblto"
 
 # Add the extra locations to avoid the complaints about unpackaged files
-FILES:${PN}-bugpointpasses = "${libdir}/llvm-rust/lib/BugpointPasses.so"
-FILES:${PN}-llvmhello = "${libdir}/llvm-rust/lib/LLVMHello.so"
-FILES:${PN}-liblto = "${libdir}/llvm-rust/lib/libLTO.so.*"
-FILES:${PN}-staticdev =+ "${libdir}/llvm-rust/*/*.a"
-FILES:${PN} += "${libdir}/libLLVM*.so.* ${libdir}/llvm-rust/lib/*.so.* ${libdir}/llvm-rust/bin"
-FILES:${PN}-dev += "${datadir}/llvm ${libdir}/llvm-rust/lib/*.so ${libdir}/llvm-rust/include ${libdir}/llvm-rust/share ${libdir}/llvm-rust/lib/cmake"
+FILES_${PN}-bugpointpasses = "${libdir}/llvm-rust/lib/BugpointPasses.so"
+FILES_${PN}-llvmhello = "${libdir}/llvm-rust/lib/LLVMHello.so"
+FILES_${PN}-liblto = "${libdir}/llvm-rust/lib/libLTO.so.*"
+FILES_${PN}-staticdev =+ "${libdir}/llvm-rust/*/*.a"
+FILES_${PN} += "${libdir}/libLLVM*.so.* ${libdir}/llvm-rust/lib/*.so.* ${libdir}/llvm-rust/bin"
+FILES_${PN}-dev += "${datadir}/llvm ${libdir}/llvm-rust/lib/*.so ${libdir}/llvm-rust/include ${libdir}/llvm-rust/share ${libdir}/llvm-rust/lib/cmake"
 
 BBCLASSEXTEND = "native"
