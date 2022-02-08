@@ -1,6 +1,6 @@
-require rust-target.inc
-require rust-source-${PV}.inc
-require rust-snapshot-${PV}.inc
+require recipes-devtools/rust/rust-target.inc
+require recipes-devtools/rust/rust-source-${PV}.inc
+require recipes-devtools/rust/rust-snapshot-${PV}.inc
 
 SRC_URI += " \
              file://riscv-march.patch \
