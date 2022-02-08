@@ -59,7 +59,7 @@ The master branch supports the latest master of poky. When poky creates releases
 
 All new patches against rust, rust-llvm, and cargo must have referenced
 upstream issues or PRs opened or an explanation why the patch cannot be
-upstreamed. This cooresponds to the OpenEmbedded policy for other meta layers.
+upstreamed. This corresponds to the OpenEmbedded policy for other meta layers.
 
 More info can be seen on the wiki.
 
