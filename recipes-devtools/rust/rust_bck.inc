@@ -7,6 +7,9 @@ LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=93a95682d51b4cb0a633a97046940ef0"
 inherit rust
 inherit cargo_common
 
+SRC_URI += "file://riscv-march.patch"
+SRC_URI += "file://rv64gc.patch"
+
 DEPENDS += "file-native python3-native"
 DEPENDS_append_class-native = " rust-llvm-native"
 
@@ -50,18 +53,9 @@ do_rust_setup_snapshot () {
     # and fail without it there.
     mkdir -p ${RUSTSRC}/build/${BUILD_SYS}
     ln -sf ${WORKDIR}/rust-snapshot/ ${RUSTSRC}/build/${BUILD_SYS}/stage0
-
-    # Need to use uninative's loader if enabled/present since the library paths
-    # are used internally by rust and result in symbol mismatches if we don't
-    if [ ! -z "${UNINATIVE_LOADER}" -a -e "${UNINATIVE_LOADER}" ]; then
-        for bin in cargo rustc rustdoc; do
-            patchelf-uninative ${WORKDIR}/rust-snapshot/bin/$bin --set-interpreter ${UNINATIVE_LOADER}
-        done
-    fi
 }
 addtask rust_setup_snapshot after do_unpack before do_configure
 do_rust_setup_snapshot[dirs] += "${WORKDIR}/rust-snapshot"
-do_rust_setup_snapshot[vardepsexclude] += "UNINATIVE_LOADER"
 
 python do_configure() {
     import json
