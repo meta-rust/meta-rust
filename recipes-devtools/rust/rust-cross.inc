@@ -11,7 +11,9 @@ python do_rust_gen_targets () {
         features = ""
         cpu = "generic"
         arch = d.getVar('{}_ARCH'.format(thing))
+        abi = ""
         if thing is "TARGET":
+            abi = d.getVar('ABIEXTENSION')
             # arm and armv7 have different targets in llvm
             if arch == "arm" and target_is_armv7(d):
                 arch = 'armv7'
@@ -32,7 +34,7 @@ DEPENDS += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs vir
 DEPENDS += "rust-native"
 
 PROVIDES = "virtual/${TARGET_PREFIX}rust"
-PN = "rust-cross-${TARGET_ARCH}"
+PN = "rust-cross-${TUNE_PKGARCH}-${TCLIBC}"
 
 # In the cross compilation case, rustc doesn't seem to get the rpath quite
 # right. It manages to include '../../lib/${TARGET_PREFIX}', but doesn't
