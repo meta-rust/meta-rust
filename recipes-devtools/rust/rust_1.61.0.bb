@@ -1,6 +1,6 @@
 require rust-target.inc
-require rust-source-${PV}.inc
-require rust-snapshot-${PV}.inc
+require rust-source.inc
+require rust-snapshot.inc
 
 INSANE_SKIP:${PN}:class-native = "already-stripped"
 
@@ -18,3 +18,4 @@ python () {
     if not pn.endswith("-native"):
         raise bb.parse.SkipRecipe("Rust recipe doesn't work for target builds at this time. Fixes welcome.")
 }
+

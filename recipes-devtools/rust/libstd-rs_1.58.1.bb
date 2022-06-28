@@ -1,4 +1,4 @@
-require rust-source.inc
+require rust-source-${PV}.inc
 require libstd-rs.inc
 
 SRC_URI += " \
