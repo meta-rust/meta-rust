@@ -1,9 +1,18 @@
 on: [pull_request]
 jobs:
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - {distro: dunfell, version: 3.1.17}
+          # - {distro: gatesgarth, version: 3.2.4} #EOL
+          # - {distro: hardknott, version: 3.3.6}  #EOL
+          # - {distro: honister, version: 3.4.4}   #EOL
+          - {distro: kirkstone, version: 4.0.1}
     env:
-      YOCTO_VERSION: 3.3.2
-      YOCTO_BRANCH: hardknott
+      YOCTO_VERSION: ${{ matrix.branch.version }}
+      YOCTO_BRANCH: ${{ matrix.branch.distro }}
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
