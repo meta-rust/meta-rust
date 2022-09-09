@@ -31,18 +31,3 @@ jobs:
           cd poky
           . oe-init-build-env
           bitbake rust-hello-world
-      - name: Test SDK
-        run: |
-          SDK_DIR=$PWD/sdk-test
-          cd poky
-          . oe-init-build-env
-          bitbake core-image-minimal -c populate_sdk
-          rm -rf $SDK_DIR
-          ./$(find ./tmp/deploy/sdk/ -name '*.sh') -d $SDK_DIR -y
-          . $(find $SDK_DIR -name 'environment-setup-*')
-          PROG=hello
-          rm -rf $PROG
-          cargo new $PROG
-          cd $PROG
-          cargo build
-          file $(find ./target -name $PROG)
