@@ -24,25 +24,10 @@ jobs:
           bitbake-layers add-layer ../../meta-rust
           echo 'PARALLEL_MAKE:pn-rust-llvm-native = "-j2"' >> conf/local.conf
           echo 'TOOLCHAIN_HOST_TASK:append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
-          echo "SSTATE_MIRRORS = \"file://.* http://sstate.yoctoproject.org/$YOCTO_VERSION/PATH;downloadfilename=PATH \\n\"" >> conf/local.conf
           echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
+          echo 'INHERIT_remove = "uninative"' >> conf/local.conf
       - name: Run bitbake
         run: |
           cd poky
           . oe-init-build-env
           bitbake rust-hello-world
-      - name: Test SDK
-        run: |
-          SDK_DIR=$PWD/sdk-test
-          cd poky
-          . oe-init-build-env
-          bitbake core-image-minimal -c populate_sdk
-          rm -rf $SDK_DIR
-          ./$(find ./tmp/deploy/sdk/ -name '*.sh') -d $SDK_DIR -y
-          . $(find $SDK_DIR -name 'environment-setup-*')
-          PROG=hello
-          rm -rf $PROG
-          cargo new $PROG
-          cd $PROG
-          cargo build
-          file $(find ./target -name $PROG)
