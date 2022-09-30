@@ -1,6 +1,6 @@
 require rust-target.inc
-require rust-source.inc
-require rust-snapshot.inc
+require rust-source-${PV}.inc
+require rust-snapshot-${PV}.inc
 
 INSANE_SKIP:${PN}:class-native = "already-stripped"
 
