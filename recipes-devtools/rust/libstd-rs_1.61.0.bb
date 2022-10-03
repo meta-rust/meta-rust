@@ -1,4 +1,4 @@
-require rust-source.inc
+require rust-source-${PV}.inc
 require libstd-rs.inc
 
 # Check if libc crate is >= 0.2.117 before dropping this patch
