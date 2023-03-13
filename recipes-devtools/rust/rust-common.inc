@@ -274,34 +274,44 @@ def arch_to_rust_target_arch(arch):
 
 # generates our target CPU value
 def llvm_cpu(d):
-    cpu = d.getVar('PACKAGE_ARCH')
-    target = d.getVar('TRANSLATED_TARGET_ARCH')
-
+    # First check if TUNE_CCARGS gives us a specific CPU to build for (via -march).
+    # Translate that GCC -march flag to a Rust/LLVM CPU.
     trans = {}
-    trans['corei7-64'] = "corei7"
-    trans['core2-32'] = "core2"
-    trans['x86-64'] = "x86-64"
-    trans['i686'] = "i686"
+    trans['btver2'] = "btver2"
+    trans['core2'] = "core2"
+    trans['mips32'] = "mips32"
+    trans['mips32r2'] = "mips32r2"
+    trans['nehalem'] = "nehalem"
+    trans['skylake'] = "skylake"
+
+    for arg in (d.getVar('TUNE_CCARGS') or '').split():
+        if arg.startswith('-march='):
+            march = arg[7:]
+            cpu = trans.get(march)
+            if cpu:
+                return cpu
+
+    # If we don't have -march in TUNE_CCARGS, check TRANSLATED_TARGET_ARCH.
+    # This must also be translated into a Rust/LLVM CPU.
+    trans = {}
     trans['i586'] = "i586"
-    trans['powerpc'] = "powerpc"
+    trans['i686'] = "i686"
     trans['mips64'] = "mips64"
     trans['mips64el'] = "mips64"
-    trans['riscv64'] = "generic-rv64"
+    trans['powerpc'] = "ppc"
+    trans['powerpc64'] = "ppc64"
     trans['riscv32'] = "generic-rv32"
+    trans['riscv64'] = "generic-rv64"
+    trans['x86-64'] = "x86-64"
 
-    if target in ["mips", "mipsel"]:
-        feat = frozenset(d.getVar('TUNE_FEATURES').split())
-        if "mips32r2" in feat:
-            trans['mipsel'] = "mips32r2"
-            trans['mips'] = "mips32r2"
-        elif "mips32" in feat:
-            trans['mipsel'] = "mips32"
-            trans['mips'] = "mips32"
+    target = d.getVar('TRANSLATED_TARGET_ARCH')
+    cpu = trans.get(target)
+    if cpu:
+        return cpu
 
-    try:
-        return trans[cpu]
-    except:
-        return trans.get(target, "generic")
+    # If we still didn't get a target CPU, choose "generic".
+    # Further optimization can still happen via llvm_features.
+    return "generic"
 
 TARGET_LLVM_CPU="${@llvm_cpu(d)}"
 TARGET_LLVM_FEATURES = "${@llvm_features(d)}"
