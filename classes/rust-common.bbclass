@@ -86,6 +86,16 @@ def rust_base_triple(d, thing):
         libc = bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hf', '', d)
     return arch + vendor + '-' + os + libc
 
+# Required for Dunfell compatbility
+# In some cases uname and the toolchain differ on their idea of the arch name
+RUST_BUILD_ARCH = "${@arch_to_rust_arch(d.getVar('BUILD_ARCH'))}"
+
+# Handle mismatches between `uname -m`-style output and Rust's arch names
+def arch_to_rust_arch(arch):
+    if arch == "ppc64le":
+        return "powerpc64le"
+    return arch
+
 # Naming explanation
 # Yocto
 # - BUILD_SYS - Yocto triple of the build environment
