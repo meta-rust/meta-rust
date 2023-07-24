@@ -134,6 +134,12 @@ python do_configure() {
     # nothing about when trying to build some stage0 tools (like fabricate)
     config.set("build", "build", e(d.getVar("SNAPSHOT_BUILD_SYS", True)))
 
+    # Explicitly disable all tools.
+    # This is done because some tools (e.g. rust-analyzer-proc-macro-srv)
+    # require the build.build target to be included in build.target which we
+    # don't want to do.
+    config.set("build", "tools", e([]))
+
     # [install]
     config.add_section("install")
     # ./x.py install doesn't have any notion of "destdir"
