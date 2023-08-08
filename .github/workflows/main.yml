@@ -10,6 +10,7 @@ jobs:
           # - {distro: hardknott, version: 3.3.6}  #EOL
           # - {distro: honister, version: 3.4.4}   #EOL
           - {distro: kirkstone, version: 4.0.1}
+          - {distro: mickledore, version: 4.2.2}
     env:
       YOCTO_VERSION: ${{ matrix.branch.version }}
       YOCTO_BRANCH: ${{ matrix.branch.distro }}
