@@ -2,8 +2,7 @@ require rust-target.inc
 require rust-source-${PV}.inc
 require rust-snapshot-${PV}.inc
 
-# The license file got updated for Rust 1.66.0+
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=92289ed52a60b63ab715612ad2915603"
+LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=c2cccf560306876da3913d79062a54b9"
 
 INSANE_SKIP:${PN}:class-native = "already-stripped"
 
