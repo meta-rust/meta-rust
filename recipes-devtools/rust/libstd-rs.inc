@@ -38,3 +38,5 @@ do_install () {
     rm -f ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/*.d
     cp ${B}/${TARGET_SYS}/${BUILD_DIR}/deps/* ${D}${rustlibdir}
 }
+
+BBCLASSEXTEND = "nativesdk"
