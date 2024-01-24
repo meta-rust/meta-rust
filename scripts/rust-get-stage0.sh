@@ -76,4 +76,8 @@ jq .checksums_sha256 <"${OUT}" | grep "cargo-${STAGE0_RUST_VERSION}-powerpc64le-
 printf -- "\n"
 
 
+
+printf -- "Do not forget to update hash for rust-source in 'recipes-devtools/rust/rust-source-%s.inc'\n" "${RUST_VERSION}"
+
+
 rm "${OUT}"
