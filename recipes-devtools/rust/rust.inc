@@ -144,11 +144,12 @@ python do_configure() {
     config.add_section("install")
     # ./x.py install doesn't have any notion of "destdir"
     # but we can prepend ${D} to all the directories instead
-    config.set("install", "prefix",  e(d.getVar("D", True) + d.getVar("prefix", True)))
-    config.set("install", "bindir",  e(d.getVar("D", True) + d.getVar("bindir", True)))
-    config.set("install", "libdir",  e(d.getVar("D", True) + d.getVar("libdir", True)))
-    config.set("install", "datadir", e(d.getVar("D", True) + d.getVar("datadir", True)))
-    config.set("install", "mandir",  e(d.getVar("D", True) + d.getVar("mandir", True)))
+    config.set("install", "prefix",     e(d.getVar("D", True) + d.getVar("prefix", True)))
+    config.set("install", "bindir",     e(d.getVar("D", True) + d.getVar("bindir", True)))
+    config.set("install", "libdir",     e(d.getVar("D", True) + d.getVar("libdir", True)))
+    config.set("install", "datadir",    e(d.getVar("D", True) + d.getVar("datadir", True)))
+    config.set("install", "mandir",     e(d.getVar("D", True) + d.getVar("mandir", True)))
+    config.set("install", "sysconfdir", e(d.getVar("D", True) + d.getVar("sysconfdir", True)))
 
     with open("config.toml", "w") as f:
         f.write('changelog-seen = 2\n\n')
