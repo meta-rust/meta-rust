@@ -35,7 +35,7 @@ def llvm_features_from_tune(d):
 
     if 'neon' in feat:
         f.append("+neon")
-    else:
+    elif target_is_armv7(d):
         f.append("-neon")
 
     if ('armv6' in mach_overrides) or ('armv6' in feat):
