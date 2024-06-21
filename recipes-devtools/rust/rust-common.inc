@@ -378,4 +378,11 @@ python do_rust_gen_targets () {
 
 addtask rust_gen_targets after do_patch before do_compile
 do_rust_gen_targets[dirs] += "${WORKDIR}/targets"
-
+do_rust_gen_targets[vardeps] += "\
+    LLVM_TARGET \
+    DATA_LAYOUT \
+    MAX_ATOMIC_WIDTH \
+    TARGET_POINTER_WIDTH \
+    TARGET_C_INT_WIDTH \
+    TARGET_ENDIAN \
+"
