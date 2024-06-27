@@ -1,7 +1,7 @@
 # include this in your distribution to easily switch between versions
 # just by changing RUST_VERSION variable
 
-RUST_VERSION ?= "1.73.0"
+RUST_VERSION ?= "1.78.0"
 
 PREFERRED_VERSION_cargo ?= "${RUST_VERSION}"
 PREFERRED_VERSION_cargo-native ?= "${RUST_VERSION}"

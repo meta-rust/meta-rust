@@ -35,7 +35,7 @@ def llvm_features_from_tune(d):
 
     if 'neon' in feat:
         f.append("+neon")
-    else:
+    elif target_is_armv7(d):
         f.append("-neon")
 
     if ('armv6' in mach_overrides) or ('armv6' in feat):
@@ -121,7 +121,7 @@ def llvm_features(d):
 
 
 ## arm-unknown-linux-gnueabihf
-DATA_LAYOUT[arm-eabi] = "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64"
+DATA_LAYOUT[arm-eabi] = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
 LLVM_TARGET[arm-eabi] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[arm-eabi] = "little"
 TARGET_POINTER_WIDTH[arm-eabi] = "32"
@@ -130,7 +130,7 @@ MAX_ATOMIC_WIDTH[arm-eabi] = "64"
 FEATURES[arm-eabi] = "+v6,+vfp2"
 
 ## armv7-unknown-linux-gnueabihf
-DATA_LAYOUT[armv7-eabi] = "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64"
+DATA_LAYOUT[armv7-eabi] = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
 LLVM_TARGET[armv7-eabi] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[armv7-eabi] = "little"
 TARGET_POINTER_WIDTH[armv7-eabi] = "32"
@@ -147,7 +147,7 @@ TARGET_C_INT_WIDTH[aarch64] = "32"
 MAX_ATOMIC_WIDTH[aarch64] = "128"
 
 ## x86_64-unknown-linux-{gnu, musl}
-DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+DATA_LAYOUT[x86_64] = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 LLVM_TARGET[x86_64] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
@@ -378,4 +378,11 @@ python do_rust_gen_targets () {
 
 addtask rust_gen_targets after do_patch before do_compile
 do_rust_gen_targets[dirs] += "${WORKDIR}/targets"
-
+do_rust_gen_targets[vardeps] += "\
+    LLVM_TARGET \
+    DATA_LAYOUT \
+    MAX_ATOMIC_WIDTH \
+    TARGET_POINTER_WIDTH \
+    TARGET_C_INT_WIDTH \
+    TARGET_ENDIAN \
+"
