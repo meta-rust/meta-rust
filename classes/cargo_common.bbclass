@@ -105,6 +105,7 @@ cargo_common_do_configure () {
 	progress.width = 80
 	EOF
 }
+cargo_common_do_configure[vardepsexclude] += "http_proxy"
 
 oe_cargo_fix_env () {
 	export CC="${RUST_TARGET_CC}"
