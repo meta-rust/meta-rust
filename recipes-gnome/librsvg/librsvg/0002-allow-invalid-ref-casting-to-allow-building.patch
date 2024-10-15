@@ -1,0 +1,20 @@
+diff --git a/src/surface_utils/mod.rs b/src/surface_utils/mod.rs
+index e95e5dce..774fb5fd 100644
+--- a/src/surface_utils/mod.rs
++++ b/src/surface_utils/mod.rs
+@@ -147,12 +147,10 @@ pub trait ImageSurfaceDataExt: DerefMut<Target = [u8]> {
+     #[inline]
+     fn set_pixel(&mut self, stride: usize, pixel: Pixel, x: u32, y: u32) {
+         let value = pixel.to_u32();
++        let index = (y as usize * stride) + (x as usize * 4);
+ 
+-        #[allow(clippy::cast_ptr_alignment)]
+-        unsafe {
+-            let p: *mut u8 = &mut self[y as usize * stride + x as usize * 4];
+-            *(p as *mut u32) = value;
+-        }
++        let bytes = &mut self[index..index + 4];
++        bytes.copy_from_slice(&value.to_le_bytes());
+     }
+ }
+ 
