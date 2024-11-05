@@ -152,7 +152,10 @@ python do_configure() {
     config.set("install", "sysconfdir", e(d.getVar("D", True) + d.getVar("sysconfdir", True)))
 
     with open("config.toml", "w") as f:
-        f.write('changelog-seen = 2\n\n')
+        if bb.utils.vercmp_string_op(d.getVar("RUST_VERSION", True), "1.80.0", "<"):
+            f.write('changelog-seen = 2\n\n')
+        elif bb.utils.vercmp_string_op(d.getVar("RUST_VERSION", True), "1.82.0", "<="):
+            f.write('change-id = 115898\n\n')
         config.write(f)
 
     # set up ${WORKDIR}/cargo_home
