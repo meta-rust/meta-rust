@@ -107,4 +107,9 @@ cargo_do_install () {
 	fi
 }
 
+python do_devshell:prepend () {
+    os.environ['RUSTFLAGS'] = d.getVar('RUSTFLAGS')
+    os.environ['CARGO_BUILD_TARGET'] = d.getVar('HOST_SYS')
+}
+
 EXPORT_FUNCTIONS do_compile do_install
