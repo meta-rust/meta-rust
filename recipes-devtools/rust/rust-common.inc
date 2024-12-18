@@ -140,7 +140,7 @@ FEATURES[armv7-eabi] = "+v7,+vfp2,+thumb2"
 
 ## aarch64-unknown-linux-{gnu, musl}
 DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
-DATA_LAYOUT[aarch64] .= "${@ "" if bb.utils.vercmp_string_op(d.getVar('RUST_VERSION', True), "1.80.0", "<") else "-Fn32"}"
+DATA_LAYOUT[aarch64] .= "${@'' if bb.utils.vercmp_string_op(d.getVar('RUST_VERSION', True), '1.80.0', '<') else '-Fn32'}"
 LLVM_TARGET[aarch64] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[aarch64] = "little"
 TARGET_POINTER_WIDTH[aarch64] = "64"
