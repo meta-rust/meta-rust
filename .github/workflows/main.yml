@@ -8,6 +8,7 @@ jobs:
           - {distro: kirkstone, version: 4.0.1}
           - {distro: langdale, version: 4.1.4}
           - {distro: mickledore, version: 4.2.2}
+          - {distro: scarthgap, version: 5.0.7}
     env:
       YOCTO_VERSION: ${{ matrix.branch.version }}
       YOCTO_BRANCH: ${{ matrix.branch.distro }}
