@@ -6,6 +6,7 @@ jobs:
       matrix:
         branch:
           - {distro: kirkstone, version: 4.0.1}
+          - {distro: langdale, version: 4.1.4}
           - {distro: mickledore, version: 4.2.2}
     env:
       YOCTO_VERSION: ${{ matrix.branch.version }}
