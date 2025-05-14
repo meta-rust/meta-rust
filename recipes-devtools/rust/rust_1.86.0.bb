@@ -6,6 +6,8 @@ LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=11a3899825f4376896e438c8c753f8dc"
 
 INSANE_SKIP:${PN}:class-native = "already-stripped"
 
+DEPENDS += "ninja-native"
+
 do_compile () {
     rust_runx build --stage 2
 }
