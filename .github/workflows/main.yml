@@ -28,11 +28,12 @@ jobs:
           . oe-init-build-env
           mv ../../sstate-cache . || true
           bitbake-layers add-layer ../../meta-openembedded/meta-oe
-          bitbake-layers add-layer ../../meta-rust
+          sed -ie "/^BBLAYERS/a $(readlink -f ../../meta-rust) \\\\" conf/bblayers.conf
           echo 'PARALLEL_MAKE:pn-rust-llvm-native = "-j2"' >> conf/local.conf
           echo 'TOOLCHAIN_HOST_TASK:append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
           echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
           echo 'INHERIT:remove = "uninative"' >> conf/local.conf
+          echo 'require conf/distro/include/rust_versions.inc' >> conf/local.conf
       - name: Run bitbake
         run: |
           cd poky
