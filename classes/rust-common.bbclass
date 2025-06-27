@@ -121,6 +121,7 @@ def arch_to_rust_arch(arch):
 
 RUST_BUILD_SYS = "${@rust_base_triple(d, 'BUILD')}"
 RUST_HOST_SYS = "${@rust_base_triple(d, 'HOST')}"
+RUST_HOST_SYS:class-native = "${HOST_SYS}"
 RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 
 # wrappers to get around the fact that Rust needs a single

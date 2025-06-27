@@ -42,4 +42,4 @@ jobs:
         run: |
           cd poky
           . oe-init-build-env
-          bitbake rust-hello-world
+          bitbake rust-hello-world python3-cryptography
