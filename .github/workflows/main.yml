@@ -42,4 +42,7 @@ jobs:
         run: |
           cd poky
           . oe-init-build-env
-          bitbake rust-hello-world python3-cryptography
+          bitbake rust-hello-world
+          if [ "$YOCTO_BRANCH" != kirkstone ]; then
+            bitbake python3-cryptography
+          fi
