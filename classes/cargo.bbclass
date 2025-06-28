@@ -45,7 +45,7 @@ RUSTFLAGS ??= ""
 BUILD_MODE = "${@['--release', ''][d.getVar('DEBUG_BUILD') == '1']}"
 CARGO_BUILD_FLAGS = "\
     -v \
-    --target ${HOST_SYS} \
+    --target ${RUST_HOST_SYS} \
     ${BUILD_MODE} \
     --manifest-path=${MANIFEST_PATH} \
     ${@oe.utils.conditional('CARGO_NO_DEFAULT_FEATURES', '1', '--no-default-features', '', d)} \
@@ -57,7 +57,7 @@ CARGO_BUILD_FLAGS = "\
 # This is based on the content of CARGO_BUILD_FLAGS and generally will need to
 # change if CARGO_BUILD_FLAGS changes.
 BUILD_DIR = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
-CARGO_TARGET_SUBDIR="${HOST_SYS}/${BUILD_DIR}"
+CARGO_TARGET_SUBDIR="${RUST_HOST_SYS}/${BUILD_DIR}"
 oe_cargo_build () {
 	export RUSTFLAGS="${RUSTFLAGS}"
 	export RUST_TARGET_PATH="${RUST_TARGET_PATH}"
@@ -109,7 +109,7 @@ cargo_do_install () {
 
 python do_devshell:prepend () {
     os.environ['RUSTFLAGS'] = d.getVar('RUSTFLAGS')
-    os.environ['CARGO_BUILD_TARGET'] = d.getVar('HOST_SYS')
+    os.environ['CARGO_BUILD_TARGET'] = d.getVar('RUST_HOST_SYS')
 }
 
 EXPORT_FUNCTIONS do_compile do_install

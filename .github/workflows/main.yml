@@ -5,13 +5,15 @@ jobs:
       fail-fast: false
       matrix:
         branch:
-          - {distro: kirkstone, version: 4.0.1}
-          - {distro: langdale, version: 4.1.4}
-          - {distro: mickledore, version: 4.2.2}
-          - {distro: scarthgap, version: 5.0.7}
+          - {distro: kirkstone, version: 4.0.1, machine: qemux86-64}
+          - {distro: langdale, version: 4.1.4, machine: qemux86-64}
+          - {distro: mickledore, version: 4.2.2, machine: qemux86-64}
+          - {distro: scarthgap, version: 5.0.7, machine: qemux86-64}
+          - {distro: scarthgap, version: 5.0.7, machine: qemuarm64}
     env:
       YOCTO_VERSION: ${{ matrix.branch.version }}
       YOCTO_BRANCH: ${{ matrix.branch.distro }}
+      YOCTO_MACHINE: ${{ matrix.branch.machine }}
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
@@ -30,6 +32,7 @@ jobs:
           mv ../../sstate-cache . || true
           bitbake-layers add-layer ../../meta-openembedded/meta-oe
           sed -ie "/^BBLAYERS/a $(readlink -f ../../meta-rust) \\\\" conf/bblayers.conf
+          echo "MACHINE = \"$YOCTO_MACHINE\"" >> conf/local.conf
           echo 'PARALLEL_MAKE:pn-rust-llvm-native = "-j2"' >> conf/local.conf
           echo 'TOOLCHAIN_HOST_TASK:append = " packagegroup-rust-cross-canadian-${MACHINE}"' >> conf/local.conf
           echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"' >> conf/local.conf
@@ -40,3 +43,6 @@ jobs:
           cd poky
           . oe-init-build-env
           bitbake rust-hello-world
+          if [ "$YOCTO_BRANCH" != kirkstone ]; then
+            bitbake python3-cryptography
+          fi
