@@ -10,6 +10,7 @@ jobs:
           - {distro: mickledore, version: 4.2.2, machine: qemux86-64}
           - {distro: scarthgap, version: 5.0.7, machine: qemux86-64}
           - {distro: scarthgap, version: 5.0.7, machine: qemuarm64}
+          - {distro: scarthgap, version: 5.0.7, machine: qemuarm}
     env:
       YOCTO_VERSION: ${{ matrix.branch.version }}
       YOCTO_BRANCH: ${{ matrix.branch.distro }}

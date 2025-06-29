@@ -59,11 +59,7 @@ def rust_base_triple(d, thing):
     Note that os is assumed to be some linux form
     '''
 
-    # The llvm-target for armv7 is armv7-unknown-linux-gnueabihf
-    if thing == "TARGET" and target_is_armv7(d):
-        arch = "armv7"
-    else:
-        arch = d.getVar('{}_ARCH'.format(thing))
+    arch = d.getVar('{}_ARCH'.format(thing))
 
     # All the Yocto targets are Linux and are 'unknown'
     vendor = "-unknown"
