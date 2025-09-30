@@ -30,7 +30,7 @@ INHIBIT_DEFAULT_RUST_DEPS = "1"
 # so it might make sense to take it's mapping. For now, though, we just mention
 # the bits we need explicitly.
 DEPENDS += "rust-llvm-native"
-DEPENDS += "virtual/${TARGET_PREFIX}gcc-crosssdk virtual/nativesdk-${TARGET_PREFIX}compilerlibs virtual/nativesdk-libc"
+DEPENDS += "virtual/${TARGET_PREFIX}gcc virtual/nativesdk-${TARGET_PREFIX}compilerlibs virtual/nativesdk-libc"
 DEPENDS += "rust-native"
 
 PROVIDES = "virtual/nativesdk-${TARGET_PREFIX}rust"
